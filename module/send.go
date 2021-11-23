@@ -24,7 +24,6 @@ func SendMessage(roomID int, msg string) {
 		log.Println("发送的消息为空。。。")
 		return
 	}
-	log.Println("消息：", msg)
 	_url := "https://fm.missevan.com/api/chatroom/message/send"
 
 	cookie := readCookie()
@@ -68,6 +67,7 @@ func SendMessage(roomID int, msg string) {
 	fmt.Println(string(body))
 }
 
+// readCookie 读取当前目录下的 `.cookie` 文件，返回内容
 func readCookie() string {
 	file, err := os.Open(".cookie")
 	if err != nil {
