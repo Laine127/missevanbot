@@ -9,11 +9,10 @@ import (
 	"missevan-fm/module"
 )
 
-var online int
+var online int // 记录当前直播间在线人数
 
 // handleTextMessage 处理文本消息
 func handleTextMessage(roomID int, msg string) {
-	fmt.Println(msg)
 	if msg == "❤️" {
 		// 过滤掉心跳消息
 		return
@@ -25,6 +24,9 @@ func handleTextMessage(roomID int, msg string) {
 	}
 
 	switch textMsg.Type {
+	case TypeNotify:
+		// 过滤掉通知消息
+		return
 	case TypeMember:
 		handleMember(roomID, textMsg)
 	case TypeGift:
@@ -35,6 +37,7 @@ func handleTextMessage(roomID int, msg string) {
 		handleRoom(roomID, textMsg)
 	default:
 	}
+	fmt.Println(msg + "\n")
 }
 
 // handleRoom 处理直播间相关事件
@@ -48,11 +51,13 @@ func handleRoom(roomID int, textMsg *FmTextMessage) {
 // handleMember 处理用户相关的事件
 func handleMember(roomID int, textMsg *FmTextMessage) {
 	switch textMsg.Event {
-	case EventJoin:
+	case EventJoinQueue:
 		// 有用户进入直播间
 		for _, v := range textMsg.Queue {
 			if username := v.Username; username != "" {
 				module.SendMessage(roomID, fmt.Sprintf("欢迎 @%s 进入直播间~", username))
+			} else {
+				module.SendMessage(roomID, "欢迎新同学进入直播间~")
 			}
 		}
 	case EventFollowed:
@@ -82,17 +87,39 @@ func handleMessage(roomID int, textMsg *FmTextMessage) {
 	case EventNew:
 		if strings.HasPrefix(textMsg.Message, "call") {
 			// 命令处理
-			handleCommand(roomID, textMsg.Message)
+			handleCommand(roomID, textMsg)
 		}
 	}
 }
 
 // handleCommand 处理消息中的命令
-func handleCommand(roomID int, msg string) {
-	cmd := msg[5:]
-	fmt.Println(cmd)
+func handleCommand(roomID int, textMsg *FmTextMessage) {
+	if len(textMsg.Message) < 5 {
+		textMsg.Message += " "
+	}
+	cmd := textMsg.Message[5:]
 	switch cmd {
 	case "人数":
 		module.SendMessage(roomID, fmt.Sprintf("当前直播间人数：%d~", online))
+	case "签到":
+		user := textMsg.User
+		text, err := module.Sign(user.UserId, user.Username)
+		if err != nil {
+			log.Println("签到出错了。。。")
+			return
+		}
+		module.SendMessage(roomID, fmt.Sprintf("@%s %s", user.Username, text))
+	case "排行":
+		if text := module.Rank(); text != "" {
+			module.SendMessage(roomID, fmt.Sprintf("每日签到榜单：%s", text))
+		} else {
+			module.SendMessage(roomID, "今天的榜单好像空空的~")
+		}
+	default:
+		text := `命令大全：
+call 人数
+call 签到
+call 排行`
+		module.SendMessage(roomID, text)
 	}
 }

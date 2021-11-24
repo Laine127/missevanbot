@@ -12,6 +12,29 @@ import (
 
 var mu = &sync.Mutex{}
 
+// header 返回特定的 Websocket 首部
+func header() *http.Header {
+	h := http.Header{}
+	h.Set("Host", "im.missevan.com")
+	h.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0")
+	h.Set("Accept", "*/*")
+	h.Set("Accept-Language", "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2")
+	h.Set("Accept-Encoding", "gzip, deflate, br")
+	// h.Set("Sec-WebSocket-Version","13")
+	// h.Set("Upgrade","websocket")
+	h.Set("Origin", "https://fm.missevan.com")
+	// h.Set("Sec-WebSocket-Extensions","permessage-deflate")
+	// h.Set("Sec-WebSocket-Key","6anGJ9ZtrqfGmuWnakoFDw==")
+	// h.Set("Connection","keep-alive, Upgrade")
+	h.Set("Cookie", "FM_SESS=20211123|8jvxga0hfxz8uqwelo3pniyov; FM_SESS.sig=Crk9p_L0eW6YKtwBkFN0viuR1EU")
+	h.Set("Sec-Fetch-Dest", "websocket")
+	h.Set("Sec-Fetch-Mode", "websocket")
+	h.Set("Sec-Fetch-Site", "same-site")
+	h.Set("Pragma", "no-cache")
+	h.Set("Cache-Control", "no-cache")
+	return &h
+}
+
 // connect Websocket 连接处理
 func connect(roomID int) {
 	dialer := new(websocket.Dialer)
@@ -38,7 +61,6 @@ func connect(roomID int) {
 
 	go heart(conn) // 定时发送心跳，防止断开
 
-	// read from server
 	for {
 		msgType, msgData, err := conn.ReadMessage()
 		if nil != err {
@@ -51,6 +73,7 @@ func connect(roomID int) {
 			// 接收文本消息
 			handleTextMessage(roomID, string(msgData))
 		case websocket.BinaryMessage:
+			// 接收二进制消息
 			// fmt.Println(msgData)
 		case websocket.CloseMessage:
 		case websocket.PingMessage:
@@ -68,28 +91,4 @@ func heart(conn *websocket.Conn) {
 		mu.Unlock()
 		time.Sleep(time.Second * 30) // 间隔时间 30s
 	}
-}
-
-// header 返回特定的 Websocket 首部
-func header() *http.Header {
-	h := http.Header{}
-	h.Set("Host", "im.missevan.com")
-	h.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0")
-	h.Set("Accept", "*/*")
-	h.Set("Accept-Language", "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2")
-	h.Set("Accept-Encoding", "gzip, deflate, br")
-	// h.Set("Sec-WebSocket-Version","13")
-	// h.Set("Upgrade","websocket")
-	h.Set("Origin", "https://fm.missevan.com")
-	// h.Set("Sec-WebSocket-Extensions","permessage-deflate")
-	// h.Set("Sec-WebSocket-Key","6anGJ9ZtrqfGmuWnakoFDw==")
-	// h.Set("Connection","keep-alive, Upgrade")
-	h.Set("Cookie", "FM_SESS=20211123|8jvxga0hfxz8uqwelo3pniyov; FM_SESS.sig=Crk9p_L0eW6YKtwBkFN0viuR1EU")
-	h.Set("Sec-Fetch-Dest", "websocket")
-	h.Set("Sec-Fetch-Mode", "websocket")
-	h.Set("Sec-Fetch-Site", "same-site")
-	h.Set("Pragma", "no-cache")
-	h.Set("Cache-Control", "no-cache")
-
-	return &h
 }

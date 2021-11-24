@@ -7,11 +7,20 @@
 - 新观众欢迎
 - 新关注感谢
 - 礼物感谢
-- 直播间人数查看（可能对手机端比较有用？）
+- 直播间在线人数查看（可能对手机端比较有用？）
+- 签到和签到排行榜功能
 
 ## 如何使用？
 
-编译本项目，在可执行文件同目录下创建 _.cookie_ 文件，填入当前账号的 Cookie，执行可执行文件即可。
+编译本项目，在可执行文件同目录下创建 _config.yaml_ 文件，填入配置信息，执行可执行文件即可。
+
+```yaml
+cookie: ".cookie" # 存储 Cookie 的文件路径 
+redis: # Redis 相关配置
+  host: ""
+  passwd:
+  db: 1
+```
 
 ```shell
 # .\missevan-fm.exe [直播间 ID]
@@ -26,9 +35,12 @@
 
 ## 目录结构
 
+- cache：Redis 连接相关模块
+- config：配置文件读取模块
 - module：各独立模块
     - send：发送消息模块
+    - sign：签到模块
 - connect.go：处理 Websocket 连接
-- handler.go：处理房间各类消息
 - main.go：程序入口
 - message.go：直播间消息 JSON 结构体
+- message_handler.go：处理房间各类消息

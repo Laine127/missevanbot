@@ -10,9 +10,10 @@ import (
 	"os"
 
 	"github.com/google/uuid"
+	"missevan-fm/config"
 )
 
-type Data struct {
+type message struct {
 	RoomID    int    `json:"room_id"`
 	Message   string `json:"message"`
 	MessageID string `json:"msg_id"`
@@ -33,7 +34,7 @@ func SendMessage(roomID int, msg string) {
 		return
 	}
 
-	d := Data{
+	d := message{
 		RoomID:    roomID,
 		Message:   msg,
 		MessageID: messageID(),
@@ -69,7 +70,8 @@ func SendMessage(roomID int, msg string) {
 
 // readCookie 读取当前目录下的 `.cookie` 文件，返回内容
 func readCookie() string {
-	file, err := os.Open(".cookie")
+	conf := config.Conf.Cookie
+	file, err := os.Open(conf)
 	if err != nil {
 		log.Println("读取Cookie失败啦：", err)
 		os.Exit(1)
