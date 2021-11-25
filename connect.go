@@ -70,11 +70,9 @@ func connect(roomID int) {
 
 		switch msgType {
 		case websocket.TextMessage:
-			// 接收文本消息
+			// 处理文本消息
 			handleTextMessage(roomID, string(msgData))
 		case websocket.BinaryMessage:
-			// 接收二进制消息
-			// fmt.Println(msgData)
 		case websocket.CloseMessage:
 		case websocket.PingMessage:
 		case websocket.PongMessage:

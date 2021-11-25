@@ -12,7 +12,7 @@ import (
 var RDB *redis.Client
 
 // InitRDBClient 初始化 Redis 客户端
-func InitRDBClient(conf *config.RedisConf) {
+func InitRDBClient(conf *config.RedisConfig) {
 	RDB = redis.NewClient(&redis.Options{
 		Addr:     conf.Host,
 		Password: conf.Password,

@@ -58,8 +58,10 @@ const (
 	EventJoin      = "join"       // 主动连接直播间
 	EventJoinQueue = "join_queue" // 用户进入直播间
 	EventFollowed  = "followed"   // 用户关注了主播
+	EventOpen      = "open"       // 直播间开启
 	EventClose     = "close"      // 直播间关闭
 	EventNewRank   = "new_rank"   // 直播间排行
+	EventLeave     = "leave"      // 用户离开直播间
 )
 
 // Type 定义消息类型

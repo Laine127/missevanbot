@@ -1,6 +1,6 @@
 # MissEvan-FM
 
-猫耳 FM 直播间机器人 Go 语言实现，模块化封装扩展功能。未来看心情更新~。
+猫耳 FM 直播间机器人 Go 语言实现，仅作为娱乐用途。未来看心情更新~
 
 ## 功能
 
@@ -20,6 +20,8 @@ redis: # Redis 相关配置
   host: ""
   passwd:
   db: 1
+push: # 各类推送服务密钥
+  bark: "" # Bark App 推送通知
 ```
 
 ```shell

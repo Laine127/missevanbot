@@ -9,14 +9,19 @@ import (
 var Conf *Config
 
 type Config struct {
-	Cookie string     `mapstructure:"cookie"`
-	Redis  *RedisConf `mapstructure:"redis"`
+	Cookie string       `mapstructure:"cookie"`
+	Redis  *RedisConfig `mapstructure:"redis"`
+	Push   *PushConfig  `mapstructure:"push"`
 }
 
-type RedisConf struct {
+type RedisConfig struct {
 	Host     string `mapstructure:"host"`
 	Password string `mapstructure:"passwd"`
 	DB       int    `mapstructure:"db"`
+}
+
+type PushConfig struct {
+	Bark string `mapstructure:"bark"`
 }
 
 // ReadConfig is used to read configuration file
