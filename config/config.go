@@ -26,10 +26,10 @@ type PushConfig struct {
 }
 
 type RoomConfig struct {
-	ID              int      `json:"id"`
-	Name            string   `json:"name"`
-	RainbowInterval int      `json:"rainbow_interval"`
-	Rainbow         []string `json:"rainbow"`
+	ID                 int      `json:"id"`
+	Name               string   `json:"name"`
+	RainbowMaxInterval int      `json:"rainbow_max_interval"`
+	Rainbow            []string `json:"rainbow"`
 }
 
 // ReadConfig is used to read configuration file

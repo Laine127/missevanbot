@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"missevan-fm/config"
 )
 
 var mu = &sync.Mutex{}
@@ -36,10 +37,10 @@ func header() *http.Header {
 }
 
 // connect Websocket 连接处理
-func connect(roomID int) {
+func connect(room *config.RoomConfig) {
 	dialer := new(websocket.Dialer)
 
-	conn, resp, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", roomID), *header())
+	conn, resp, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", room.ID), *header())
 	if err != nil {
 		log.Println(err)
 		return
@@ -52,7 +53,7 @@ func connect(roomID int) {
 		return
 	}
 
-	joinMsg := fmt.Sprintf(`{"action":"join","uuid":"35e77342-30af-4b0b-a0eb-f80a826a68c7","type":"room","room_id":%d}`, roomID)
+	joinMsg := fmt.Sprintf(`{"action":"join","uuid":"35e77342-30af-4b0b-a0eb-f80a826a68c7","type":"room","room_id":%d}`, room.ID)
 
 	if err := conn.WriteMessage(websocket.TextMessage, []byte(joinMsg)); err != nil {
 		log.Println(err)
@@ -60,6 +61,8 @@ func connect(roomID int) {
 	}
 
 	go heart(conn) // 定时发送心跳，防止断开
+
+	go cronTask(room) // 定时任务
 
 	for {
 		msgType, msgData, err := conn.ReadMessage()
@@ -71,7 +74,7 @@ func connect(roomID int) {
 		switch msgType {
 		case websocket.TextMessage:
 			// 处理文本消息
-			handleTextMessage(roomID, string(msgData))
+			handleTextMessage(room.ID, string(msgData))
 		case websocket.BinaryMessage:
 		case websocket.CloseMessage:
 		case websocket.PingMessage:

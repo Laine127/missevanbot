@@ -110,7 +110,8 @@ func handleMember(roomID int, textMsg *FmTextMessage) {
 			}
 			if username := v.Username; username != "" {
 				module.SendMessage(roomID, fmt.Sprintf("欢迎 @%s 进入直播间~", username))
-			} else {
+			} else if count%2 == 0 {
+				// 减半欢迎新用户次数
 				module.SendMessage(roomID, "欢迎新同学进入直播间~")
 			}
 		}
