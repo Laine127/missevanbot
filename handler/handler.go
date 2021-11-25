@@ -9,7 +9,7 @@ import (
 )
 
 // helperText 帮助文本
-const helperText = `命令大全：
+const helperText = `命令帮助：
 帮助 -- 获取帮助信息
 在线 -- 查看当前在线人数
 签到 -- 在当前直播间进行签到
@@ -28,6 +28,7 @@ var _cmdMap = map[string]int{
 	"在线": CmdOnline,
 	"签到": CmdSign,
 	"排行": CmdRank,
+	// 下面是隐藏的命令
 	"比心": CmdLove,
 	"笔芯": CmdLove,
 }

@@ -9,10 +9,11 @@ import (
 var Conf *Config
 
 type Config struct {
-	Cookie string        `mapstructure:"cookie"`
-	Redis  *RedisConfig  `mapstructure:"redis"`
-	Push   *PushConfig   `mapstructure:"push"`
-	Rooms  []*RoomConfig `mapstructure:"rooms"`
+	Name   string        `mapstructure:"name"`   // 机器人的昵称
+	Cookie string        `mapstructure:"cookie"` // 文件的存储位置
+	Redis  *RedisConfig  `mapstructure:"redis"`  // Redis服务配置
+	Push   *PushConfig   `mapstructure:"push"`   // 消息推送配置
+	Rooms  []*RoomConfig `mapstructure:"rooms"`  // 启用的房间列表配置
 }
 
 type RedisConfig struct {
@@ -26,11 +27,11 @@ type PushConfig struct {
 }
 
 type RoomConfig struct {
-	ID                 int      `mapstructure:"id"`
-	Name               string   `mapstructure:"name"`
-	Pinyin             bool     `mapstructure:"pinyin"`
-	RainbowMaxInterval int      `mapstructure:"rainbow_max_interval"`
-	Rainbow            []string `mapstructure:"rainbow"`
+	ID                 int      `mapstructure:"id"`                   // 直播间ID
+	Name               string   `mapstructure:"name"`                 // 主播自定义昵称
+	Pinyin             bool     `mapstructure:"pinyin"`               // 是否开启注音功能
+	RainbowMaxInterval int      `mapstructure:"rainbow_max_interval"` // 彩虹屁最长发送间隔
+	Rainbow            []string `mapstructure:"rainbow"`              // 彩虹屁自定义列表
 }
 
 // ReadConfig is used to read configuration file

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"log"
 
 	"missevan-fm/config"
 	"missevan-fm/module"
@@ -16,7 +15,6 @@ func handleRoom(room *config.RoomConfig, textMsg *FmTextMessage) {
 	case EventStatistic:
 		_statistics[room.ID].Online = textMsg.Statistics.Online
 	case EventOpen:
-		log.Println("直播间开启~")
 		// 通知推送
 		if r := module.RoomInfo(room.ID); r != nil {
 			creatorName := r.Info.Creator.Username
@@ -24,7 +22,6 @@ func handleRoom(room *config.RoomConfig, textMsg *FmTextMessage) {
 			module.Push(conf, module.TitleOpen, text)
 		}
 	case EventClose:
-		log.Println("直播间已经关闭了~")
 		// 通知推送
 		if r := module.RoomInfo(room.ID); r != nil {
 			creatorName := r.Info.Creator.Username
