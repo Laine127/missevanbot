@@ -21,18 +21,18 @@ func header() *http.Header {
 	h.Set("Accept", "*/*")
 	h.Set("Accept-Language", "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2")
 	h.Set("Accept-Encoding", "gzip, deflate, br")
-	// h.Set("Sec-WebSocket-Version","13")
-	// h.Set("Upgrade","websocket")
 	h.Set("Origin", "https://fm.missevan.com")
-	// h.Set("Sec-WebSocket-Extensions","permessage-deflate")
-	// h.Set("Sec-WebSocket-Key","6anGJ9ZtrqfGmuWnakoFDw==")
-	// h.Set("Connection","keep-alive, Upgrade")
 	h.Set("Cookie", "FM_SESS=20211123|8jvxga0hfxz8uqwelo3pniyov; FM_SESS.sig=Crk9p_L0eW6YKtwBkFN0viuR1EU")
 	h.Set("Sec-Fetch-Dest", "websocket")
 	h.Set("Sec-Fetch-Mode", "websocket")
 	h.Set("Sec-Fetch-Site", "same-site")
 	h.Set("Pragma", "no-cache")
 	h.Set("Cache-Control", "no-cache")
+	// h.Set("Sec-WebSocket-Version","13")
+	// h.Set("Upgrade","websocket")
+	// h.Set("Sec-WebSocket-Extensions","permessage-deflate")
+	// h.Set("Sec-WebSocket-Key","6anGJ9ZtrqfGmuWnakoFDw==")
+	// h.Set("Connection","keep-alive, Upgrade")
 	return &h
 }
 
@@ -74,7 +74,7 @@ func connect(room *config.RoomConfig) {
 		switch msgType {
 		case websocket.TextMessage:
 			// 处理文本消息
-			handleTextMessage(room.ID, string(msgData))
+			handleTextMessage(room, string(msgData))
 		case websocket.BinaryMessage:
 		case websocket.CloseMessage:
 		case websocket.PingMessage:

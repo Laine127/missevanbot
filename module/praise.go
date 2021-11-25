@@ -12,9 +12,10 @@ func Praise(room *config.RoomConfig) {
 	roomID := room.ID
 	texts := room.Rainbow
 	for {
-		randNumber := rand.Intn(room.RainbowMaxInterval)
+		r := rand.New(rand.NewSource(int64(roomID) + time.Now().UnixNano()))
+		randNumber := r.Intn(room.RainbowMaxInterval)
 		time.Sleep(time.Duration(randNumber) * time.Minute)
-		randIndex := rand.Intn(len(texts))
+		randIndex := r.Intn(len(texts))
 		SendMessage(roomID, texts[randIndex])
 	}
 }
