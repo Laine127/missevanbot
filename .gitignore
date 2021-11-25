@@ -16,3 +16,4 @@
 # vendor/
 
 *.yaml
+*.ps1

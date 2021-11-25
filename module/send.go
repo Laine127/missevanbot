@@ -3,7 +3,6 @@ package module
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -34,14 +33,11 @@ func SendMessage(roomID int, msg string) {
 		return
 	}
 
-	d := message{
+	data, _ := json.Marshal(message{
 		RoomID:    roomID,
 		Message:   msg,
 		MessageID: messageID(),
-	}
-	data, _ := json.Marshal(d)
-
-	fmt.Println(string(data))
+	})
 
 	client := new(http.Client)
 	req, err := http.NewRequest("POST", _url, bytes.NewReader(data))
@@ -60,12 +56,12 @@ func SendMessage(roomID int, msg string) {
 		return
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	fmt.Println(string(body))
+	// fmt.Println(string(body) + "\n")
 }
 
 // readCookie 读取当前目录下的 `.cookie` 文件，返回内容

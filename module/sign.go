@@ -4,20 +4,23 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 
 	"missevan-fm/cache"
 )
 
-const RedisPrefix = "missevan:fm"
+const RedisPrefix = "missevan:"
 
 var ctx = context.Background()
 
 // Sign 用户签到
-func Sign(uid int, uname string) (string, error) {
+func Sign(roomID, uid int, uname string) (string, error) {
 	rdb := cache.RDB
 
-	key := fmt.Sprintf("%s:sign:%d", RedisPrefix, uid)
+	prefix := RedisPrefix + strconv.Itoa(roomID)
+
+	key := fmt.Sprintf("%s:sign:%d", prefix, uid)
 	// 获取当前缓存中的签到信息
 	cmd := rdb.HMGet(ctx, key, "count", "day", "luck")
 	var count, day, luck string
@@ -48,23 +51,29 @@ func Sign(uid int, uname string) (string, error) {
 	// 增加签到天数
 	countCMD := rdb.HIncrBy(ctx, key, "count", 1)
 	// 放入排行榜
-	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:id", RedisPrefix, time.Now().Format("2006-01-02")), uid)
-	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:name", RedisPrefix, time.Now().Format("2006-01-02")), uname)
+	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:id", prefix, time.Now().Format("2006-01-02")), uid)
+	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:name", prefix, time.Now().Format("2006-01-02")), uname)
 
 	return fmt.Sprintf("签到成功啦，已经连续签到%d天~\n\n%s", countCMD.Val(), luck), nil
 }
 
 // Rank return the rank of sign task today.
-func Rank() string {
+func Rank(roomID int) string {
 	rdb := cache.RDB
-	key := fmt.Sprintf("%s:rank:%s:id", RedisPrefix, time.Now().Format("2006-01-02"))
-	nKey := fmt.Sprintf("%s:rank:%s:name", RedisPrefix, time.Now().Format("2006-01-02"))
+
+	prefix := RedisPrefix + strconv.Itoa(roomID)
+
+	key := fmt.Sprintf("%s:rank:%s:id", prefix, time.Now().Format("2006-01-02"))
+	nKey := fmt.Sprintf("%s:rank:%s:name", prefix, time.Now().Format("2006-01-02"))
 	listID := rdb.LRange(ctx, key, 0, -1)
 	listName := rdb.LRange(ctx, nKey, 0, -1)
 	result := "\n"
 	for k, v := range listID.Val() {
-		count := rdb.HGet(ctx, fmt.Sprintf("%s:sign:%s", RedisPrefix, v), "count").Val()
-		result += fmt.Sprintf("Rank %d. [%s]\t连续签到%s天\n", k+1, listName.Val()[k], count)
+		count := rdb.HGet(ctx, fmt.Sprintf("%s:sign:%s", prefix, v), "count").Val()
+		result += fmt.Sprintf("Rank %d. [%s]\t连续签到%s天", k+1, listName.Val()[k], count)
+		if k < len(listID.Val())-1 {
+			result += "\n"
+		}
 	}
 	return result
 }

@@ -1,23 +1,22 @@
 package main
 
 import (
-	"log"
-	"os"
-	"strconv"
+	"sync"
 
 	"missevan-fm/cache"
 	"missevan-fm/config"
 )
 
 func main() {
-	config.ReadConfig()                    // 读取配置文件
-	cache.InitRDBClient(config.Conf.Redis) // 初始化 Redis 缓存
-
-	rid := os.Args[1] // 455984011
-	id, err := strconv.Atoi(rid)
-	if err != nil {
-		log.Println("Room ID错误。。。")
-		return
+	wg := &sync.WaitGroup{}
+	config.ReadConfig() // 读取配置文件
+	conf := config.Conf
+	cache.InitRDBClient(conf.Redis) // 初始化 Redis 缓存
+	for _, room := range conf.Rooms {
+		wg.Add(1)
+		go func(room *config.RoomConfig) {
+			connect(room) // 主连接
+		}(room)
 	}
-	connect(id) // 主连接
+	wg.Wait()
 }
