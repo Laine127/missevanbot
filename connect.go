@@ -62,8 +62,6 @@ func connect(room *config.RoomConfig) {
 
 	go heart(conn) // 定时发送心跳，防止断开
 
-	go cronTask(room) // 定时任务
-
 	for {
 		msgType, msgData, err := conn.ReadMessage()
 		if nil != err {

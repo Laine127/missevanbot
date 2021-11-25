@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"missevan-fm/config"
+	"missevan-fm/module"
 )
 
 // helperText 帮助文本
@@ -36,6 +38,7 @@ var _cmdMap = map[string]int{
 type statistic struct {
 	Count  int // 统计进入的数量
 	Online int // 记录当前直播间在线人数
+	Timer  *time.Timer
 }
 
 var _statistics = map[int]*statistic{} // 存储每个直播间的实时信息
@@ -56,6 +59,8 @@ func HandleTextMessage(room *config.RoomConfig, msg string) {
 	// 初始化全局 Map
 	if _, ok := _statistics[room.ID]; !ok {
 		_statistics[room.ID] = new(statistic)
+
+		module.SendMessage(room.ID, "芝士机器人在线了，可以在直播间输入“帮助”或者@我来获取支持哦～")
 	}
 
 	switch textMsg.Type {
