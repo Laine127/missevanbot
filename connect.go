@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"missevan-fm/config"
+	"missevan-fm/handler"
 )
 
 var mu = &sync.Mutex{}
@@ -54,7 +55,6 @@ func connect(room *config.RoomConfig) {
 	}
 
 	joinMsg := fmt.Sprintf(`{"action":"join","uuid":"35e77342-30af-4b0b-a0eb-f80a826a68c7","type":"room","room_id":%d}`, room.ID)
-
 	if err := conn.WriteMessage(websocket.TextMessage, []byte(joinMsg)); err != nil {
 		log.Println(err)
 		return
@@ -73,8 +73,7 @@ func connect(room *config.RoomConfig) {
 
 		switch msgType {
 		case websocket.TextMessage:
-			// 处理文本消息
-			handleTextMessage(room, string(msgData))
+			handler.HandleTextMessage(room, string(msgData)) // 处理文本消息
 		case websocket.BinaryMessage:
 		case websocket.CloseMessage:
 		case websocket.PingMessage:

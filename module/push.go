@@ -15,7 +15,9 @@ const (
 
 // Push 推送消息通知
 func Push(conf *config.PushConfig, title, msg string) {
-	BarkPush(conf.Bark, title, msg)
+	if conf.Bark != "" {
+		BarkPush(conf.Bark, title, msg)
+	}
 }
 
 // BarkPush 通过 Bark 推送

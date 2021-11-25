@@ -1,4 +1,4 @@
-package main
+package handler
 
 // FmTextMessage 直播间Websocket消息主体
 type FmTextMessage struct {
