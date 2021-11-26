@@ -7,38 +7,13 @@ import (
 	"time"
 
 	"missevan-fm/config"
-	"missevan-fm/module"
 )
-
-// helperText 帮助文本
-const helperText = `命令帮助：
-帮助 -- 获取帮助信息
-在线 -- 查看当前在线人数
-签到 -- 在当前直播间进行签到
-排行 -- 查看当前直播间当天签到排行`
-
-const (
-	CmdHelper = iota
-	CmdOnline
-	CmdSign
-	CmdRank
-	CmdLove
-)
-
-var _cmdMap = map[string]int{
-	"帮助": CmdHelper,
-	"在线": CmdOnline,
-	"签到": CmdSign,
-	"排行": CmdRank,
-	// 下面是隐藏的命令
-	"比心": CmdLove,
-	"笔芯": CmdLove,
-}
 
 type statistic struct {
-	Count  int // 统计进入的数量
-	Online int // 记录当前直播间在线人数
-	Timer  *time.Timer
+	Count  int         // 统计进入的数量
+	Online int         // 记录当前直播间在线人数
+	Bait   bool        // 是否开启演员模式
+	Timer  *time.Timer // 定时任务计时器
 }
 
 var _statistics = map[int]*statistic{} // 存储每个直播间的实时信息
@@ -59,8 +34,6 @@ func HandleTextMessage(room *config.RoomConfig, msg string) {
 	// 初始化全局 Map
 	if _, ok := _statistics[room.ID]; !ok {
 		_statistics[room.ID] = new(statistic)
-
-		module.SendMessage(room.ID, "芝士机器人在线了，可以在直播间输入“帮助”或者@我来获取支持哦～")
 	}
 
 	switch textMsg.Type {

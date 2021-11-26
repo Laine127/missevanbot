@@ -9,14 +9,12 @@ import (
 
 // Praise 彩虹屁模块
 func Praise(room *config.RoomConfig, timer *time.Timer) {
-	roomID := room.ID
-	texts := room.Rainbow
 	for {
-		r := rand.New(rand.NewSource(int64(roomID) + time.Now().UnixNano()))
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		randNumber := r.Intn(room.RainbowMaxInterval)
-		timer.Reset(time.Duration(randNumber) * time.Minute)
+		timer.Reset(time.Duration(randNumber+1) * time.Minute)
 		<-timer.C
-		randIndex := r.Intn(len(texts))
-		SendMessage(roomID, texts[randIndex])
+		randIndex := r.Intn(len(room.Rainbow))
+		SendMessage(room.ID, room.Rainbow[randIndex])
 	}
 }

@@ -34,7 +34,7 @@ func Sign(roomID, uid int, uname string) (string, error) {
 		luck = v
 	} else {
 		// 还没有运势记录
-		luck = luckString(uid)
+		luck = luckString()
 		rdb.HSet(ctx, key, "luck", luck)
 	}
 	// 判断是否重复签到
@@ -46,7 +46,7 @@ func Sign(roomID, uid int, uname string) (string, error) {
 		rdb.HSet(ctx, key, "count", 0)
 	}
 	// 生成今天的运势
-	luck = luckString(uid)
+	luck = luckString()
 	rdb.HMSet(ctx, key, "day", time.Now().Format("2006-01-02"), "luck", luck)
 	// 增加签到天数
 	countCMD := rdb.HIncrBy(ctx, key, "count", 1)
@@ -79,10 +79,10 @@ func Rank(roomID int) string {
 }
 
 // luckString 返回运势字符串
-func luckString(uid int) (result string) {
+func luckString() (result string) {
 	result = "今日运势："
 	luckPool := [10]string{"大凶", "大吉", "不详", "吉兆", "无事", "隆运", "破财", "稳步", "跌宕", "未可知"}
-	r := rand.New(rand.NewSource(int64(uid) + time.Now().UnixNano()))
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	// 便于随意调整概率
 	switch num := r.Intn(100); {
 	case num < 5:

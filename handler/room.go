@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"time"
 
 	"missevan-fm/config"
 	"missevan-fm/module"
@@ -10,31 +9,30 @@ import (
 
 // handleRoom 处理直播间相关事件
 func handleRoom(room *config.RoomConfig, textMsg *FmTextMessage) {
-	conf := config.Conf.Push
+	s := _statistics[room.ID]
 
 	switch textMsg.Event {
 	case EventStatistic:
-		_statistics[room.ID].Online = textMsg.Statistics.Online
+		s.Online = textMsg.Statistics.Online
 	case EventOpen:
+		// 发送帮助信息
+		module.SendMessage(room.ID, "芝士机器人在线了，可以在直播间输入“帮助”或者@我来获取支持哦～")
 		// 通知推送
 		if r := module.RoomInfo(room.ID); r != nil {
 			creatorName := r.Info.Creator.Username
 			text := fmt.Sprintf("%s 开播啦~", creatorName)
-			module.Push(conf, module.TitleOpen, text)
+			module.Push(module.TitleOpen, text)
 		}
-		// 启用定时任务
-		timer := time.NewTimer(1)
-		_statistics[room.ID].Timer = timer
-		go module.CronTask(room, timer)
 	case EventClose:
 		// 通知推送
 		if r := module.RoomInfo(room.ID); r != nil {
 			creatorName := r.Info.Creator.Username
 			text := fmt.Sprintf("%s 下播啦~", creatorName)
-			module.Push(conf, module.TitleClose, text)
+			module.Push(module.TitleClose, text)
 		}
 		// 关闭定时任务
-		if timer := _statistics[room.ID].Timer; timer != nil {
+		s.Bait = false
+		if timer := s.Timer; timer != nil {
 			timer.Stop()
 		}
 	}

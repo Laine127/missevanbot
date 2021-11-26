@@ -21,7 +21,7 @@ var _chatList = [...]string{
 
 // handleChat 处理聊天请求
 func handleChat(room *config.RoomConfig, textMsg *FmTextMessage) {
-	r := rand.New(rand.NewSource(int64(room.ID) + time.Now().UnixNano()))
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	idx := r.Intn(len(_chatList))
 	module.SendMessage(room.ID, fmt.Sprintf("@%s %s", textMsg.User.Username, _chatList[idx]))
 }

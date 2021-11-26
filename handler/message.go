@@ -19,6 +19,7 @@ func handleMessage(room *config.RoomConfig, textMsg *FmTextMessage) {
 		if strings.HasPrefix(textMsg.Message, fmt.Sprintf("@%s", config.Conf.Name)) {
 			// 检查是否是聊天请求，进行处理
 			handleChat(room, textMsg)
+			return
 		}
 	}
 }

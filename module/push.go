@@ -14,7 +14,9 @@ const (
 )
 
 // Push 推送消息通知
-func Push(conf *config.PushConfig, title, msg string) {
+func Push(title, msg string) {
+	conf := config.Conf.Push
+
 	if conf.Bark != "" {
 		BarkPush(conf.Bark, title, msg)
 	}
