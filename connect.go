@@ -38,10 +38,10 @@ func header() *http.Header {
 }
 
 // connect Websocket 连接处理
-func connect(room *config.RoomConfig) {
+func connect(conf *config.Room) {
 	dialer := new(websocket.Dialer)
 
-	conn, resp, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", room.ID), *header())
+	conn, resp, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", conf.ID), *header())
 	if err != nil {
 		log.Println(err)
 		return
@@ -54,7 +54,7 @@ func connect(room *config.RoomConfig) {
 		return
 	}
 
-	joinMsg := fmt.Sprintf(`{"action":"join","uuid":"35e77342-30af-4b0b-a0eb-f80a826a68c7","type":"room","room_id":%d}`, room.ID)
+	joinMsg := fmt.Sprintf(`{"action":"join","uuid":"35e77342-30af-4b0b-a0eb-f80a826a68c7","type":"room","room_id":%d}`, conf.ID)
 	if err := conn.WriteMessage(websocket.TextMessage, []byte(joinMsg)); err != nil {
 		log.Println(err)
 		return
@@ -71,7 +71,7 @@ func connect(room *config.RoomConfig) {
 
 		switch msgType {
 		case websocket.TextMessage:
-			handler.HandleTextMessage(room, string(msgData)) // 处理文本消息
+			handler.HandleTextMessage(conf, string(msgData)) // 处理文本消息
 		case websocket.BinaryMessage:
 		case websocket.CloseMessage:
 		case websocket.PingMessage:

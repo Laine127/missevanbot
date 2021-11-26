@@ -9,24 +9,24 @@ import (
 var Conf *Config
 
 type Config struct {
-	Name   string        `mapstructure:"name"`   // 机器人的昵称
-	Cookie string        `mapstructure:"cookie"` // 文件的存储位置
-	Redis  *RedisConfig  `mapstructure:"redis"`  // Redis服务配置
-	Push   *PushConfig   `mapstructure:"push"`   // 消息推送配置
-	Rooms  []*RoomConfig `mapstructure:"rooms"`  // 启用的房间列表配置
+	Name   string  `mapstructure:"name"`   // 机器人的昵称
+	Cookie string  `mapstructure:"cookie"` // 文件的存储位置
+	Redis  *Redis  `mapstructure:"redis"`  // Redis服务配置
+	Push   *Push   `mapstructure:"push"`   // 消息推送配置
+	Rooms  []*Room `mapstructure:"rooms"`  // 启用的房间列表配置
 }
 
-type RedisConfig struct {
+type Redis struct {
 	Host     string `mapstructure:"host"`
 	Password string `mapstructure:"passwd"`
 	DB       int    `mapstructure:"db"`
 }
 
-type PushConfig struct {
+type Push struct {
 	Bark string `mapstructure:"bark"`
 }
 
-type RoomConfig struct {
+type Room struct {
 	ID                 int      `mapstructure:"id"`                   // 直播间ID
 	Name               string   `mapstructure:"name"`                 // 主播自定义昵称
 	Pinyin             bool     `mapstructure:"pinyin"`               // 是否开启注音功能
@@ -34,8 +34,8 @@ type RoomConfig struct {
 	Rainbow            []string `mapstructure:"rainbow"`              // 彩虹屁自定义列表
 }
 
-// ReadConfig is used to read configuration file
-func ReadConfig() {
+// Load is used to load configuration file
+func Load() {
 	conf := new(Config)
 
 	viper.SetConfigName("config")

@@ -5,7 +5,6 @@ import (
 	"log"
 	"time"
 
-	"missevan-fm/config"
 	"missevan-fm/module"
 )
 
@@ -25,6 +24,7 @@ const (
 	CmdBait          // 演员模式启停
 )
 
+// _cmdMap 帮助映射
 var _cmdMap = map[string]int{
 	"帮助": CmdHelper,
 	"在线": CmdOnline,
@@ -37,59 +37,58 @@ var _cmdMap = map[string]int{
 }
 
 // handleCommand 处理消息中的命令
-func handleCommand(room *config.RoomConfig, cmdType int, textMsg *FmTextMessage) {
+func (room *RoomStore) handleCommand(cmdType int, textMsg *FmTextMessage) {
+	roomID := room.Conf.ID
 	switch cmdType {
 	case CmdOnline:
-		msg := fmt.Sprintf("当前直播间人数：%d~", _statistics[room.ID].Online)
-		module.SendMessage(room.ID, msg)
+		msg := fmt.Sprintf("当前直播间人数：%d~", room.Online)
+		module.SendMessage(roomID, msg)
 	case CmdSign:
 		user := textMsg.User
-		text, err := module.Sign(room.ID, user.UserId, user.Username)
+		text, err := module.Sign(roomID, user.UserId, user.Username)
 		if err != nil {
 			log.Println("签到出错了。。。")
 			return
 		}
 		msg := fmt.Sprintf("@%s %s", user.Username, text)
-		module.SendMessage(room.ID, msg)
+		module.SendMessage(roomID, msg)
 	case CmdRank:
-		if text := module.Rank(room.ID); text != "" {
+		if text := module.Rank(roomID); text != "" {
 			msg := fmt.Sprintf("每日签到榜单：%s", text)
-			module.SendMessage(room.ID, msg)
+			module.SendMessage(roomID, msg)
 		} else {
-			module.SendMessage(room.ID, "今天的榜单好像空空的~")
+			module.SendMessage(roomID, "今天的榜单好像空空的~")
 		}
 	case CmdLove:
-		module.SendMessage(room.ID, "❤️~")
+		module.SendMessage(roomID, "❤️~")
 	case CmdBait:
 		baitSwitch(room)
 	case CmdHelper:
 		fallthrough
 	default:
-		module.SendMessage(room.ID, helpText)
+		module.SendMessage(roomID, helpText)
 	}
 }
 
 // baitSwitch 演员模式启停
-func baitSwitch(room *config.RoomConfig) {
-	if room.Rainbow == nil || len(room.Rainbow) == 0 {
-		module.SendMessage(room.ID, "我好像没什么可说的。。。")
+func baitSwitch(room *RoomStore) {
+	if room.Conf.Rainbow == nil || len(room.Conf.Rainbow) == 0 {
+		// 设定的内容为空
+		module.SendMessage(room.Conf.ID, "我好像没什么可说的。。。")
 		return
 	}
-
-	module.SendMessage(room.ID, "了解！")
-
-	if s := _statistics[room.ID]; s.Bait && s.Timer != nil {
-		s.Bait = false
-		s.Timer.Stop()
+	if room.Bait && room.Timer != nil {
+		module.SendMessage(room.Conf.ID, "我要去睡觉了")
+		room.Bait = false
+		room.Timer.Stop()
 	} else {
-		s.Bait = true
-		if room.RainbowMaxInterval <= 0 {
-			room.RainbowMaxInterval = 10
+		room.Bait = true
+		if room.Conf.RainbowMaxInterval <= 0 {
+			room.Conf.RainbowMaxInterval = 10
 		}
-
 		// 启用定时任务
 		timer := time.NewTimer(1)
-		_statistics[room.ID].Timer = timer
-		go module.Praise(room, timer)
+		room.Timer = timer
+		go module.Praise(room.Conf, timer)
 	}
 }

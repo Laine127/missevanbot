@@ -12,8 +12,8 @@ import (
 var RDB *redis.Client
 
 // InitRDBClient 初始化 Redis 客户端
-func InitRDBClient(conf *config.RedisConfig) {
-	RDB = redis.NewClient(&redis.Options{
+func InitRDBClient(conf *config.Redis) {
+	rdb := redis.NewClient(&redis.Options{
 		Addr:     conf.Host,
 		Password: conf.Password,
 		DB:       conf.DB,
@@ -21,9 +21,9 @@ func InitRDBClient(conf *config.RedisConfig) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := RDB.Ping(ctx).Result()
-
-	if err != nil {
+	if _, err := rdb.Ping(ctx).Result(); err != nil {
 		panic(fmt.Errorf("连接Redis不成功: %s \n", err))
 	}
+
+	RDB = rdb
 }

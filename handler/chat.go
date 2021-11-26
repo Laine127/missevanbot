@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"time"
 
-	"missevan-fm/config"
 	"missevan-fm/module"
 )
 
@@ -20,8 +19,9 @@ var _chatList = [...]string{
 }
 
 // handleChat 处理聊天请求
-func handleChat(room *config.RoomConfig, textMsg *FmTextMessage) {
+func (room *RoomStore) handleChat(textMsg *FmTextMessage) {
+	roomID := room.Conf.ID
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	idx := r.Intn(len(_chatList))
-	module.SendMessage(room.ID, fmt.Sprintf("@%s %s", textMsg.User.Username, _chatList[idx]))
+	module.SendMessage(roomID, fmt.Sprintf("@%s %s", textMsg.User.Username, _chatList[idx]))
 }

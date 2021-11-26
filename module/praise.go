@@ -8,7 +8,7 @@ import (
 )
 
 // Praise 彩虹屁模块
-func Praise(room *config.RoomConfig, timer *time.Timer) {
+func Praise(room *config.Room, timer *time.Timer) {
 	for {
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		randNumber := r.Intn(room.RainbowMaxInterval)
