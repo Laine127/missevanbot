@@ -73,15 +73,15 @@ func (room *RoomStore) handleRoom(textMsg *FmTextMessage) {
 		// 发送帮助信息
 		module.SendMessage(roomID, "芝士机器人在线了，可以在直播间输入“帮助”或者@我来获取支持哦～")
 		// 通知推送
-		if r := module.RoomInfo(roomID); r != nil {
-			creatorName := r.Info.Creator.Username
+		if info := module.RoomInfo(roomID); info != nil {
+			creatorName := info.Creator.Username
 			text := fmt.Sprintf("%s 开播啦~", creatorName)
 			module.Push(module.TitleOpen, text)
 		}
 	case EventClose:
 		// 通知推送
-		if r := module.RoomInfo(roomID); r != nil {
-			creatorName := r.Info.Creator.Username
+		if info := module.RoomInfo(roomID); info != nil {
+			creatorName := info.Creator.Username
 			text := fmt.Sprintf("%s 下播啦~", creatorName)
 			module.Push(module.TitleClose, text)
 		}

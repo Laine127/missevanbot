@@ -11,13 +11,13 @@ import (
 // helpText 帮助文本
 const helpText = `命令帮助：
 帮助 -- 获取帮助信息
-在线 -- 查看当前在线人数
+房间 -- 查看当前直播间信息
 签到 -- 在当前直播间进行签到
 排行 -- 查看当前直播间当天签到排行`
 
 const (
 	CmdHelper = iota // 帮助提示
-	CmdOnline        // 在线信息答复
+	CmdRoom          // 直播间信息
 	CmdSign          // 签到答复
 	CmdRank          // 榜单答复
 	CmdLove          // 比心答复
@@ -27,7 +27,7 @@ const (
 // _cmdMap 帮助映射
 var _cmdMap = map[string]int{
 	"帮助": CmdHelper,
-	"在线": CmdOnline,
+	"房间": CmdRoom,
 	"签到": CmdSign,
 	"排行": CmdRank,
 	// 下面是隐藏的命令
@@ -40,9 +40,23 @@ var _cmdMap = map[string]int{
 func (room *RoomStore) handleCommand(cmdType int, textMsg *FmTextMessage) {
 	roomID := room.Conf.ID
 	switch cmdType {
-	case CmdOnline:
-		msg := fmt.Sprintf("当前直播间人数：%d~", room.Online)
-		module.SendMessage(roomID, msg)
+	case CmdRoom:
+		if info := module.RoomInfo(roomID); info != nil {
+			msg := fmt.Sprintf("当前直播间信息：\n- 房间名：%s\n- 公告：%s\n- 主播：%s\n- 在线人数：%d\n- 累计人数：%d\n- 管理员：\n",
+				info.Room.Name,
+				info.Room.Announcement,
+				info.Creator.Username,
+				room.Online,
+				info.Room.Statistics.Accumulation,
+			)
+			for k, v := range info.Room.Members.Admin {
+				msg += fmt.Sprintf("--- %s", v.Username)
+				if k < len(info.Room.Members.Admin)-1 {
+					msg += "\n"
+				}
+			}
+			module.SendMessage(roomID, msg)
+		}
 	case CmdSign:
 		user := textMsg.User
 		text, err := module.Sign(roomID, user.UserId, user.Username)
