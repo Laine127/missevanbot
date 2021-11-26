@@ -54,16 +54,11 @@ go build
 - cache：Redis 连接相关模块
 - config：配置文件读取模块
 - handler：处理房间各类消息的模块
-    - chat.go：交互消息处理
-    - command.go：指令消息处理
+    - chat.go：聊天类消息处理
+    - command.go：命令消息处理
     - const.go：直播间消息 JSON 结构体定义
-    - gift.go：礼物消息处理
     - handler.go：消息处理入口
-    - member.go：观众消息处理
-    - message.go：用户本文消息处理
-    - room.go：房间消息处理
 - module：各独立模块
-    - cron：定时任务模块
     - praise：彩虹屁模块
     - push：消息推送模块
     - room：直播间相关模块
