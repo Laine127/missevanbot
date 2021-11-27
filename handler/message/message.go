@@ -1,15 +1,16 @@
-package module
+package message
 
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/google/uuid"
-	"missevan-fm/config"
+	"missevan-fm/bot"
 )
 
 type message struct {
@@ -18,31 +19,32 @@ type message struct {
 	MessageID string `json:"msg_id"`
 }
 
-// SendMessage 发送一条消息 Post
-func SendMessage(roomID int, msg string) {
-	if msg == "" {
-		log.Println("发送的消息为空。。。")
+// MustSend 发送一条消息，输出错误日志并忽略
+func MustSend(roomID int, text string) {
+	if err := Send(roomID, text); err != nil {
+		log.Println("发送消息出错：", err)
 		return
 	}
+}
+
+// Send 发送一条消息，返回错误
+func Send(roomID int, text string) (err error) {
 	_url := "https://fm.missevan.com/api/chatroom/message/send"
 
 	cookie := readCookie()
-
 	if cookie == "" {
-		log.Println("Cookie是空的。。。")
-		return
+		return errors.New("cookie is empty")
 	}
 
 	data, _ := json.Marshal(message{
 		RoomID:    roomID,
-		Message:   msg,
+		Message:   text,
 		MessageID: messageID(),
 	})
 
 	client := new(http.Client)
 	req, err := http.NewRequest("POST", _url, bytes.NewReader(data))
 	if err != nil {
-		log.Println(err)
 		return
 	}
 
@@ -52,21 +54,18 @@ func SendMessage(roomID int, msg string) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
 		return
 	}
 	defer resp.Body.Close()
+
 	_, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	// fmt.Println(string(body) + "\n")
+
+	return
 }
 
-// readCookie 读取当前目录下的 `.cookie` 文件，返回内容
+// readCookie 读取当前目录下的 Cookie 文件，返回内容
 func readCookie() string {
-	conf := config.Conf.Cookie
+	conf := bot.Conf.Cookie
 	file, err := os.Open(conf)
 	if err != nil {
 		log.Println("读取Cookie失败啦：", err)

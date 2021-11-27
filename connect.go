@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"missevan-fm/config"
+	"missevan-fm/bot"
 	"missevan-fm/handler"
 )
 
@@ -38,7 +38,7 @@ func header() *http.Header {
 }
 
 // connect Websocket 连接处理
-func connect(conf *config.Room) {
+func connect(conf *bot.RoomConfig) {
 	dialer := new(websocket.Dialer)
 
 	conn, resp, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", conf.ID), *header())

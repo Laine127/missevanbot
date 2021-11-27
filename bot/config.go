@@ -1,4 +1,4 @@
-package config
+package bot
 
 import (
 	"fmt"
@@ -9,24 +9,25 @@ import (
 var Conf *Config
 
 type Config struct {
-	Name   string  `mapstructure:"name"`   // 机器人的昵称
-	Cookie string  `mapstructure:"cookie"` // 文件的存储位置
-	Redis  *Redis  `mapstructure:"redis"`  // Redis服务配置
-	Push   *Push   `mapstructure:"push"`   // 消息推送配置
-	Rooms  []*Room `mapstructure:"rooms"`  // 启用的房间列表配置
+	Name   string        `mapstructure:"name"`   // 机器人的昵称
+	Cookie string        `mapstructure:"cookie"` // 文件的存储位置
+	Redis  *RedisConfig  `mapstructure:"redis"`  // Redis服务配置
+	Push   *PushConfig   `mapstructure:"push"`   // 消息推送配置
+	Admin  int           `mapstructure:"admin"`  // 机器人控制人
+	Rooms  []*RoomConfig `mapstructure:"rooms"`  // 启用的房间列表配置
 }
 
-type Redis struct {
+type RedisConfig struct {
 	Host     string `mapstructure:"host"`
 	Password string `mapstructure:"passwd"`
 	DB       int    `mapstructure:"db"`
 }
 
-type Push struct {
+type PushConfig struct {
 	Bark string `mapstructure:"bark"`
 }
 
-type Room struct {
+type RoomConfig struct {
 	ID                 int      `mapstructure:"id"`                   // 直播间ID
 	Name               string   `mapstructure:"name"`                 // 主播自定义昵称
 	Pinyin             bool     `mapstructure:"pinyin"`               // 是否开启注音功能
@@ -34,8 +35,8 @@ type Room struct {
 	Rainbow            []string `mapstructure:"rainbow"`              // 彩虹屁自定义列表
 }
 
-// Load is used to load configuration file
-func Load() {
+// LoadConfig is used to load configuration file
+func LoadConfig() {
 	conf := new(Config)
 
 	viper.SetConfigName("config")

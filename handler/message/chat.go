@@ -1,11 +1,9 @@
-package handler
+package message
 
 import (
 	"fmt"
 	"math/rand"
 	"time"
-
-	"missevan-fm/module"
 )
 
 var _chatList = [...]string{
@@ -18,10 +16,9 @@ var _chatList = [...]string{
 	"你知道嘛，我的智商有25哦",
 }
 
-// handleChat 处理聊天请求
-func (room *RoomStore) handleChat(textMsg *FmTextMessage) {
-	roomID := room.Conf.ID
+// Chat 简单回复
+func Chat(username string) string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	idx := r.Intn(len(_chatList))
-	module.SendMessage(roomID, fmt.Sprintf("@%s %s", textMsg.User.Username, _chatList[idx]))
+	return fmt.Sprintf("@%s %s", username, _chatList[idx])
 }

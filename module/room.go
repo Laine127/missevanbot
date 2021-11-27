@@ -15,34 +15,36 @@ type response struct {
 }
 
 type Info struct {
-	Creator creator `json:"creator"`
+	Creator Creator `json:"creator"`
 	Room    room    `json:"room"`
 }
 
 // Creator 创建者响应字段
-type creator struct {
+type Creator struct {
 	UserID   int    `json:"user_id"`
 	Username string `json:"username"`
 }
 
 type room struct {
+	RoomID       int        `json:"room_id"`      // 直播间ID
 	Name         string     `json:"name"`         // 直播间名
 	Announcement string     `json:"announcement"` // 公告
-	Members      member     `json:"members"`      // 直播间成员
+	Members      Member     `json:"members"`      // 直播间成员
 	Statistics   statistics `json:"statistics"`   // 统计数据
 }
 
-type member struct {
-	Admin []admin `json:"admin"` // 管理员
+type Member struct {
+	Admin []Admin `json:"admin"` // 管理员
 }
 
 type statistics struct {
 	Accumulation int `json:"accumulation"` // 累计人数
 	Vip          int `json:"vip"`          // 贵宾数量
 	Score        int `json:"score"`        // 分数
+	Online       int `json:"online"`       // 在线
 }
 
-type admin struct {
+type Admin struct {
 	UserID   int    `json:"user_id"`
 	Username string `json:"username"`
 }

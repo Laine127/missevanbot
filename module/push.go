@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"missevan-fm/config"
+	"missevan-fm/bot"
 )
 
 const (
@@ -15,7 +15,7 @@ const (
 
 // Push 推送消息通知
 func Push(title, msg string) {
-	conf := config.Conf.Push
+	conf := bot.Conf.Push
 
 	if conf.Bark != "" {
 		BarkPush(conf.Bark, title, msg)

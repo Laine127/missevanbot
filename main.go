@@ -3,20 +3,19 @@ package main
 import (
 	"sync"
 
-	"missevan-fm/cache"
-	"missevan-fm/config"
+	"missevan-fm/bot"
 )
 
 func main() {
-	config.Load() // 读取并载入配置文件
-	conf := config.Conf
-	cache.InitRDBClient(conf.Redis) // 初始化 Redis 缓存
+	bot.LoadConfig() // 读取并载入配置文件
+	conf := bot.Conf
+	bot.InitRDBClient(conf.Redis) // 初始化 Redis 缓存
 
 	wg := &sync.WaitGroup{}
 
 	for _, roomConf := range conf.Rooms {
 		wg.Add(1)
-		go func(conf *config.Room) {
+		go func(conf *bot.RoomConfig) {
 			connect(conf) // 主连接
 		}(roomConf)
 	}

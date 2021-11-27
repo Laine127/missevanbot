@@ -13,6 +13,7 @@
 - 监听直播间状态（如开播/下播）
 - 消息推送
 - 汉语注音功能（提供给中文学习者）
+- 判断不同用户（机器人管理员、主播、房管、普通用户）
 
 ## 如何使用？
 
@@ -30,6 +31,7 @@ push: # 各类推送服务密钥
 rooms: # 需要启用的直播间
   - id: 111111111
     name: "主播一号" # 主播昵称，可以随意自定义，暂时没有用处
+    pinyin: false # 是否开启用户名注音功能
     rainbow_max_interval: 10 # 彩虹屁发送的最大时间间隔，单位：分钟
     rainbow: # 定时发送的彩虹屁列表，留空不使用
       - "Test1"
@@ -51,10 +53,13 @@ go build
 
 ## 目录结构
 
-- cache：Redis 连接相关模块
-- config：配置文件读取模块
+- bot
+    - config.go：配置文件读取模块
+    - redis.go：Redis 连接相关模块
 - handler：处理房间各类消息的模块
-    - chat.go：聊天类消息处理
+    - message
+        - chat.go：处理聊天信息
+        - message.go：处理消息发送
     - command.go：命令消息处理
     - const.go：直播间消息 JSON 结构体定义
     - handler.go：消息处理入口
@@ -62,7 +67,6 @@ go build
     - praise：彩虹屁模块
     - push：消息推送模块
     - room：直播间相关模块
-    - send：发送消息模块
     - sign：签到模块
 - connect.go：处理 Websocket 连接
 - main.go：程序入口

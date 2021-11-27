@@ -22,7 +22,7 @@ type FmUser struct {
 		Name  string `json:"name"`
 		Level int    `json:"level"`
 	} `json:"titles"`
-	UserId   int    `json:"user_id"`
+	UserID   int    `json:"user_id"`
 	Username string `json:"username"`
 }
 

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"missevan-fm/cache"
+	"missevan-fm/bot"
 )
 
 const RedisPrefix = "missevan:"
@@ -16,7 +16,7 @@ var ctx = context.Background()
 
 // Sign 用户签到
 func Sign(roomID, uid int, uname string) (string, error) {
-	rdb := cache.RDB
+	rdb := bot.RDB
 
 	prefix := RedisPrefix + strconv.Itoa(roomID)
 
@@ -59,7 +59,7 @@ func Sign(roomID, uid int, uname string) (string, error) {
 
 // Rank return the rank of sign task today.
 func Rank(roomID int) string {
-	rdb := cache.RDB
+	rdb := bot.RDB
 
 	prefix := RedisPrefix + strconv.Itoa(roomID)
 
@@ -70,7 +70,7 @@ func Rank(roomID int) string {
 	result := "\n"
 	for k, v := range listID.Val() {
 		count := rdb.HGet(ctx, fmt.Sprintf("%s:sign:%s", prefix, v), "count").Val()
-		result += fmt.Sprintf("Rank %d. [%s]\t连续签到%s天", k+1, listName.Val()[k], count)
+		result += fmt.Sprintf("Rank %d. [%s] 连续签到%s天", k+1, listName.Val()[k], count)
 		if k < len(listID.Val())-1 {
 			result += "\n"
 		}

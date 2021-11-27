@@ -1,4 +1,4 @@
-package cache
+package bot
 
 import (
 	"context"
@@ -6,13 +6,12 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"missevan-fm/config"
 )
 
 var RDB *redis.Client
 
 // InitRDBClient 初始化 Redis 客户端
-func InitRDBClient(conf *config.Redis) {
+func InitRDBClient(conf *RedisConfig) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     conf.Host,
 		Password: conf.Password,
