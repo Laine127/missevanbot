@@ -30,8 +30,7 @@ var _levelMap = map[string]int32{
 
 // NewLogger 返回一个 Logger 对象
 func NewLogger(str string, roomID int) (*Logger, error) {
-	_ = os.Mkdir("logs", 0666) // 创建文件夹
-	file, err := os.OpenFile(fmt.Sprintf("logs/%d.log", roomID), os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
+	file, err := os.Create(fmt.Sprintf("logs/%d.log", roomID))
 	if err != nil {
 		return nil, err
 	}

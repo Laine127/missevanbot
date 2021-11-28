@@ -2,12 +2,18 @@ package main
 
 import (
 	"log"
+	"os"
 	"sync"
 
 	"missevan-fm/bot"
 	"missevan-fm/handler"
 	"missevan-fm/util"
 )
+
+func init() {
+	_ = os.Mkdir("logs", 0755)
+	_ = os.Chmod("logs", 0755)
+}
 
 func main() {
 	bot.LoadConfig() // 读取并载入配置文件
