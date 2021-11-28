@@ -11,12 +11,13 @@ import (
 
 // 指令类型
 const (
-	CmdHelper = iota // 帮助提示
-	CmdInfo          // 直播间信息
-	CmdSign          // 签到答复
-	CmdRank          // 榜单答复
-	CmdLove          // 比心答复
-	CmdBait          // 演员模式启停
+	CmdHelper  = iota // 帮助提示
+	CmdInfo           // 直播间信息
+	CmdSign           // 签到答复
+	CmdRank           // 榜单答复
+	CmdLove           // 比心答复
+	CmdBait           // 演员模式启停
+	CmdWeather        // 天气
 )
 
 // 用户角色
@@ -32,7 +33,8 @@ const helpText = `命令帮助：
 帮助 -- 获取帮助信息
 房间 -- 查看当前直播间信息
 签到 -- 在当前直播间进行签到
-排行 -- 查看当前直播间当天签到排行`
+排行 -- 查看当前直播间当天签到排行
+天气 城市名 -- 查询该城市的当日天气`
 
 // _cmdMap 帮助映射
 var _cmdMap = map[string]int{
@@ -40,6 +42,7 @@ var _cmdMap = map[string]int{
 	"房间": CmdInfo,
 	"签到": CmdSign,
 	"排行": CmdRank,
+	"天气": CmdWeather,
 	// 下面是隐藏的命令
 	"比心": CmdLove,
 	"笔芯": CmdLove,
@@ -73,7 +76,7 @@ func (cmd *command) info(info *module.Info) {
 	module.MustSend(info.Room.RoomID, text)
 }
 
-// Sign 处理签到指令
+// sign 处理签到命令
 func (cmd *command) sign(user FmUser) {
 	ret, err := module.Sign(cmd.Room.ID, user.UserID, user.Username)
 	if err != nil {
@@ -84,7 +87,7 @@ func (cmd *command) sign(user FmUser) {
 	module.MustSend(cmd.Room.ID, text)
 }
 
-// Rank 处理排行榜指令
+// rank 处理排行榜命令
 func (cmd *command) rank() {
 	var text string
 	if rank := module.Rank(cmd.Room.ID); rank != "" {
@@ -95,7 +98,7 @@ func (cmd *command) rank() {
 	module.MustSend(cmd.Room.ID, text)
 }
 
-// cmdBait 演员模式启停
+// bait 处理演员模式启停命令
 func (cmd *command) bait() {
 	if cmd.Role > RoleAdmin {
 		return // 权限不足
@@ -115,6 +118,15 @@ func (cmd *command) bait() {
 		room.Timer = timer
 		go module.Praise(room.RoomConfig, timer)
 	}
+}
+
+// weather 处理天气查询命令
+func (cmd *command) weather(city string) {
+	text := module.Weather(city)
+	if text == "" {
+		text = "查询的城市好像不正确哦~"
+	}
+	module.MustSend(cmd.Room.ID, text)
 }
 
 // userRole 判断当前用户的角色

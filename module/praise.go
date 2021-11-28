@@ -48,7 +48,7 @@ func comment() (s string) {
 	if err := json.Unmarshal(body, c); err != nil {
 		ll.Print("解析彩虹屁接口失败", err.Error())
 	}
-	if c.Code != "200" {
+	if c.Code != "200" || c.Msg != "success" {
 		ll.Print("请求彩虹屁接口错误", c.Code)
 		return
 	}

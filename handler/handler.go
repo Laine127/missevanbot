@@ -141,12 +141,13 @@ func (store *RoomStore) handleMessage(textMsg *FmTextMessage) {
 	switch textMsg.Event {
 	case EventNew:
 		// 判断是否是命令，进行处理
-		if cmdType, ok := _cmdMap[textMsg.Message]; ok {
+		arr := strings.Split(textMsg.Message, " ")
+		if cmdType, ok := _cmdMap[arr[0]]; ok {
 			store.handleCommand(cmdType, textMsg)
 			return
 		}
 		// 判断是否是沟通请求，进行处理
-		if strings.HasPrefix(textMsg.Message, fmt.Sprintf("@%s", bot.Conf.Name)) {
+		if arr[0] == fmt.Sprintf("@%s", bot.Conf.Name) {
 			store.handleChat(textMsg)
 			return
 		}
@@ -169,6 +170,8 @@ func (store *RoomStore) handleCommand(cmdType int, textMsg *FmTextMessage) {
 		Role: userRole(info, user.UserID), // 获取当前发信用户的角色
 	}
 
+	arr := strings.Split(textMsg.Message, " ")
+
 	switch cmdType {
 	case CmdInfo:
 		cmd.info(info)
@@ -180,6 +183,10 @@ func (store *RoomStore) handleCommand(cmdType int, textMsg *FmTextMessage) {
 		module.MustSend(store.ID, "❤️~")
 	case CmdBait:
 		cmd.bait()
+	case CmdWeather:
+		if len(arr) == 2 {
+			cmd.weather(arr[1])
+		}
 	case CmdHelper:
 		fallthrough
 	default:
