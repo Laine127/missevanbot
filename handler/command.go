@@ -97,12 +97,10 @@ func (cmd *command) rank() {
 
 // cmdBait 演员模式启停
 func (cmd *command) bait() {
-	room := cmd.Room
-	if room.Rainbow == nil || len(room.Rainbow) == 0 {
-		// 设定的内容为空
-		module.MustSend(room.ID, "我好像没什么可说的")
-		return
+	if cmd.Role > RoleAdmin {
+		return // 权限不足
 	}
+	room := cmd.Room
 	if room.Bait && room.Timer != nil {
 		module.MustSend(room.ID, "我突然有点困了")
 		room.Bait = false

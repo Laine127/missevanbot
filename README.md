@@ -35,10 +35,6 @@ rooms: # 需要启用的直播间
     name: "主播一号" # 主播昵称，可以随意自定义，暂时没有用处
     pinyin: false # 是否开启用户名注音功能
     rainbow_max_interval: 10 # 彩虹屁发送的最大时间间隔，单位：分钟
-    rainbow: # 定时发送的彩虹屁列表，留空不使用
-      - "Test1"
-      - "Test2"
-      - "Test3"
   - id: 222222222
     name: "主播二号"
 ```

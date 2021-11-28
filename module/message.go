@@ -12,12 +12,6 @@ import (
 	"missevan-fm/bot"
 )
 
-type message struct {
-	RoomID    int    `json:"room_id"`
-	Message   string `json:"message"`
-	MessageID string `json:"msg_id"`
-}
-
 // MustSend 发送一条消息，输出错误日志并忽略
 func MustSend(roomID int, text string) {
 	if err := Send(roomID, text); err != nil {
@@ -35,7 +29,11 @@ func Send(roomID int, text string) (err error) {
 		return errors.New("cookie is empty")
 	}
 
-	data, _ := json.Marshal(message{
+	data, _ := json.Marshal(struct {
+		RoomID    int    `json:"room_id"`
+		Message   string `json:"message"`
+		MessageID string `json:"msg_id"`
+	}{
 		RoomID:    roomID,
 		Message:   text,
 		MessageID: messageID(),

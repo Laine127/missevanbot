@@ -29,11 +29,10 @@ type PushConfig struct {
 }
 
 type RoomConfig struct {
-	ID                 int      `mapstructure:"id"`                   // 直播间ID
-	Name               string   `mapstructure:"name"`                 // 主播自定义昵称
-	Pinyin             bool     `mapstructure:"pinyin"`               // 是否开启注音功能
-	RainbowMaxInterval int      `mapstructure:"rainbow_max_interval"` // 彩虹屁最长发送间隔
-	Rainbow            []string `mapstructure:"rainbow"`              // 彩虹屁自定义列表
+	ID                 int    `mapstructure:"id"`                   // 直播间ID
+	Name               string `mapstructure:"name"`                 // 主播自定义昵称
+	Pinyin             bool   `mapstructure:"pinyin"`               // 是否开启注音功能
+	RainbowMaxInterval int    `mapstructure:"rainbow_max_interval"` // 彩虹屁最长发送间隔
 }
 
 // LoadConfig is used to load configuration file
