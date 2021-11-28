@@ -1,21 +1,13 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"missevan-fm/bot"
-	"missevan-fm/handler/message"
 	"missevan-fm/module"
 )
-
-// helpText 帮助文本
-const helpText = `命令帮助：
-帮助 -- 获取帮助信息
-房间 -- 查看当前直播间信息
-签到 -- 在当前直播间进行签到
-排行 -- 查看当前直播间当天签到排行`
 
 // 指令类型
 const (
@@ -34,6 +26,13 @@ const (
 	RoleAdmin          // 房管
 	RoleMember         // 普通成员
 )
+
+// helpText 帮助文本
+const helpText = `命令帮助：
+帮助 -- 获取帮助信息
+房间 -- 查看当前直播间信息
+签到 -- 在当前直播间进行签到
+排行 -- 查看当前直播间当天签到排行`
 
 // _cmdMap 帮助映射
 var _cmdMap = map[string]int{
@@ -56,7 +55,6 @@ type command struct {
 // info 处理直播间相关的命令
 func (cmd *command) info(info *module.Info) {
 	if cmd.Role > RoleAdmin {
-		log.Println("权限不足", cmd.Role)
 		return // 权限不足
 	}
 	text := fmt.Sprintf("当前直播间信息：\n- 房间名：%s\n- 公告：%s\n- 主播：%s\n- 在线人数：%d\n- 累计人数：%d\n- 管理员：\n",
@@ -72,18 +70,18 @@ func (cmd *command) info(info *module.Info) {
 			text += "\n"
 		}
 	}
-	message.MustSend(info.Room.RoomID, text)
+	module.MustSend(info.Room.RoomID, text)
 }
 
 // Sign 处理签到指令
 func (cmd *command) sign(user FmUser) {
 	ret, err := module.Sign(cmd.Room.ID, user.UserID, user.Username)
 	if err != nil {
-		log.Println("签到出错了。。。")
+		cmd.Room.Error(errors.New("签到出错了：" + err.Error()))
 		return
 	}
 	text := fmt.Sprintf("@%s %s", user.Username, ret)
-	message.MustSend(cmd.Room.ID, text)
+	module.MustSend(cmd.Room.ID, text)
 }
 
 // Rank 处理排行榜指令
@@ -94,7 +92,7 @@ func (cmd *command) rank() {
 	} else {
 		text = "今天的榜单好像空空的~"
 	}
-	message.MustSend(cmd.Room.ID, text)
+	module.MustSend(cmd.Room.ID, text)
 }
 
 // cmdBait 演员模式启停
@@ -102,11 +100,11 @@ func (cmd *command) bait() {
 	room := cmd.Room
 	if room.Rainbow == nil || len(room.Rainbow) == 0 {
 		// 设定的内容为空
-		message.MustSend(room.ID, "我好像没什么可说的")
+		module.MustSend(room.ID, "我好像没什么可说的")
 		return
 	}
 	if room.Bait && room.Timer != nil {
-		message.MustSend(room.ID, "我突然有点困了")
+		module.MustSend(room.ID, "我突然有点困了")
 		room.Bait = false
 		room.Timer.Stop()
 	} else {

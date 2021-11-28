@@ -11,6 +11,7 @@ var Conf *Config
 type Config struct {
 	Name   string        `mapstructure:"name"`   // 机器人的昵称
 	Cookie string        `mapstructure:"cookie"` // 文件的存储位置
+	Level  string        `mapstructure:"level"`  // 日志等级
 	Redis  *RedisConfig  `mapstructure:"redis"`  // Redis服务配置
 	Push   *PushConfig   `mapstructure:"push"`   // 消息推送配置
 	Admin  int           `mapstructure:"admin"`  // 机器人控制人

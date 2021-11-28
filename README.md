@@ -14,6 +14,7 @@
 - 消息推送
 - 汉语注音功能（提供给中文学习者）
 - 判断不同用户（机器人管理员、主播、房管、普通用户）
+- 输出日志
 
 ## 如何使用？
 
@@ -22,6 +23,7 @@
 ```yaml
 name: "芝士Bot" # Bot 昵称，必须与帐号昵称完全相同
 cookie: ".cookie" # 存储 Cookie 的文件路径 
+level: "debug" # 日志等级
 redis: # Redis 相关配置
   host: ""
   passwd:
@@ -57,16 +59,16 @@ go build
     - config.go：配置文件读取模块
     - redis.go：Redis 连接相关模块
 - handler：处理房间各类消息的模块
-    - message
-        - chat.go：处理聊天信息
-        - message.go：处理消息发送
+    - chat.go：处理聊天信息
     - command.go：命令消息处理
     - const.go：直播间消息 JSON 结构体定义
     - handler.go：消息处理入口
 - module：各独立模块
-    - praise：彩虹屁模块
-    - push：消息推送模块
-    - room：直播间相关模块
-    - sign：签到模块
+    - message.go：处理消息发送
+    - module.go：初始化
+    - praise.go：彩虹屁模块
+    - push.go：消息推送模块
+    - room.go：直播间相关模块
+    - sign.go：签到模块
 - connect.go：处理 Websocket 连接
 - main.go：程序入口

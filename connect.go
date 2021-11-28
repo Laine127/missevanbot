@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,14 +9,21 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"missevan-fm/bot"
 	"missevan-fm/handler"
 )
 
 var mu = &sync.Mutex{}
 
-// header 返回特定的 Websocket 首部
-func header() *http.Header {
+// connect Websocket 连接处理
+func connect(store *handler.RoomStore) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println(r)
+		}
+	}()
+
+	dialer := new(websocket.Dialer)
+
 	h := http.Header{}
 	h.Set("Host", "im.missevan.com")
 	h.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0")
@@ -34,29 +42,23 @@ func header() *http.Header {
 	// h.Set("Sec-WebSocket-Extensions","permessage-deflate")
 	// h.Set("Sec-WebSocket-Key","6anGJ9ZtrqfGmuWnakoFDw==")
 	// h.Set("Connection","keep-alive, Upgrade")
-	return &h
-}
 
-// connect Websocket 连接处理
-func connect(conf *bot.RoomConfig) {
-	dialer := new(websocket.Dialer)
-
-	conn, resp, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", conf.ID), *header())
+	conn, resp, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", store.ID), h)
 	if err != nil {
-		log.Println(err)
+		store.Error(err)
 		return
 	}
 	defer conn.Close()
 
 	if resp.StatusCode != 101 {
 		// 101 响应成功，非 101 则失败
-		log.Println("请求失败")
+		store.Error(errors.New("请求失败"))
 		return
 	}
 
-	joinMsg := fmt.Sprintf(`{"action":"join","uuid":"35e77342-30af-4b0b-a0eb-f80a826a68c7","type":"room","room_id":%d}`, conf.ID)
+	joinMsg := fmt.Sprintf(`{"action":"join","uuid":"35e77342-30af-4b0b-a0eb-f80a826a68c7","type":"room","room_id":%d}`, store.ID)
 	if err := conn.WriteMessage(websocket.TextMessage, []byte(joinMsg)); err != nil {
-		log.Println(err)
+		store.Error(err)
 		return
 	}
 
@@ -65,13 +67,13 @@ func connect(conf *bot.RoomConfig) {
 	for {
 		msgType, msgData, err := conn.ReadMessage()
 		if nil != err {
-			log.Println(err)
+			store.Error(err)
 			break
 		}
 
 		switch msgType {
 		case websocket.TextMessage:
-			handler.HandleTextMessage(conf, string(msgData)) // 处理文本消息
+			handler.HandleTextMessage(store, string(msgData)) // 处理文本消息
 		case websocket.BinaryMessage:
 		case websocket.CloseMessage:
 		case websocket.PingMessage:

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -54,18 +53,18 @@ func RoomInfo(roomID int) *Info {
 	_url := fmt.Sprintf("https://fm.missevan.com/api/v2/live/%d", roomID)
 	resp, err := http.Get(_url)
 	if err != nil {
-		log.Println("获取直播间信息错误：", err)
+		ll.Print("获取直播间信息响应错误", err.Error())
 		return nil
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("读取直播间信息错误：", err)
+		ll.Print("读取直播间信息响应错误", err.Error())
 		return nil
 	}
 	res := new(response)
 	if err := json.Unmarshal(body, res); err != nil {
-		log.Println("解析直播间信息响应错误：", err)
+		ll.Print("解析直播间信息响应错误", err.Error())
 		return nil
 	}
 	return &res.Info

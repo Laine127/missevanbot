@@ -18,6 +18,7 @@
 
 *.yaml
 *.ps1
+*.log
 .cookie
 
 missevan*

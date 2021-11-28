@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"missevan-fm/bot"
-	"missevan-fm/handler/message"
 )
 
 // Praise 彩虹屁模块
@@ -17,6 +16,6 @@ func Praise(room *bot.RoomConfig, timer *time.Timer) {
 		<-timer.C
 		randIndex := r.Intn(len(room.Rainbow))
 		text := room.Rainbow[randIndex]
-		message.MustSend(room.ID, text)
+		MustSend(room.ID, text)
 	}
 }

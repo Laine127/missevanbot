@@ -1,11 +1,10 @@
-package message
+package module
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 
@@ -22,7 +21,7 @@ type message struct {
 // MustSend 发送一条消息，输出错误日志并忽略
 func MustSend(roomID int, text string) {
 	if err := Send(roomID, text); err != nil {
-		log.Println("发送消息出错：", err)
+		ll.Print("发送消息出错", err.Error())
 		return
 	}
 }
@@ -68,12 +67,12 @@ func readCookie() string {
 	conf := bot.Conf.Cookie
 	file, err := os.Open(conf)
 	if err != nil {
-		log.Println("读取Cookie失败啦：", err)
+		ll.Print("read cookie failed", err.Error())
 		os.Exit(1)
 	}
 	content, err := ioutil.ReadAll(file)
 	if err != nil {
-		log.Println("读取Cookie失败啦：", err)
+		ll.Print("read cookie failed", err.Error())
 		os.Exit(1)
 	}
 	return string(content)
