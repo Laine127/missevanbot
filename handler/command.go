@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"missevan-fm/bot"
@@ -11,13 +12,16 @@ import (
 
 // 指令类型
 const (
-	CmdHelper  = iota // 帮助提示
-	CmdInfo           // 直播间信息
-	CmdSign           // 签到答复
-	CmdRank           // 榜单答复
-	CmdLove           // 比心答复
-	CmdBait           // 演员模式启停
-	CmdWeather        // 天气
+	CmdHelper   = iota // 帮助提示
+	CmdInfo            // 直播间信息
+	CmdSign            // 签到答复
+	CmdRank            // 榜单答复
+	CmdLove            // 比心答复
+	CmdBait            // 演员模式启停
+	CmdWeather         // 天气
+	CmdMusicAdd        // 点歌
+	CmdMusicAll        // 点歌歌单
+	CmdMusicPop        // 弹出一首歌
 )
 
 // 用户角色
@@ -34,7 +38,10 @@ const helpText = `命令帮助：
 房间 -- 查看当前直播间信息
 签到 -- 在当前直播间进行签到
 排行 -- 查看当前直播间当天签到排行
-天气 城市名 -- 查询该城市的当日天气`
+天气 城市名 -- 查询该城市的当日天气
+点歌 歌名 -- 将一首歌曲添加进待播歌单
+歌单 -- 查询当前待播歌单
+完成 -- 删除待播清单第一首歌曲`
 
 // _cmdMap 帮助映射
 var _cmdMap = map[string]int{
@@ -43,6 +50,9 @@ var _cmdMap = map[string]int{
 	"签到": CmdSign,
 	"排行": CmdRank,
 	"天气": CmdWeather,
+	"点歌": CmdMusicAdd,
+	"歌单": CmdMusicAll,
+	"完成": CmdMusicPop,
 	// 下面是隐藏的命令
 	"比心": CmdLove,
 	"笔芯": CmdLove,
@@ -127,6 +137,41 @@ func (cmd *command) weather(city string) {
 		text = "查询的城市好像不正确哦~"
 	}
 	module.MustSend(cmd.Room.ID, text)
+}
+
+// musicAdd 处理点歌命令
+func (cmd *command) musicAdd(music string) {
+	module.MusicAdd(cmd.Room.ID, music)
+	module.MustSend(cmd.Room.ID, fmt.Sprintf("点歌 %s 成功~", music))
+}
+
+// musicAll 处理歌单获取命令
+func (cmd *command) musicAll() {
+	if cmd.Role > RoleAdmin {
+		return // 权限不足
+	}
+	musics := module.MusicAll(cmd.Room.ID)
+	if len(musics) == 0 {
+		module.MustSend(cmd.Room.ID, "当前还没有人点歌哦~")
+		return
+	}
+	text := strings.Builder{}
+	for k, v := range musics {
+		text.WriteString(fmt.Sprintf("%d. %s", k+1, v))
+		if k < len(musics)-1 {
+			text.WriteString("\n")
+		}
+	}
+	module.MustSend(cmd.Room.ID, text.String())
+}
+
+// musicPop 处理弹出歌曲命令
+func (cmd *command) musicPop() {
+	if cmd.Role > RoleAdmin {
+		return // 权限不足
+	}
+	module.MusicPop(cmd.Room.ID)
+	module.MustSend(cmd.Room.ID, "完成了一首歌曲~")
 }
 
 // userRole 判断当前用户的角色

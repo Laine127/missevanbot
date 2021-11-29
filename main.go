@@ -7,6 +7,7 @@ import (
 
 	"missevan-fm/bot"
 	"missevan-fm/handler"
+	"missevan-fm/module"
 	"missevan-fm/util"
 )
 
@@ -25,6 +26,7 @@ func main() {
 	for _, roomConf := range conf.Rooms {
 		wg.Add(1)
 		go func(roomConf *bot.RoomConfig) {
+			defer wg.Done()
 			ll, err := util.NewLogger(conf.Level, roomConf.ID)
 			if err != nil {
 				log.Println(err)
@@ -34,7 +36,8 @@ func main() {
 				RoomConfig: roomConf,
 				Logger:     ll,
 			}
-			connect(store) // 主连接
+			module.MustFollow(module.RoomInfo(store.ID).Creator.UserID) // 关注当前主播
+			connect(store)                                              // 主连接
 		}(roomConf)
 	}
 	wg.Wait()

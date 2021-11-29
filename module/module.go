@@ -1,6 +1,7 @@
 package module
 
 import (
+	"context"
 	"log"
 	"sync"
 
@@ -10,6 +11,8 @@ import (
 var once = sync.Once{}
 
 var ll *util.Logger
+
+var ctx = context.Background()
 
 func init() {
 	once.Do(func() {

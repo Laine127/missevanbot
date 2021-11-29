@@ -87,6 +87,8 @@ func (store *RoomStore) handleRoom(textMsg *FmTextMessage) {
 		if timer := store.Timer; timer != nil {
 			timer.Stop()
 		}
+		// 删除点歌歌单
+		module.MusicClear(store.ID)
 	}
 }
 
@@ -187,6 +189,14 @@ func (store *RoomStore) handleCommand(cmdType int, textMsg *FmTextMessage) {
 		if len(arr) == 2 {
 			cmd.weather(arr[1])
 		}
+	case CmdMusicAdd:
+		if len(arr) == 2 {
+			cmd.musicAdd(arr[1])
+		}
+	case CmdMusicAll:
+		cmd.musicAll()
+	case CmdMusicPop:
+		cmd.musicPop()
 	case CmdHelper:
 		fallthrough
 	default:

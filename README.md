@@ -61,8 +61,10 @@ go build
     - const.go：直播间消息 JSON 结构体定义
     - handler.go：消息处理入口
 - module：各独立模块
-    - message.go：处理消息发送
-    - module.go：初始化
+    - follow.go：关注模块
+    - message.go：处理消息发送模块
+    - module.go：初始化模块
+    - music.go：点歌歌单模块
     - praise.go：彩虹屁模块
     - push.go：消息推送模块
     - room.go：直播间相关模块
