@@ -10,12 +10,15 @@ import (
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	"missevan-fm/models"
+	"missevan-fm/modules"
 )
 
 var mu = &sync.Mutex{}
 
 // Connect Websocket 连接处理
 func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
+	follow(roomID) // 关注主播
+
 	dialer := new(websocket.Dialer)
 
 	h := http.Header{}
@@ -84,5 +87,12 @@ func heart(conn *websocket.Conn) {
 		_ = conn.WriteMessage(websocket.TextMessage, []byte("❤️"))
 		mu.Unlock()
 		time.Sleep(time.Second * 30) // 间隔时间 30s
+	}
+}
+
+// follow 用于启动时关注主播
+func follow(roomID int) {
+	if info := modules.RoomInfo(roomID); info != nil {
+		modules.MustFollow(info.Creator.UserID)
 	}
 }

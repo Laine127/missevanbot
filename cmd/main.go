@@ -1,7 +1,7 @@
 package main
 
 import (
-	"os"
+	"log"
 	"sync"
 
 	"missevan-fm/config"
@@ -10,20 +10,21 @@ import (
 	"missevan-fm/utils/logger"
 )
 
-func init() {
-	_ = os.Mkdir("logs", 0755)
-	_ = os.Chmod("logs", 0755)
-}
-
 var wg = &sync.WaitGroup{}
 
 func main() {
+	// load the configurations
 	config.LoadConfig()
-
 	conf := config.Config()
+
+	// init the Redis client
 	config.InitRDBClient(conf.Redis)
 
-	_ = logger.Init(conf.Log)
+	// init the logger
+	if err := logger.Init(conf.Log); err != nil {
+		log.Println("init logger failed: ", err)
+		return
+	}
 
 	for _, roomConf := range conf.Rooms {
 		inputMsg := make(chan models.FmTextMessage, 1)

@@ -49,16 +49,17 @@ func HandleMember(outputMsg chan<- string, store *models.Room, textMsg models.Fm
 		for _, v := range textMsg.Queue {
 			store.Count++
 			var text string
-			if username := v.Username; username != "" {
+			if username := v.Username; username == config.Name() {
+				continue
+			} else if username != "" {
 				text = fmt.Sprintf("欢迎 @%s 进入直播间~", username)
-				if !store.Pinyin {
-					continue
-				}
-				// 如果注音功能开启了，发送注音消息
-				py := pinyin.NewArgs()
-				py.Style = pinyin.Tone
-				if arr := pinyin.Pinyin(username, py); len(arr) > 0 {
-					text += fmt.Sprintf("\n注音：%s", arr)
+				if store.Pinyin {
+					// 如果注音功能开启了，发送注音消息
+					py := pinyin.NewArgs()
+					py.Style = pinyin.Tone
+					if arr := pinyin.Pinyin(username, py); len(arr) > 0 {
+						text += fmt.Sprintf("\n注音：%s", arr)
+					}
 				}
 			} else if store.Count > 1 && store.Count%2 == 0 {
 				// 屏蔽第一次匿名用户欢迎，减半欢迎匿名用户次数
@@ -98,7 +99,7 @@ func HandleMessage(outputMsg chan<- string, room *models.Room, textMsg models.Fm
 			return
 		}
 		// 判断是否是沟通请求，进行处理
-		if arr[0] == fmt.Sprintf("@%s", config.Config().Name) {
+		if arr[0] == fmt.Sprintf("@%s", config.Name()) {
 			handleChat(outputMsg, room, textMsg)
 			return
 		}

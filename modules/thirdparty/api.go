@@ -23,8 +23,8 @@ func WeatherText(city string) (s string) {
 	}
 	// 天气接口 JSON 结构体
 	c := new(struct {
-		Code string `json:"code"`
-		Msg  string `json:"msg"`
+		Code interface{} `json:"code"`
+		Msg  string      `json:"msg"`
 		Data struct {
 			CityName string `json:"cityname"` // 城市名
 			Weather  string `json:"weather"`  // 天气
@@ -32,13 +32,16 @@ func WeatherText(city string) (s string) {
 			SD       string `json:"SD"`       // 相对湿度
 		} `json:"data"`
 	})
+	log.Println(string(body))
 	if err := json.Unmarshal(body, c); err != nil {
 		log.Println("解析天气接口失败", err.Error())
-	}
-	if c.Code != "200" || c.Msg != "success" {
-		log.Println("请求天气接口错误", err.Error())
 		return
 	}
+
+	if v, ok := c.Code.(int); ok && v == -1 {
+		return c.Msg // request failed
+	}
+
 	return fmt.Sprintf(`%s 今日天气：
 [天气] %s
 [温度] %s

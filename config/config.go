@@ -6,16 +6,16 @@ import (
 	"github.com/spf13/viper"
 )
 
-var botConfig *BotConfig
+var botConfig BotConfig
 
 type BotConfig struct {
 	Name   string        `mapstructure:"name"`   // 机器人的昵称
 	Cookie string        `mapstructure:"cookie"` // 文件的存储位置
-	Log    *LogConfig    `mapstructure:"log"`
-	Redis  *RedisConfig  `mapstructure:"redis"` // Redis服务配置
-	Push   *PushConfig   `mapstructure:"push"`  // 消息推送配置
-	Admin  int           `mapstructure:"admin"` // 机器人控制人
-	Rooms  []*RoomConfig `mapstructure:"rooms"` // 启用的房间列表配置
+	Admin  int           `mapstructure:"admin"`  // 机器人控制人
+	Log    *LogConfig    `mapstructure:"log"`    // 日志配置
+	Redis  *RedisConfig  `mapstructure:"redis"`  // Redis服务配置
+	Push   *PushConfig   `mapstructure:"push"`   // 消息推送配置
+	Rooms  []*RoomConfig `mapstructure:"rooms"`  // 启用的房间列表配置
 }
 
 type LogConfig struct {
@@ -52,18 +52,30 @@ func LoadConfig() {
 	viper.AddConfigPath(".")
 
 	if err := viper.ReadInConfig(); err != nil {
-		panic(fmt.Errorf("Fatal error read configration file: %s \n", err))
+		panic(fmt.Errorf("fatal error read configration file: %s", err))
 	}
 	if err := viper.Unmarshal(conf); err != nil {
-		panic(fmt.Errorf("Fatal error unmarshal configration file: %s \n", err))
+		panic(fmt.Errorf("fatal error unmarshal configration file: %s", err))
 	}
-	botConfig = conf
+	botConfig = *conf
 }
 
+// Config return copy of the configurations.
 func Config() BotConfig {
-	return *botConfig
+	return botConfig
 }
 
+// Cookie return path string of the cookie file.
 func Cookie() string {
 	return botConfig.Cookie
+}
+
+// Name return name of the bot.
+func Name() string {
+	return botConfig.Name
+}
+
+// Admin return ID of the bot admin.
+func Admin() int {
+	return botConfig.Admin
 }

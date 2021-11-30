@@ -24,7 +24,7 @@ func Send(outputMsg <-chan string, roomID int) {
 func sendLoop(msg string, roomID int) {
 	defer func() {
 		if p := recover(); p != nil {
-			zap.S().Fatal(p)
+			zap.S().Error(p)
 		}
 	}()
 

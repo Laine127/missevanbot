@@ -16,7 +16,7 @@ func Match(inputMsg <-chan models.FmTextMessage, outputMsg chan<- string, room *
 func matchLoop(msg models.FmTextMessage, outputMsg chan<- string, room *models.Room) {
 	defer func() {
 		if p := recover(); p != nil {
-			zap.S().Fatal(p)
+			zap.S().Error(p)
 		}
 	}()
 

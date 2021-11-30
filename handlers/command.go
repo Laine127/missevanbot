@@ -24,7 +24,7 @@ func (cmd *command) info(info *modules.Info) {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
 	}
-	text := fmt.Sprintf("当前直播间信息：\n- 房间名：%s\n- 公告：%s\n- 主播：%s\n- 在线人数：%d\n- 累计人数：%d\n- 管理员：\n",
+	text := fmt.Sprintf("当前直播间信息：\n- 房间名：%s\n- 公告：%s\n- 主播：%s\n- 当前在线：%d\n- 累计人数：%d\n- 管理员：\n",
 		info.Room.Name,
 		info.Room.Announcement,
 		info.Creator.Username,
@@ -130,7 +130,7 @@ func (cmd *command) musicPop() {
 // userRole 判断当前用户的角色
 func userRole(info *modules.Info, userID int) int {
 	switch userID {
-	case config.Config().Admin:
+	case config.Admin():
 		return models.RoleSuper // 机器人管理员
 	case info.Creator.UserID:
 		return models.RoleCreator // 主播
