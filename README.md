@@ -11,6 +11,7 @@
 - 签到和签到排行榜
 - 定时发送彩虹屁（
 - 天气查询
+- 歌单记录
 - 监听直播间状态（如开播/下播）
 - 消息推送
 - 汉语注音功能（提供给中文学习者）
@@ -24,13 +25,19 @@
 ```yaml
 name: "芝士Bot" # Bot 昵称，必须与帐号昵称完全相同
 cookie: ".cookie" # 存储 Cookie 的文件路径 
-level: "debug" # 日志等级
+log:
+  level: "info"
+  file: "./logs/missevan.log"
+  max_size: 200
+  max_age: 30
+  max_backups: 7
 redis: # Redis 相关配置
   host: ""
   passwd:
   db: 1
 push: # 各类推送服务密钥
   bark: "" # Bark App 推送通知
+admin: 11111 # 管理员 ID
 rooms: # 需要启用的直播间
   - id: 111111111
     name: "主播一号" # 主播昵称，可以随意自定义，暂时没有用处
@@ -52,22 +59,31 @@ go build
 
 ## 目录结构
 
-- bot
-    - config.go：配置文件读取模块
-    - redis.go：Redis 连接相关模块
-- handler：处理房间各类消息的模块
+- cmd：主函数入口
+- config：需要初始化的模块
+    - config.go：配置文件
+    - redis.go：Redis 客户端
+- core
+    - connect.go：Websocket 连接处理，获取消息
+    - match.go：处理消息
+    - send.go：发送消息
+- handlers：处理房间各类消息的模块
     - chat.go：处理聊天信息
     - command.go：命令消息处理
-    - const.go：直播间消息 JSON 结构体定义
-    - handler.go：消息处理入口
-- module：各独立模块
+    - http.go：HTTP 请求
+    - message.go：消息处理入口
+- models：结构体模型
+- modules：各独立模块
+    - game：游戏模块
+    - thirdparty：第三方组件
+        - api：第三方接口
+        - push：第三方推送模块
     - follow.go：关注模块
     - message.go：处理消息发送模块
-    - module.go：初始化模块
     - music.go：点歌歌单模块
     - praise.go：彩虹屁模块
     - push.go：消息推送模块
     - room.go：直播间相关模块
     - sign.go：签到模块
-- connect.go：处理 Websocket 连接
-- main.go：程序入口
+- utils：辅助工具
+    - logger：日志组件

@@ -1,17 +1,20 @@
-package module
+package modules
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+
+	"missevan-fm/config"
 )
 
 // MustFollow 关注动作，不返回错误
 func MustFollow(uid int) {
 	if err := Follow(uid); err != nil {
-		ll.Print("关注用户出错", err.Error())
+		log.Println("关注用户出错", err.Error())
 		return
 	}
 }
@@ -20,7 +23,7 @@ func MustFollow(uid int) {
 func Follow(uid int) (err error) {
 	_url := "https://www.missevan.com/person/ChangeAttention"
 
-	cookie := readCookie()
+	cookie := config.Cookie()
 	if cookie == "" {
 		return errors.New("cookie is empty")
 	}
@@ -47,7 +50,7 @@ func Follow(uid int) (err error) {
 
 	_, err = ioutil.ReadAll(resp.Body)
 
-	ll.Print("关注用户", fmt.Sprintf("%d", uid))
+	log.Println("关注用户", fmt.Sprintf("%d", uid))
 
 	return
 }

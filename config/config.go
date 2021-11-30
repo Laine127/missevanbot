@@ -1,4 +1,4 @@
-package bot
+package config
 
 import (
 	"fmt"
@@ -6,16 +6,24 @@ import (
 	"github.com/spf13/viper"
 )
 
-var Conf *Config
+var botConfig *BotConfig
 
-type Config struct {
+type BotConfig struct {
 	Name   string        `mapstructure:"name"`   // 机器人的昵称
 	Cookie string        `mapstructure:"cookie"` // 文件的存储位置
-	Level  string        `mapstructure:"level"`  // 日志等级
-	Redis  *RedisConfig  `mapstructure:"redis"`  // Redis服务配置
-	Push   *PushConfig   `mapstructure:"push"`   // 消息推送配置
-	Admin  int           `mapstructure:"admin"`  // 机器人控制人
-	Rooms  []*RoomConfig `mapstructure:"rooms"`  // 启用的房间列表配置
+	Log    *LogConfig    `mapstructure:"log"`
+	Redis  *RedisConfig  `mapstructure:"redis"` // Redis服务配置
+	Push   *PushConfig   `mapstructure:"push"`  // 消息推送配置
+	Admin  int           `mapstructure:"admin"` // 机器人控制人
+	Rooms  []*RoomConfig `mapstructure:"rooms"` // 启用的房间列表配置
+}
+
+type LogConfig struct {
+	Level      string `mapstructure:"level"`
+	File       string `mapstructure:"file"`
+	MaxSize    int    `mapstructure:"max_size"`
+	MaxAge     int    `mapstructure:"max_age"`
+	MaxBackups int    `mapstructure:"max_backups"`
 }
 
 type RedisConfig struct {
@@ -37,7 +45,7 @@ type RoomConfig struct {
 
 // LoadConfig is used to load configuration file
 func LoadConfig() {
-	conf := new(Config)
+	conf := new(BotConfig)
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -49,5 +57,13 @@ func LoadConfig() {
 	if err := viper.Unmarshal(conf); err != nil {
 		panic(fmt.Errorf("Fatal error unmarshal configration file: %s \n", err))
 	}
-	Conf = conf
+	botConfig = conf
+}
+
+func Config() BotConfig {
+	return *botConfig
+}
+
+func Cookie() string {
+	return botConfig.Cookie
 }

@@ -1,22 +1,24 @@
-package module
+package modules
 
 import (
+	"context"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
-	"missevan-fm/bot"
+	"missevan-fm/config"
+	"missevan-fm/modules/thirdparty"
 )
 
 const RedisPrefix = "missevan:"
 
+var ctx = context.Background()
+
 // Sign 用户签到
 func Sign(roomID, uid int, uname string) (string, error) {
-	rdb := bot.RDB
+	rdb := config.RDB
 	prefix := RedisPrefix + strconv.Itoa(roomID)
 
 	key := fmt.Sprintf("%s:sign:%d", prefix, uid)
@@ -53,12 +55,12 @@ func Sign(roomID, uid int, uname string) (string, error) {
 	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:id", prefix, time.Now().Format("2006-01-02")), uid)
 	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:name", prefix, time.Now().Format("2006-01-02")), uname)
 
-	return fmt.Sprintf("签到成功啦，已经连续签到%d天~\n\n%s\n\n%s", countCMD.Val(), luck, poemString()), nil
+	return fmt.Sprintf("签到成功啦，已经连续签到%d天~\n\n%s\n\n%s", countCMD.Val(), luck, thirdparty.PoemText()), nil
 }
 
 // Rank return the rank of sign task today.
 func Rank(roomID int) string {
-	rdb := bot.RDB
+	rdb := config.RDB
 	prefix := RedisPrefix + strconv.Itoa(roomID)
 
 	key := fmt.Sprintf("%s:rank:%s:id", prefix, time.Now().Format("2006-01-02"))
@@ -88,23 +90,4 @@ func luckString() string {
 	}
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return result + luckPool[r.Intn(len(luckPool))]
-}
-
-// poemString 获取一句诗词
-func poemString() string {
-	_url := "https://v1.jinrishici.com/rensheng.txt"
-
-	resp, err := http.Get(_url)
-	if err != nil {
-		ll.Print("获取诗词出错", err.Error())
-		return ""
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		ll.Print("获取诗词出错", err.Error())
-		return ""
-	}
-	return string(body)
 }

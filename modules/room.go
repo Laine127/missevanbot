@@ -1,10 +1,12 @@
-package module
+package modules
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 // response 直播间响应字段
@@ -53,18 +55,18 @@ func RoomInfo(roomID int) *Info {
 	_url := fmt.Sprintf("https://fm.missevan.com/api/v2/live/%d", roomID)
 	resp, err := http.Get(_url)
 	if err != nil {
-		ll.Print("获取直播间信息响应错误", err.Error())
+		zap.S().Infof("获取直播间信息响应错误：%s", err)
 		return nil
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		ll.Print("读取直播间信息响应错误", err.Error())
+		zap.S().Infof("读取直播间信息响应错误：%s", err)
 		return nil
 	}
 	res := new(response)
 	if err := json.Unmarshal(body, res); err != nil {
-		ll.Print("解析直播间信息响应错误", err.Error())
+		zap.S().Infof("解析直播间信息响应错误：%s", err)
 		return nil
 	}
 	return &res.Info
