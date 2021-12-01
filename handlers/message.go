@@ -51,11 +51,11 @@ func HandleMember(outputMsg chan<- string, store *models.Room, textMsg models.Fm
 	case models.EventJoinQueue:
 		// 有用户进入直播间
 		for _, v := range textMsg.Queue {
-			store.Count++
 			var text string
-			if username := v.Username; username == config.Name() {
-				continue
-			} else if username != "" {
+
+			store.Count++
+
+			if username := v.Username; username != "" {
 				text = fmt.Sprintf("欢迎 @%s 进入直播间~", username)
 				if store.Pinyin {
 					// 如果注音功能开启了，发送注音消息

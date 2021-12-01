@@ -21,26 +21,26 @@ func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
 
 	dialer := new(websocket.Dialer)
 
+	cookie, err := modules.Cookie()
+	if err != nil {
+		zap.S().Error("获取 Cookie 失败：", err)
+		return
+	}
+
 	h := http.Header{}
 	h.Add("Pragma", "no-cache")
 	h.Add("Origin", "https://fm.missevan.com")
 	h.Add("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,ja;q=0.5")
 	h.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36 Edg/96.0.1054.34")
 	h.Add("Cache-Control", "no-cache")
-	h.Add("Cookie", "token=61a0d2dc56cc29d0d36c41f4%7C903ac8675bb6b1badaabb9c15b360c77%7C1637929692%7C863201c6033861e3")
+	h.Add("Cookie", cookie)
 
-	conn, resp, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", roomID), h)
+	conn, _, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", roomID), h)
 	if err != nil {
 		zap.S().Error(err)
 		return
 	}
 	defer conn.Close()
-
-	if resp.StatusCode != 101 {
-		// 101 响应成功，非 101 则失败
-		zap.S().Error("请求失败")
-		return
-	}
 
 	joinMsg := fmt.Sprintf(`{"action":"join","uuid":"35e77342-30af-4b0b-a0eb-f80a826a68c7","type":"room","room_id":%d}`, roomID)
 	if err := conn.WriteMessage(websocket.TextMessage, []byte(joinMsg)); err != nil {

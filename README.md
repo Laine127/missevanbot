@@ -70,7 +70,6 @@ go build
 - handlers：处理房间各类消息的模块
     - chat.go：处理聊天信息
     - command.go：命令消息处理
-    - http.go：HTTP 请求
     - message.go：消息处理入口
 - models：结构体模型
 - modules：各独立模块
@@ -78,8 +77,8 @@ go build
     - thirdparty：第三方组件
         - api：第三方接口
         - push：第三方推送模块
-    - follow.go：关注模块
-    - message.go：处理消息发送模块
+    - fm.go：猫耳 FM 相关模块
+    - http.go：HTTP 请求模块
     - music.go：点歌歌单模块
     - praise.go：彩虹屁模块
     - push.go：消息推送模块
