@@ -85,9 +85,10 @@ func (cmd *command) bait() {
 
 // weather 处理天气查询命令
 func (cmd *command) weather(city string) {
-	text := thirdparty.WeatherText(city)
-	if text == "" {
-		text = "查询的城市好像不正确哦~"
+	text, err := thirdparty.WeatherText(city)
+	if err != nil {
+		zap.S().Error("天气查询失败：", err)
+		return
 	}
 	cmd.Output <- text
 }

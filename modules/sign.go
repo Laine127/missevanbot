@@ -55,7 +55,12 @@ func Sign(roomID, uid int, uname string) (string, error) {
 	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:id", prefix, time.Now().Format("2006-01-02")), uid)
 	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:name", prefix, time.Now().Format("2006-01-02")), uname)
 
-	return fmt.Sprintf("签到成功啦，已经连续签到%d天~\n\n%s\n\n%s", countCMD.Val(), luck, thirdparty.PoemText()), nil
+	poem, err := thirdparty.PoemText()
+	if err != nil {
+		poem = "孜孜不倦，不易乎世。"
+	}
+
+	return fmt.Sprintf("签到成功啦，已经连续签到%d天~\n\n%s\n\n%s", countCMD.Val(), luck, poem), nil
 }
 
 // Rank return the rank of sign task today.

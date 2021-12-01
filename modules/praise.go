@@ -16,7 +16,7 @@ func Praise(outputMsg chan<- string, room *config.RoomConfig, timer *time.Timer)
 		timer.Reset(time.Duration(randNumber+1) * time.Minute)
 		<-timer.C
 
-		if text := thirdparty.PraiseText(); text != "" {
+		if text, err := thirdparty.PraiseText(); err == nil && text != "" {
 			outputMsg <- text
 		}
 	}

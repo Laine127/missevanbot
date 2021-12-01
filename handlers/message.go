@@ -13,23 +13,27 @@ import (
 
 // HandleRoom 处理直播间相关事件
 func HandleRoom(outputMsg chan<- string, room *models.Room, textMsg models.FmTextMessage) {
+	info, err := modules.RoomInfo(room.ID)
+	if err != nil {
+		zap.S().Error("获取直播间信息错误：", err)
+		return
+	}
+
 	switch textMsg.Event {
 	case models.EventStatistic:
 		room.Online = textMsg.Statistics.Online // 更新在线人数
 	case models.EventOpen:
 		outputMsg <- "芝士机器人在线了，可以在直播间输入“帮助”或者@我来获取支持哦～"
 		// 通知推送
-		if info := modules.RoomInfo(room.ID); info != nil {
-			creatorName := info.Creator.Username
-			text := fmt.Sprintf("%s 开播啦~", creatorName)
-			modules.Push(modules.TitleOpen, text)
+		text := fmt.Sprintf("%s 开播啦~", info.Creator.Username)
+		if err := modules.Push(modules.TitleOpen, text); err != nil {
+			zap.S().Error("Bark 推送失败", err)
 		}
 	case models.EventClose:
 		// 通知推送
-		if info := modules.RoomInfo(room.ID); info != nil {
-			creatorName := info.Creator.Username
-			text := fmt.Sprintf("%s 下播啦~", creatorName)
-			modules.Push(modules.TitleClose, text)
+		text := fmt.Sprintf("%s 下播啦~", info.Creator.Username)
+		if err := modules.Push(modules.TitleClose, text); err != nil {
+			zap.S().Error("Bark 推送失败", err)
 		}
 		// 关闭定时任务
 		room.Bait = false
@@ -109,9 +113,9 @@ func HandleMessage(outputMsg chan<- string, room *models.Room, textMsg models.Fm
 // handleCommand 处理消息中的命令，
 // 简单的逻辑在本函数中处理，其余在 command.go 中处理
 func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, textMsg models.FmTextMessage) {
-	info := modules.RoomInfo(store.ID)
-	if info == nil {
-		zap.S().Error("房间信息为空")
+	info, err := modules.RoomInfo(store.ID)
+	if err != nil {
+		zap.S().Error("获取直播间信息错误：", err)
 		return
 	}
 

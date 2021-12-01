@@ -2,9 +2,10 @@ package core
 
 import (
 	"encoding/json"
+	"net/http"
 
 	"go.uber.org/zap"
-	"missevan-fm/handlers"
+	"missevan-fm/modules"
 	"missevan-fm/utils"
 )
 
@@ -35,7 +36,12 @@ func sendLoop(msg string, roomID int) {
 		Message:   msg,
 		MessageID: utils.MessageID(),
 	})
-	if err := handlers.PostRequest(_url, data); err != nil {
+
+	header := http.Header{}
+	header.Set("content-type", "application/json; charset=UTF-8")
+
+	if body, err := modules.PostRequest(_url, header, data); err != nil {
+		zap.S().Debug(string(body))
 		zap.S().Error(err)
 	}
 }

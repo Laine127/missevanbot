@@ -1,4 +1,4 @@
-package handlers
+package modules
 
 import (
 	"bytes"
@@ -12,10 +12,11 @@ import (
 )
 
 // PostRequest 发送 POST 请求，传递 data
-func PostRequest(_url string, data []byte) (err error) {
+func PostRequest(_url string, header http.Header, data []byte) (body []byte, err error) {
 	cookie := readCookie()
 	if cookie == "" {
-		return errors.New("cookie is empty")
+		err = errors.New("cookie is empty")
+		return
 	}
 
 	client := new(http.Client)
@@ -24,9 +25,10 @@ func PostRequest(_url string, data []byte) (err error) {
 		return
 	}
 
-	req.Header.Set("content-type", "application/json;charset=UTF-8")
-	req.Header.Set("cookie", cookie)
+	req.Header = header
+	req.Header.Set("origin", "https://www.missevan.com")
 	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36 Edg/95.0.1020.53")
+	req.Header.Set("cookie", cookie)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -34,7 +36,7 @@ func PostRequest(_url string, data []byte) (err error) {
 	}
 	defer resp.Body.Close()
 
-	_, err = ioutil.ReadAll(resp.Body)
+	body, err = ioutil.ReadAll(resp.Body)
 	return
 }
 

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-
-	"go.uber.org/zap"
 )
 
 // response 直播间响应字段
@@ -51,23 +49,20 @@ type Admin struct {
 }
 
 // RoomInfo 获取直播间信息
-func RoomInfo(roomID int) *Info {
+func RoomInfo(roomID int) (info *Info, err error) {
 	_url := fmt.Sprintf("https://fm.missevan.com/api/v2/live/%d", roomID)
 	resp, err := http.Get(_url)
 	if err != nil {
-		zap.S().Infof("获取直播间信息响应错误：%s", err)
-		return nil
+		return
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		zap.S().Infof("读取直播间信息响应错误：%s", err)
-		return nil
+		return
 	}
 	res := new(response)
-	if err := json.Unmarshal(body, res); err != nil {
-		zap.S().Infof("解析直播间信息响应错误：%s", err)
-		return nil
+	if err = json.Unmarshal(body, res); err != nil {
+		return
 	}
-	return &res.Info
+	return &res.Info, nil
 }

@@ -1,8 +1,6 @@
 package modules
 
 import (
-	"log"
-
 	"missevan-fm/config"
 	"missevan-fm/modules/thirdparty"
 )
@@ -13,12 +11,13 @@ const (
 )
 
 // Push 推送消息通知
-func Push(title, msg string) {
+func Push(title, msg string) (err error) {
 	conf := config.Config().Push
 
 	if conf.Bark != "" {
-		if err := thirdparty.BarkPush(conf.Bark, title, msg); err != nil {
-			log.Println("Bark 推送失败", err.Error())
+		if err = thirdparty.BarkPush(conf.Bark, title, msg); err != nil {
+			return
 		}
 	}
+	return nil
 }

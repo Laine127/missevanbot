@@ -92,7 +92,19 @@ func heart(conn *websocket.Conn) {
 
 // follow 用于启动时关注主播
 func follow(roomID int) {
-	if info := modules.RoomInfo(roomID); info != nil {
-		modules.MustFollow(info.Creator.UserID)
+	info, err := modules.RoomInfo(roomID)
+	if err != nil {
+		zap.S().Error("获取直播间信息错误：", err)
+		return
 	}
+
+	uid := info.Creator.UserID
+
+	ret, err := modules.Follow(uid)
+	if err != nil {
+		zap.S().Error("关注用户出错", err)
+		return
+	}
+	zap.S().Debug(string(ret))
+	zap.S().Info("已关注用户 ", fmt.Sprintf("%d", uid))
 }
