@@ -41,7 +41,8 @@ func sendLoop(msg string, roomID int) {
 	header.Set("content-type", "application/json; charset=UTF-8")
 
 	if body, err := modules.PostRequest(_url, header, data); err != nil {
-		zap.S().Debug(string(body))
 		zap.S().Error(err)
+	} else {
+		zap.S().Debug(string(body))
 	}
 }

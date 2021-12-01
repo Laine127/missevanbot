@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"missevan-fm/config"
+	"missevan-fm/models"
 	"missevan-fm/modules/thirdparty"
 )
 
@@ -40,7 +41,7 @@ func Sign(roomID, uid int, uname string) (string, error) {
 	}
 	// 判断是否重复签到
 	if day == time.Now().Format("2006-01-02") {
-		return fmt.Sprintf("已经签到过啦\n\n您已经连续签到%s天\n\n%s", count, luck), nil
+		return fmt.Sprintf(models.TplSignDuplicate, count, luck), nil
 	}
 	// 判断是否连续签到
 	if day != time.Now().AddDate(0, 0, -1).Format("2006-01-02") {
@@ -57,10 +58,10 @@ func Sign(roomID, uid int, uname string) (string, error) {
 
 	poem, err := thirdparty.PoemText()
 	if err != nil {
-		poem = "孜孜不倦，不易乎世。"
+		poem = models.TplDefaultPoem
 	}
 
-	return fmt.Sprintf("签到成功啦，已经连续签到%d天~\n\n%s\n\n%s", countCMD.Val(), luck, poem), nil
+	return fmt.Sprintf(models.TplSignSuccess, countCMD.Val(), luck, poem), nil
 }
 
 // Rank return the rank of sign task today.
@@ -87,12 +88,7 @@ func Rank(roomID int) string {
 // luckString 返回运势字符串
 func luckString() string {
 	result := "今日运势："
-	luckPool := [...]string{
-		"大凶", "大吉", "不详",
-		"吉兆", "无事", "隆运",
-		"破财", "稳步", "跌宕",
-		"未可知",
-	}
+	pool := models.LuckPool
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return result + luckPool[r.Intn(len(luckPool))]
+	return result + pool[r.Intn(len(pool))]
 }

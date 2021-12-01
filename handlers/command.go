@@ -24,7 +24,7 @@ func (cmd *command) info(info *modules.Info) {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
 	}
-	text := fmt.Sprintf("当前直播间信息：\n- 房间名：%s\n- 公告：%s\n- 主播：%s\n- 当前在线：%d\n- 累计人数：%d\n- 管理员：\n",
+	text := fmt.Sprintf(models.TplRoomInfo,
 		info.Room.Name,
 		info.Room.Announcement,
 		info.Creator.Username,
@@ -56,7 +56,7 @@ func (cmd *command) rank() {
 	if rank := modules.Rank(cmd.Room.ID); rank != "" {
 		text = fmt.Sprintf("每日签到榜单：%s", rank)
 	} else {
-		text = "今天的榜单好像空空的~"
+		text = models.TplRankEmpty
 	}
 	cmd.Output <- text
 }
@@ -68,7 +68,7 @@ func (cmd *command) bait() {
 	}
 	room := cmd.Room
 	if room.Bait && room.Timer != nil {
-		cmd.Output <- "我突然有点困了"
+		cmd.Output <- models.TplBaitStop
 		room.Bait = false
 		room.Timer.Stop()
 	} else {
@@ -96,7 +96,7 @@ func (cmd *command) weather(city string) {
 // musicAdd 处理点歌命令
 func (cmd *command) musicAdd(music string) {
 	modules.MusicAdd(cmd.Room.ID, music)
-	cmd.Output <- fmt.Sprintf("点歌 %s 成功~", music)
+	cmd.Output <- fmt.Sprintf(models.TplMusicAdd, music)
 }
 
 // musicAll 处理歌单获取命令
@@ -106,7 +106,7 @@ func (cmd *command) musicAll() {
 	}
 	musics := modules.MusicAll(cmd.Room.ID)
 	if len(musics) == 0 {
-		cmd.Output <- "当前还没有人点歌哦~"
+		cmd.Output <- models.TplMusicNone
 		return
 	}
 	text := strings.Builder{}
@@ -125,7 +125,7 @@ func (cmd *command) musicPop() {
 		return // 权限不足
 	}
 	modules.MusicPop(cmd.Room.ID)
-	cmd.Output <- "完成了一首歌曲~"
+	cmd.Output <- models.TplMusicDone
 }
 
 // userRole 判断当前用户的角色

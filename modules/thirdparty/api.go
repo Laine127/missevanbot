@@ -38,10 +38,7 @@ func WeatherText(city string) (text string, err error) {
 		return c.Msg, nil // request failed
 	}
 
-	return fmt.Sprintf(`%s 今日天气：
-[天气] %s
-[温度] %s
-[相对湿度] %s`,
+	return fmt.Sprintf("%s 今日天气：\n[天气] %s\n[温度] %s\n[相对湿度] %s",
 		c.Data.CityName,
 		c.Data.Weather,
 		c.Data.Temp,

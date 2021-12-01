@@ -23,7 +23,7 @@ func HandleRoom(outputMsg chan<- string, room *models.Room, textMsg models.FmTex
 	case models.EventStatistic:
 		room.Online = textMsg.Statistics.Online // 更新在线人数
 	case models.EventOpen:
-		outputMsg <- "芝士机器人在线了，可以在直播间输入“帮助”或者@我来获取支持哦～"
+		outputMsg <- models.TplBotStart
 		// 通知推送
 		text := fmt.Sprintf("%s 开播啦~", info.Creator.Username)
 		if err := modules.Push(modules.TitleOpen, text); err != nil {
@@ -56,7 +56,7 @@ func HandleMember(outputMsg chan<- string, store *models.Room, textMsg models.Fm
 			store.Count++
 
 			if username := v.Username; username != "" {
-				text = fmt.Sprintf("欢迎 @%s 进入直播间~", username)
+				text = fmt.Sprintf(models.TplWelcome, username)
 				if store.Pinyin {
 					// 如果注音功能开启了，发送注音消息
 					py := pinyin.NewArgs()
@@ -67,14 +67,14 @@ func HandleMember(outputMsg chan<- string, store *models.Room, textMsg models.Fm
 				}
 			} else if store.Count > 1 && store.Count%2 == 0 {
 				// 屏蔽第一次匿名用户欢迎，减半欢迎匿名用户次数
-				text = "欢迎新同学进入直播间~"
+				text = models.TplWelcomeAnon
 			}
 			outputMsg <- text
 		}
 	case models.EventFollowed:
 		// 有新关注
 		if username := textMsg.User.Username; username != "" {
-			outputMsg <- fmt.Sprintf("感谢 @%s 的关注~", username)
+			outputMsg <- fmt.Sprintf(models.TplThankFollow, username)
 		}
 	}
 	return
@@ -87,7 +87,7 @@ func HandleGift(outputMsg chan<- string, room *models.Room, textMsg models.FmTex
 		// 有用户送礼物
 		if username := textMsg.User.Username; username != "" {
 			gift := textMsg.Gift
-			outputMsg <- fmt.Sprintf("感谢 @%s 赠送的%d个%s~", username, gift.Number, gift.Name)
+			outputMsg <- fmt.Sprintf(models.TplThankGift, username, gift.Number, gift.Name)
 		}
 	}
 }
@@ -136,15 +136,15 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 		cmd.sign(textMsg.User)
 	case models.CmdRank:
 		cmd.rank()
-	case models.CmdLove:
-		outputMsg <- "❤️~"
 	case models.CmdBait:
 		cmd.bait()
 	case models.CmdWeather:
+		// check args
 		if len(arr) == 2 {
 			cmd.weather(arr[1])
 		}
 	case models.CmdMusicAdd:
+		// check args
 		if len(arr) == 2 {
 			cmd.musicAdd(arr[1])
 		}
@@ -152,6 +152,8 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 		cmd.musicAll()
 	case models.CmdMusicPop:
 		cmd.musicPop()
+	case models.CmdLove:
+		outputMsg <- "❤️~"
 	case models.CmdHelper:
 		fallthrough
 	default:
