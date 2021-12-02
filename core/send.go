@@ -18,6 +18,9 @@ type message struct {
 // Send 从 outputMsg 中取出消息并发送
 func Send(outputMsg <-chan string, roomID int) {
 	for msg := range outputMsg {
+		if msg == "" {
+			continue
+		}
 		sendLoop(msg, roomID)
 	}
 }

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mozillazg/go-pinyin"
 	"go.uber.org/zap"
 	"missevan-fm/config"
 	"missevan-fm/models"
 	"missevan-fm/modules"
+	"missevan-fm/utils"
 )
 
 // HandleRoom 处理直播间相关事件
@@ -52,25 +52,18 @@ func HandleMember(outputMsg chan<- string, store *models.Room, textMsg models.Fm
 	case models.EventJoinQueue:
 		// 有用户进入直播间
 		for _, v := range textMsg.Queue {
-			var text string
-
-			store.Count++
-
+			store.Count++ // 计数
 			if username := v.Username; username != "" {
-				text = fmt.Sprintf(models.TplWelcome, username)
+				text := fmt.Sprintf(models.TplWelcome, username)
 				if store.Pinyin {
 					// 如果注音功能开启了，发送注音消息
-					py := pinyin.NewArgs()
-					py.Style = pinyin.Tone
-					if arr := pinyin.Pinyin(username, py); len(arr) > 0 {
-						text += fmt.Sprintf("\n注音：%s", arr)
-					}
+					text += fmt.Sprintf("\n注音：[%s]", utils.Pinyin(username))
 				}
+				outputMsg <- text
 			} else if store.Count > 1 && store.Count%2 == 0 {
 				// 屏蔽第一次匿名用户欢迎，减半欢迎匿名用户次数
-				text = models.TplWelcomeAnon
+				outputMsg <- models.TplWelcomeAnon
 			}
-			outputMsg <- text
 		}
 	case models.EventFollowed:
 		// 有新关注
@@ -78,7 +71,6 @@ func HandleMember(outputMsg chan<- string, store *models.Room, textMsg models.Fm
 			outputMsg <- fmt.Sprintf(models.TplThankFollow, username)
 		}
 	}
-	return
 }
 
 // HandleGift 处理礼物相关的事件
