@@ -12,7 +12,7 @@ const (
 
 // Push 推送消息通知
 func Push(title, msg string) (err error) {
-	conf := config.Config().Push
+	conf := config.Push()
 
 	if conf.Bark != "" {
 		if err = thirdparty.BarkPush(conf.Bark, title, msg); err != nil {

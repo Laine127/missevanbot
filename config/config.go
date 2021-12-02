@@ -65,6 +65,11 @@ func Config() BotConfig {
 	return botConfig
 }
 
+// Push return copy of the push configurations.
+func Push() PushConfig {
+	return *botConfig.Push
+}
+
 // Cookie return path string of the cookie file.
 func Cookie() string {
 	return botConfig.Cookie

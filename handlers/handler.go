@@ -21,7 +21,8 @@ func HandleRoom(outputMsg chan<- string, room *models.Room, textMsg models.FmTex
 
 	switch textMsg.Event {
 	case models.EventStatistic:
-		room.Online = textMsg.Statistics.Online // 更新在线人数
+		// 更新在线人数
+		room.Online = textMsg.Statistics.Online
 	case models.EventOpen:
 		outputMsg <- models.TplBotStart
 		// 通知推送

@@ -30,6 +30,7 @@ type room struct {
 	Announcement string     `json:"announcement"` // 公告
 	Members      Member     `json:"members"`      // 直播间成员
 	Statistics   statistics `json:"statistics"`   // 统计数据
+	Status       status     `json:"status"`       // 状态信息
 }
 
 type Member struct {
@@ -41,6 +42,15 @@ type statistics struct {
 	Vip          int `json:"vip"`          // 贵宾数量
 	Score        int `json:"score"`        // 分数
 	Online       int `json:"online"`       // 在线
+}
+
+type status struct {
+	Channel struct {
+		Event    string `json:"event"`
+		Platform string `json:"platform"`
+		Time     int64  `json:"time"`
+		Type     string `json:"type"`
+	} `json:"channel"`
 }
 
 type Admin struct {

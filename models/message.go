@@ -2,12 +2,11 @@ package models
 
 // FmTextMessage 直播间Websocket消息主体
 type FmTextMessage struct {
-	Type      string `json:"type"`
-	Event     string `json:"event"`
-	RoomID    int    `json:"room_id"`
-	Message   string `json:"message"`
-	MessageID string `json:"msg_id"`
-
+	Type       string       `json:"type"`
+	Event      string       `json:"event"`
+	RoomID     int          `json:"room_id"`
+	Message    string       `json:"message"`
+	MessageID  string       `json:"msg_id"`
 	User       FmUser       `json:"user"`
 	Queue      []FmQueue    `json:"queue"`
 	Gift       FmGift       `json:"gift"`

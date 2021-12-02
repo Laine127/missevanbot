@@ -28,6 +28,7 @@ func (cmd *command) info(info *modules.Info) {
 		info.Room.Name,
 		info.Room.Announcement,
 		info.Creator.Username,
+		info.Room.Status.Channel.Platform,
 		cmd.Room.Online,
 		info.Room.Statistics.Accumulation,
 	)
