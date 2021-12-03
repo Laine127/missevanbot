@@ -1,15 +1,18 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"go.uber.org/zap"
 	"missevan-fm/config"
 	"missevan-fm/models"
 	"missevan-fm/modules"
 	"missevan-fm/modules/thirdparty"
+	"missevan-fm/utils"
 )
 
 type command struct {
@@ -56,6 +59,39 @@ func (cmd *command) rank() {
 		text = models.TplRankEmpty
 	}
 	cmd.Output <- text
+}
+
+// star 生成星座运势
+func (cmd *command) star(str string) {
+	if utf8.RuneCountInString(str) == 2 {
+		str += "座"
+	}
+	if _, ok := thirdparty.StarList[str]; !ok {
+		// check if validate
+		return
+	}
+	ctx := context.Background()
+	rdb := config.RDB
+	key := fmt.Sprintf("%szodiac:%s:%s", models.RedisPrefix, utils.Today(), str)
+
+	n, err := rdb.Exists(ctx, key).Result()
+	if err != nil {
+		zap.S().Error("获取星座运势错误：", err)
+		return
+	}
+	if n > 0 {
+		ret := rdb.HMGet(ctx, key, "content", "score")
+		cmd.Output <- fmt.Sprintf(models.TplStarFortune, str, ret.Val()[1], ret.Val()[0])
+	} else {
+		// check if exists
+		fort, err := thirdparty.Zodiac(str, thirdparty.Level5)
+		if err != nil {
+			zap.S().Error("获取星座运势错误：", err)
+			return
+		}
+		rdb.HMSet(ctx, key, "content", fort.Content, "score", fort.Score)
+		cmd.Output <- fmt.Sprintf(models.TplStarFortune, str, fort.Score, fort.Content)
+	}
 }
 
 // bait 处理演员模式启停命令

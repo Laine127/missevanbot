@@ -6,6 +6,7 @@ const (
 	CmdInfo            // 直播间信息
 	CmdSign            // 签到答复
 	CmdRank            // 榜单答复
+	CmdStar            // 星座运势
 	CmdLove            // 比心答复
 	CmdBait            // 演员模式启停
 	CmdWeather         // 天气
@@ -31,6 +32,7 @@ const HelpText = `命令帮助：
 房间 -- 查看当前直播间信息
 签到 -- 在当前直播间进行签到
 排行 -- 查看当前直播间当天签到排行
+星座 星座名 -- 查看星座今日运势
 天气 城市名 -- 查询该城市的当日天气
 点歌 歌名 -- 将歌曲添加进待播歌单
 歌单 -- 查询当前待播歌单
@@ -46,6 +48,7 @@ var _cmdMap = map[string]int{
 	"房间": CmdInfo,
 	"签到": CmdSign,
 	"排行": CmdRank,
+	"星座": CmdStar,
 	"天气": CmdWeather,
 	"点歌": CmdMusicAdd,
 	"歌单": CmdMusicAll,

@@ -29,6 +29,7 @@ const (
 const (
 	TplSignDuplicate = "已经签到过啦\n\n您已经连续签到%s天\n\n%s"
 	TplSignSuccess   = "签到成功啦，已经连续签到%d天~\n\n%s\n\n%s"
+	TplStarFortune   = "%s今日幸运值：%s\n\n%s"
 	TplPiaStart      = "启动成功啦～"
 	TplPiaStop       = "停止成功啦～"
 )

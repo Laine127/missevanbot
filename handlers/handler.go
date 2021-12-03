@@ -121,7 +121,7 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 		Output: outputMsg,
 	}
 
-	arr := strings.Split(textMsg.Message, " ")
+	arr := strings.Fields(strings.TrimSpace(textMsg.Message))
 	if len(arr) < 1 {
 		return
 	}
@@ -133,6 +133,11 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 		cmd.sign(textMsg.User)
 	case models.CmdRank:
 		cmd.rank()
+	case models.CmdStar:
+		// check args
+		if len(arr) == 2 {
+			cmd.star(arr[1])
+		}
 	case models.CmdBait:
 		cmd.bait()
 	case models.CmdWeather:

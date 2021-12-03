@@ -6,6 +6,8 @@ import (
 	"missevan-fm/config"
 )
 
+const RedisPrefix = "missevan:"
+
 // Room 直播间
 type Room struct {
 	*config.RoomConfig             // 当前房间的配置

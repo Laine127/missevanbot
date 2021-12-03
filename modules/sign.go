@@ -11,16 +11,15 @@ import (
 	"missevan-fm/config"
 	"missevan-fm/models"
 	"missevan-fm/modules/thirdparty"
+	"missevan-fm/utils"
 )
-
-const RedisPrefix = "missevan:"
 
 var ctx = context.Background()
 
 // Sign 用户签到
 func Sign(roomID, uid int, uname string) (string, error) {
 	rdb := config.RDB
-	prefix := RedisPrefix + strconv.Itoa(roomID)
+	prefix := models.RedisPrefix + strconv.Itoa(roomID)
 
 	key := fmt.Sprintf("%s:sign:%d", prefix, uid)
 	// 获取当前缓存中的签到信息
@@ -40,7 +39,7 @@ func Sign(roomID, uid int, uname string) (string, error) {
 		rdb.HSet(ctx, key, "luck", luck)
 	}
 	// 判断是否重复签到
-	if day == time.Now().Format("2006-01-02") {
+	if day == utils.Today() {
 		return fmt.Sprintf(models.TplSignDuplicate, count, luck), nil
 	}
 	// 判断是否连续签到
@@ -49,12 +48,12 @@ func Sign(roomID, uid int, uname string) (string, error) {
 	}
 	// 生成今天的运势
 	luck = luckString()
-	rdb.HMSet(ctx, key, "day", time.Now().Format("2006-01-02"), "luck", luck)
+	rdb.HMSet(ctx, key, "day", utils.Today(), "luck", luck)
 	// 增加签到天数
 	countCMD := rdb.HIncrBy(ctx, key, "count", 1)
 	// 放入排行榜
-	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:id", prefix, time.Now().Format("2006-01-02")), uid)
-	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:name", prefix, time.Now().Format("2006-01-02")), uname)
+	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:id", prefix, utils.Today()), uid)
+	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:name", prefix, utils.Today()), uname)
 
 	poem, err := thirdparty.PoemText()
 	if err != nil {
@@ -67,10 +66,10 @@ func Sign(roomID, uid int, uname string) (string, error) {
 // Rank return the rank of sign task today.
 func Rank(roomID int) string {
 	rdb := config.RDB
-	prefix := RedisPrefix + strconv.Itoa(roomID)
+	prefix := models.RedisPrefix + strconv.Itoa(roomID)
 
-	key := fmt.Sprintf("%s:rank:%s:id", prefix, time.Now().Format("2006-01-02"))
-	nKey := fmt.Sprintf("%s:rank:%s:name", prefix, time.Now().Format("2006-01-02"))
+	key := fmt.Sprintf("%s:rank:%s:id", prefix, utils.Today())
+	nKey := fmt.Sprintf("%s:rank:%s:name", prefix, utils.Today())
 	listID := rdb.LRange(ctx, key, 0, -1)
 	listName := rdb.LRange(ctx, nKey, 0, -1)
 	result := strings.Builder{}
