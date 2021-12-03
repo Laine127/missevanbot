@@ -12,6 +12,9 @@ const (
 	CmdMusicAdd        // 点歌
 	CmdMusicAll        // 点歌歌单
 	CmdMusicPop        // 弹出一首歌
+	CmdPiaStart        // 启动pia戏模式
+	CmdPiaNext         // 下一条
+	CmdPiaStop         // 结束pia戏模式
 )
 
 // 用户角色
@@ -31,7 +34,11 @@ const HelpText = `命令帮助：
 天气 城市名 -- 查询该城市的当日天气
 点歌 歌名 -- 将歌曲添加进待播歌单
 歌单 -- 查询当前待播歌单
-完成 -- 删除待播清单第一首歌曲`
+完成 -- 删除待播清单第一首歌曲
+本子 ID -- 获取戏文，开启pia戏模式
+n -- 下一条内容
+n 数字 -- 多条内容
+结束 -- 结束pia戏模式`
 
 // _cmdMap 帮助映射
 var _cmdMap = map[string]int{
@@ -43,6 +50,9 @@ var _cmdMap = map[string]int{
 	"点歌": CmdMusicAdd,
 	"歌单": CmdMusicAll,
 	"完成": CmdMusicPop,
+	"本子": CmdPiaStart,
+	"n":  CmdPiaNext,
+	"结束": CmdPiaStop,
 	// 下面是隐藏的命令
 	"比心": CmdLove,
 	"笔芯": CmdLove,

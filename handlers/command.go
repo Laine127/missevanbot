@@ -26,17 +26,13 @@ func (cmd *command) info(info *modules.Info) {
 	}
 	text := fmt.Sprintf(models.TplRoomInfo,
 		info.Room.Name,
-		info.Room.Announcement,
 		info.Creator.Username,
 		info.Room.Status.Channel.Platform,
 		cmd.Room.Online,
 		info.Room.Statistics.Accumulation,
 	)
-	for k, v := range info.Room.Members.Admin {
-		text += fmt.Sprintf("--- %s", v.Username)
-		if k < len(info.Room.Members.Admin)-1 {
-			text += "\n"
-		}
+	for _, v := range info.Room.Members.Admin {
+		text += fmt.Sprintf("\n--- %s", v.Username)
 	}
 	cmd.Output <- text
 }
@@ -112,10 +108,10 @@ func (cmd *command) musicAll() {
 	}
 	text := strings.Builder{}
 	for k, v := range musics {
-		text.WriteString(fmt.Sprintf("%d. %s", k+1, v))
-		if k < len(musics)-1 {
+		if k > 0 {
 			text.WriteString("\n")
 		}
+		text.WriteString(fmt.Sprintf("%d. %s", k+1, v))
 	}
 	cmd.Output <- text.String()
 }
@@ -127,6 +123,57 @@ func (cmd *command) musicPop() {
 	}
 	modules.MusicPop(cmd.Room.ID)
 	cmd.Output <- models.TplMusicDone
+}
+
+// piaStart 处理开启pia戏命令
+func (cmd *command) piaStart(id int) {
+	if cmd.Role > models.RoleAdmin {
+		return // 权限不足
+	}
+	var err error
+	cmd.Room.PiaList, err = thirdparty.Fetch(id)
+	if err != nil {
+		zap.S().Error("获取戏文出错了：", err)
+		return
+	}
+	cmd.Room.PiaIndex = 1
+	cmd.Output <- models.TplPiaStart
+}
+
+// piaNext 处理下一条戏文命令
+func (cmd *command) piaNext(dur int) {
+	if cmd.Role > models.RoleAdmin {
+		return // 权限不足
+	}
+	if cmd.Room.PiaIndex == 0 || cmd.Room.PiaList == nil {
+		return
+	}
+	idx := cmd.Room.PiaIndex - 1
+	cmd.Room.PiaIndex += dur
+	length := len(cmd.Room.PiaList)
+	if idx < length || idx >= length {
+		text := strings.Builder{}
+		if idx+dur >= length {
+			dur = 0
+		}
+		for k, v := range (cmd.Room.PiaList)[idx : idx+dur] {
+			if k > 0 {
+				text.WriteString("\n")
+			}
+			text.WriteString(v)
+		}
+		cmd.Output <- text.String()
+	}
+}
+
+// piaStop 处理停止pia戏命令
+func (cmd *command) piaStop() {
+	if cmd.Role > models.RoleAdmin {
+		return // 权限不足
+	}
+	cmd.Room.PiaList = nil
+	cmd.Room.PiaIndex = 0
+	cmd.Output <- models.TplPiaStop
 }
 
 // userRole 判断当前用户的角色

@@ -11,9 +11,15 @@ const (
 
 // Command related
 const (
-	TplRoomInfo  = "当前直播间信息：\n- 房间名：%s\n- 公告：%s\n- 主播：%s\n- 直播平台：%s\n- 当前在线：%d\n- 累计人数：%d\n- 管理员：\n" // 房间信息模板
-	TplRankEmpty = "今天的榜单好像空空的~"                                                                     // 榜单为空
-	TplBaitStop  = "我突然有点困了"                                                                         // 关闭演员模式
+	TplRoomInfo = `当前直播间信息：
+- 房间名：%s
+- 主播：%s
+- 直播平台：%s
+- 当前在线：%d
+- 累计人数：%d
+- 管理员：`  // 房间信息模板
+	TplRankEmpty = "今天的榜单好像空空的~" // 榜单为空
+	TplBaitStop  = "我突然有点困了"     // 关闭演员模式
 	TplMusicAdd  = "点歌 %s 成功啦~"
 	TplMusicNone = "当前还没有人点歌哦~"
 	TplMusicDone = "完成了一首歌曲~"
@@ -23,6 +29,8 @@ const (
 const (
 	TplSignDuplicate = "已经签到过啦\n\n您已经连续签到%s天\n\n%s"
 	TplSignSuccess   = "签到成功啦，已经连续签到%d天~\n\n%s\n\n%s"
+	TplPiaStart      = "启动成功啦～"
+	TplPiaStop       = "停止成功啦～"
 )
 
 const TplDefaultPoem = "孜孜不倦，不易乎世。"

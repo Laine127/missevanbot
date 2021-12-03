@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"go.uber.org/zap"
@@ -121,6 +122,9 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 	}
 
 	arr := strings.Split(textMsg.Message, " ")
+	if len(arr) < 1 {
+		return
+	}
 
 	switch cmdType {
 	case models.CmdInfo:
@@ -145,6 +149,28 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 		cmd.musicAll()
 	case models.CmdMusicPop:
 		cmd.musicPop()
+	case models.CmdPiaStart:
+		// check args
+		if len(arr) == 2 {
+			id, err := strconv.Atoi(arr[1])
+			if err != nil {
+				return
+			}
+			cmd.piaStart(id)
+		}
+	case models.CmdPiaNext:
+		if len(arr) == 1 {
+			cmd.piaNext(1)
+		}
+		if len(arr) == 2 {
+			dur, err := strconv.Atoi(arr[1])
+			if err != nil {
+				return
+			}
+			cmd.piaNext(dur)
+		}
+	case models.CmdPiaStop:
+		cmd.piaStop()
 	case models.CmdLove:
 		outputMsg <- "❤️~"
 	case models.CmdHelper:

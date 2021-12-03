@@ -13,4 +13,6 @@ type Room struct {
 	Online             int         // 记录当前直播间在线人数
 	Bait               bool        // 是否开启演员模式
 	Timer              *time.Timer // 定时任务计时器
+	PiaList            []string    // 戏文
+	PiaIndex           int         // 位置
 }
