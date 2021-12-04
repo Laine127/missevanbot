@@ -41,6 +41,7 @@ type RoomConfig struct {
 	Name               string `mapstructure:"name"`                 // 主播自定义昵称
 	Pinyin             bool   `mapstructure:"pinyin"`               // 是否开启注音功能
 	RainbowMaxInterval int    `mapstructure:"rainbow_max_interval"` // 彩虹屁最长发送间隔
+	Watch              bool   `mapstructure:"watch"`                // 是否监控开播/下播
 }
 
 // LoadConfig is used to load configuration file

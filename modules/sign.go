@@ -3,7 +3,6 @@ package modules
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -35,7 +34,7 @@ func Sign(roomID, uid int, uname string) (string, error) {
 		luck = v
 	} else {
 		// 还没有运势记录
-		luck = luckString()
+		luck = models.LuckString()
 		rdb.HSet(ctx, key, "luck", luck)
 	}
 	// 判断是否重复签到
@@ -47,7 +46,7 @@ func Sign(roomID, uid int, uname string) (string, error) {
 		rdb.HSet(ctx, key, "count", 0)
 	}
 	// 生成今天的运势
-	luck = luckString()
+	luck = models.LuckString()
 	rdb.HMSet(ctx, key, "day", utils.Today(), "luck", luck)
 	// 增加签到天数
 	countCMD := rdb.HIncrBy(ctx, key, "count", 1)
@@ -82,12 +81,4 @@ func Rank(roomID int) string {
 		}
 	}
 	return result.String()
-}
-
-// luckString 返回运势字符串
-func luckString() string {
-	result := "今日运势："
-	pool := models.LuckPool
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return result + pool[r.Intn(len(pool))]
 }

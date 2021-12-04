@@ -27,15 +27,19 @@ func HandleRoom(outputMsg chan<- string, room *models.Room, textMsg models.FmTex
 	case models.EventOpen:
 		outputMsg <- models.TplBotStart
 		// 通知推送
-		text := fmt.Sprintf("%s 开播啦~", info.Creator.Username)
-		if err := modules.Push(modules.TitleOpen, text); err != nil {
-			zap.S().Error("Bark 推送失败", err)
+		if room.Watch {
+			text := fmt.Sprintf("%s 开播啦~", info.Creator.Username)
+			if err := modules.Push(modules.TitleOpen, text); err != nil {
+				zap.S().Error("Bark 推送失败", err)
+			}
 		}
 	case models.EventClose:
 		// 通知推送
-		text := fmt.Sprintf("%s 下播啦~", info.Creator.Username)
-		if err := modules.Push(modules.TitleClose, text); err != nil {
-			zap.S().Error("Bark 推送失败", err)
+		if room.Watch {
+			text := fmt.Sprintf("%s 下播啦~", info.Creator.Username)
+			if err := modules.Push(modules.TitleClose, text); err != nil {
+				zap.S().Error("Bark 推送失败", err)
+			}
 		}
 		// 关闭定时任务
 		room.Bait = false
