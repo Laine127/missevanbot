@@ -2,20 +2,22 @@ package models
 
 // 指令类型
 const (
-	CmdHelper   = iota // 帮助提示
-	CmdInfo            // 直播间信息
-	CmdSign            // 签到答复
-	CmdRank            // 榜单答复
-	CmdStar            // 星座运势
-	CmdLove            // 比心答复
-	CmdBait            // 演员模式启停
-	CmdWeather         // 天气
-	CmdMusicAdd        // 点歌
-	CmdMusicAll        // 点歌歌单
-	CmdMusicPop        // 弹出一首歌
-	CmdPiaStart        // 启动pia戏模式
-	CmdPiaNext         // 下一条
-	CmdPiaStop         // 结束pia戏模式
+	CmdHelper      = iota // 帮助提示
+	CmdRoomInfo           // 直播间信息
+	CmdCheckin            // 签到答复
+	CmdCheckinRank        // 榜单答复
+	CmdHoroscope          // 星座运势
+	CmdBaitSwitch         // 演员模式启停
+	CmdWeather            // 天气
+	CmdMusicAdd           // 点歌
+	CmdMusicAll           // 点歌歌单
+	CmdMusicPop           // 弹出一首歌
+	CmdPiaStart           // 启动pia戏模式
+	CmdPiaNext            // 下一条
+	CmdPiaNextSafe        // 下一条（安全输出）
+	CmdPiaRelocate        // 重定位
+	CmdPiaStop            // 结束pia戏模式
+	CmdLove               // 比心答复
 )
 
 // 用户角色
@@ -29,39 +31,45 @@ const (
 // HelpText 帮助文本
 const HelpText = `命令帮助：
 帮助 -- 获取帮助信息
-房间 -- 查看当前直播间信息
-签到 -- 在当前直播间进行签到
-排行 -- 查看当前直播间当天签到排行
-星座 星座名 -- 查看星座今日运势
+房间 -- 查询直播间信息
+签到 -- 在当前直播间签到
+排行 -- 查看当天签到排行
+星座 星座名 -- 查询星座今日运势
 天气 城市名 -- 查询该城市的当日天气
-点歌 歌名 -- 将歌曲添加进待播歌单
-歌单 -- 查询当前待播歌单
-完成 -- 删除待播清单第一首歌曲
-本子 ID -- 获取戏文，开启pia戏模式
-n -- 下一条内容
-n 数字 -- 多条内容
++++++ 点歌相关 +++++
+点歌 歌名 -- 添加歌曲到排队歌单
+歌单 -- 查询排队歌单
+完成 -- 删除排队清单第一首歌曲
++++++ pia戏相关 +++++
+本子 本号 -- 获取戏文，开启pia戏模式
+s -- 下一条文本（防屏蔽版）
+n -- 下一条文本
+n 数字 -- 多条文本
+r 数字 -- 定位到指定的位置
 结束 -- 结束pia戏模式
-
++++++++++++++++
 Author: Secriy`
 
 // _cmdMap 帮助映射
 var _cmdMap = map[string]int{
 	"帮助": CmdHelper,
-	"房间": CmdInfo,
-	"签到": CmdSign,
-	"排行": CmdRank,
-	"星座": CmdStar,
+	"房间": CmdRoomInfo,
+	"签到": CmdCheckin,
+	"排行": CmdCheckinRank,
+	"星座": CmdHoroscope,
 	"天气": CmdWeather,
 	"点歌": CmdMusicAdd,
 	"歌单": CmdMusicAll,
 	"完成": CmdMusicPop,
 	"本子": CmdPiaStart,
 	"n":  CmdPiaNext,
+	"s":  CmdPiaNextSafe,
+	"r":  CmdPiaRelocate,
 	"结束": CmdPiaStop,
 	// 下面是隐藏的命令
 	"比心": CmdLove,
 	"笔芯": CmdLove,
-	"咳咳": CmdBait,
+	"咳咳": CmdBaitSwitch,
 }
 
 // Command 使用 Key 获取对应的命令

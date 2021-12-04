@@ -22,8 +22,8 @@ type command struct {
 	Output chan<- string
 }
 
-// info 处理直播间相关的命令
-func (cmd *command) info(info *models.FmInfo) {
+// roomInfo 处理直播间相关的命令
+func (cmd *command) roomInfo(info *models.FmInfo) {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
 	}
@@ -169,39 +169,92 @@ func (cmd *command) piaStart(id int) {
 		return // 权限不足
 	}
 	var err error
-	cmd.Room.PiaList, err = thirdparty.Fetch(id)
+	var roles []string
+	roles, cmd.Room.PiaList, err = thirdparty.Fetch(id)
 	if err != nil {
 		zap.S().Error("获取戏文出错了：", err)
 		return
 	}
 	cmd.Room.PiaIndex = 1
-	cmd.Output <- models.TplPiaStart
+	text := strings.Builder{}
+	for _, v := range roles {
+		text.WriteString(fmt.Sprintf("\n%s", v))
+	}
+	cmd.Output <- fmt.Sprintf(models.TplPiaStart, text.String())
 }
 
 // piaNext 处理下一条戏文命令
-func (cmd *command) piaNext(dur int) {
+func (cmd *command) piaNext(dur int, safe bool) {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
 	}
 	if cmd.Room.PiaIndex == 0 || cmd.Room.PiaList == nil {
+		// 没有启动
+		cmd.Output <- models.TplPiaEmpty
 		return
 	}
-	idx := cmd.Room.PiaIndex - 1
-	cmd.Room.PiaIndex += dur
+
 	length := len(cmd.Room.PiaList)
-	if idx < length || idx >= length {
-		text := strings.Builder{}
-		if idx+dur >= length {
-			dur = 0
-		}
-		for k, v := range (cmd.Room.PiaList)[idx : idx+dur] {
-			if k > 0 {
-				text.WriteString("\n")
-			}
-			text.WriteString(v)
-		}
-		cmd.Output <- text.String()
+	start := cmd.Room.PiaIndex - 1
+	stop := start + dur
+
+	if stop > length {
+		// 索引越界，则边界定位到数组末尾
+		stop = length
 	}
+
+	text := strings.Builder{}
+	for k, v := range (cmd.Room.PiaList)[start:stop] {
+		if k > 0 {
+			text.WriteString("\n")
+		}
+		if safe {
+			// 安全输出，防止屏蔽
+			for _, s := range v {
+				text.WriteString(string(s))
+				text.WriteString(" ")
+			}
+			continue
+		}
+		text.WriteString(v)
+	}
+	text.WriteString(fmt.Sprintf("\n\n进度：%d/%d", stop, length))
+	cmd.Room.PiaIndex = stop + 1
+	cmd.Output <- text.String()
+
+	if stop == length {
+		// 到达末尾，清空列表，关闭当前模式
+		cmd.Room.PiaList = nil
+		cmd.Room.PiaIndex = 0
+		cmd.Output <- models.TplPiaDone
+	}
+}
+
+// piaNextSafe 安全输出一条戏文
+func (cmd *command) piaNextSafe() {
+	cmd.piaNext(1, true)
+}
+
+// piaRelocate 重定位文章位置
+func (cmd *command) piaRelocate(idx int) {
+	if cmd.Role > models.RoleAdmin {
+		return // 权限不足
+	}
+	if cmd.Room.PiaIndex == 0 || cmd.Room.PiaList == nil {
+		// 没有启动
+		cmd.Output <- models.TplPiaEmpty
+		return
+	}
+	idx-- // 转换为程序下标
+
+	length := len(cmd.Room.PiaList)
+	if idx >= length {
+		// 越界错误
+		cmd.Output <- models.TplPiaOutBounds
+		return
+	}
+	cmd.Room.PiaIndex = idx + 1
+	cmd.Output <- models.TplPiaRelocate
 }
 
 // piaStop 处理停止pia戏命令

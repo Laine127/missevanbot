@@ -94,14 +94,17 @@ func HandleGift(outputMsg chan<- string, room *models.Room, textMsg models.FmTex
 func HandleMessage(outputMsg chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	switch textMsg.Event {
 	case models.EventNew:
+		first := strings.Split(textMsg.Message, " ")[0]
+		if first == "" {
+			return
+		}
 		// 判断是否是命令，进行处理
-		arr := strings.Split(textMsg.Message, " ")
-		if cmdType := models.Command(arr[0]); cmdType >= 0 {
+		if cmdType := models.Command(first); cmdType >= 0 {
 			handleCommand(outputMsg, room, cmdType, textMsg)
 			return
 		}
 		// 判断是否是沟通请求，进行处理
-		if arr[0] == fmt.Sprintf("@%s", config.Name()) {
+		if first == fmt.Sprintf("@%s", config.Name()) {
 			handleChat(outputMsg, room, textMsg)
 			return
 		}
@@ -126,23 +129,20 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 	}
 
 	arr := strings.Fields(strings.TrimSpace(textMsg.Message))
-	if len(arr) < 1 {
-		return
-	}
 
 	switch cmdType {
-	case models.CmdInfo:
-		cmd.info(&info)
-	case models.CmdSign:
+	case models.CmdRoomInfo:
+		cmd.roomInfo(&info)
+	case models.CmdCheckin:
 		cmd.checkin(textMsg.User)
-	case models.CmdRank:
+	case models.CmdCheckinRank:
 		cmd.checkinRank()
-	case models.CmdStar:
+	case models.CmdHoroscope:
 		// check args
 		if len(arr) == 2 {
 			cmd.horoscopes(arr[1])
 		}
-	case models.CmdBait:
+	case models.CmdBaitSwitch:
 		cmd.baitSwitch()
 	case models.CmdWeather:
 		// check args
@@ -169,14 +169,24 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 		}
 	case models.CmdPiaNext:
 		if len(arr) == 1 {
-			cmd.piaNext(1)
+			cmd.piaNext(1, false)
 		}
 		if len(arr) == 2 {
 			dur, err := strconv.Atoi(arr[1])
 			if err != nil {
 				return
 			}
-			cmd.piaNext(dur)
+			cmd.piaNext(dur, false)
+		}
+	case models.CmdPiaNextSafe:
+		cmd.piaNextSafe()
+	case models.CmdPiaRelocate:
+		if len(arr) == 2 {
+			idx, err := strconv.Atoi(arr[1])
+			if err != nil {
+				return
+			}
+			cmd.piaRelocate(idx)
 		}
 	case models.CmdPiaStop:
 		cmd.piaStop()
