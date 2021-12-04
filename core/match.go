@@ -21,6 +21,8 @@ func matchLoop(msg models.FmTextMessage, outputMsg chan<- string, room *models.R
 	}()
 
 	switch msg.Type {
+	case models.TypeNotify:
+		return
 	case models.TypeRoom:
 		handlers.HandleRoom(outputMsg, room, msg)
 	case models.TypeMember:
@@ -31,4 +33,6 @@ func matchLoop(msg models.FmTextMessage, outputMsg chan<- string, room *models.R
 		handlers.HandleMessage(outputMsg, room, msg)
 	default:
 	}
+
+	zap.S().Info(msg)
 }

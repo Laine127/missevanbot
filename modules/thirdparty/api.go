@@ -19,7 +19,7 @@ func WeatherText(city string) (text string, err error) {
 		return
 	}
 	// 天气接口 JSON 结构体
-	c := new(struct {
+	c := struct {
 		Code interface{} `json:"code"`
 		Msg  string      `json:"msg"`
 		Data struct {
@@ -28,9 +28,9 @@ func WeatherText(city string) (text string, err error) {
 			Temp     string `json:"temp"`     // 温度
 			SD       string `json:"SD"`       // 相对湿度
 		} `json:"data"`
-	})
+	}{}
 
-	if err = json.Unmarshal(body, c); err != nil {
+	if err = json.Unmarshal(body, &c); err != nil {
 		return
 	}
 
@@ -75,15 +75,15 @@ func PraiseText() (text string, err error) {
 		return
 	}
 	// 彩虹屁接口 JSON 结构体
-	c := new(struct {
+	c := struct {
 		Code interface{} `json:"code"`
 		Msg  string      `json:"msg"`
 		Data struct {
 			Comment string `json:"comment"`
 		} `json:"data"`
-	})
+	}{}
 
-	if err = json.Unmarshal(body, c); err != nil {
+	if err = json.Unmarshal(body, &c); err != nil {
 		return
 	}
 

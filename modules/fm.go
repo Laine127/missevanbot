@@ -22,8 +22,8 @@ func RoomInfo(roomID int) (info models.FmInfo, err error) {
 	if err != nil {
 		return
 	}
-	res := new(models.FmRoom)
-	if err = json.Unmarshal(body, res); err != nil {
+	res := models.FmRoom{}
+	if err = json.Unmarshal(body, &res); err != nil {
 		return
 	}
 	return res.Info, nil

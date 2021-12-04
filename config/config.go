@@ -75,7 +75,7 @@ func Admin() int {
 
 // LoadConfig is used to load configuration file
 func LoadConfig() {
-	conf := new(BotConfig)
+	conf := BotConfig{}
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -84,10 +84,10 @@ func LoadConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("fatal error read configration file: %s", err))
 	}
-	if err := viper.Unmarshal(conf); err != nil {
+	if err := viper.Unmarshal(&conf); err != nil {
 		panic(fmt.Errorf("fatal error unmarshal configration file: %s", err))
 	}
-	botConfig = *conf
+	botConfig = conf
 
 	initCookie()
 }

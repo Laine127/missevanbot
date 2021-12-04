@@ -52,10 +52,10 @@ func Zodiac(star string, level int) (fort Fortune, err error) {
 		return
 	}
 
-	f := new(Fortune)
-	if err = json.Unmarshal(body, f); err != nil {
+	f := Fortune{}
+	if err = json.Unmarshal(body, &f); err != nil {
 		return
 	}
 
-	return *f, nil
+	return f, nil
 }

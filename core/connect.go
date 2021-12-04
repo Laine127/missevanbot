@@ -64,13 +64,12 @@ func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
 			if string(msgData) == "❤️" {
 				continue // 过滤掉心跳消息
 			}
-			// 解析 JSON 数据
-			textMsg := new(models.FmTextMessage)
-			if err := json.Unmarshal(msgData, textMsg); err != nil {
+			textMsg := models.FmTextMessage{}
+			if err := json.Unmarshal(msgData, &textMsg); err != nil {
 				zap.S().Errorf("%s 解析失败：%s", string(msgData), err)
 				continue
 			}
-			inputMsg <- *textMsg
+			inputMsg <- textMsg
 		case websocket.BinaryMessage:
 		case websocket.CloseMessage:
 		case websocket.PingMessage:
