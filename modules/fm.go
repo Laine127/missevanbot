@@ -1,13 +1,36 @@
 package modules
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"missevan-fm/models"
 )
 
-// Cookie 获取初始连接的 Cookie 字符串
-func Cookie() (string, error) {
+// RoomInfo 获取直播间信息
+func RoomInfo(roomID int) (info models.FmInfo, err error) {
+	_url := fmt.Sprintf("https://fm.missevan.com/api/v2/live/%d", roomID)
+	resp, err := http.Get(_url)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	res := new(models.FmRoom)
+	if err = json.Unmarshal(body, res); err != nil {
+		return
+	}
+	return res.Info, nil
+}
+
+// ConnCookie 获取初始连接的 Cookie 字符串
+func ConnCookie() (string, error) {
 	_url := "https://fm.missevan.com/api/user/info"
 
 	resp, err := http.Get(_url)

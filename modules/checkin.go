@@ -15,12 +15,12 @@ import (
 
 var ctx = context.Background()
 
-// Sign 用户签到
-func Sign(roomID, uid int, uname string) (string, error) {
+// Checkin 用户签到
+func Checkin(roomID, uid int, uname string) (string, error) {
 	rdb := config.RDB
 	prefix := models.RedisPrefix + strconv.Itoa(roomID)
 
-	key := fmt.Sprintf("%s:sign:%d", prefix, uid)
+	key := fmt.Sprintf("%s:checkin:%d", prefix, uid)
 	// 获取当前缓存中的签到信息
 	cmd := rdb.HMGet(ctx, key, "count", "day", "luck")
 	var count, day, luck string
@@ -62,8 +62,8 @@ func Sign(roomID, uid int, uname string) (string, error) {
 	return fmt.Sprintf(models.TplSignSuccess, countCMD.Val(), luck, poem), nil
 }
 
-// Rank return the rank of sign task today.
-func Rank(roomID int) string {
+// CheckinRank return the rank of checkin task today.
+func CheckinRank(roomID int) string {
 	rdb := config.RDB
 	prefix := models.RedisPrefix + strconv.Itoa(roomID)
 
@@ -74,7 +74,7 @@ func Rank(roomID int) string {
 	result := strings.Builder{}
 	result.WriteString("\n")
 	for k, v := range listID.Val() {
-		count := rdb.HGet(ctx, fmt.Sprintf("%s:sign:%s", prefix, v), "count").Val()
+		count := rdb.HGet(ctx, fmt.Sprintf("%s:checkin:%s", prefix, v), "count").Val()
 		result.WriteString(fmt.Sprintf("Rank %d. [%s] 连续签到%s天", k+1, listName.Val()[k], count))
 		if k < len(listID.Val())-1 {
 			result.WriteString("\n")

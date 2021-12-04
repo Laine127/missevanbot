@@ -85,13 +85,12 @@ go build
     - thirdparty：第三方组件
         - api：第三方接口
         - push：消息推送
+    - checkin.go：签到模块
     - fm.go：猫耳 FM 相关模块
     - http.go：HTTP 请求模块
     - music.go：点歌歌单模块
     - praise.go：彩虹屁模块
     - push.go：消息推送模块
-    - room.go：直播间相关模块
-    - sign.go：签到模块
 - utils：辅助工具
     - logger：日志组件
     - uuid.go：消息 ID 生成

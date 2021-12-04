@@ -21,7 +21,7 @@ func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
 
 	dialer := new(websocket.Dialer)
 
-	cookie, err := modules.Cookie()
+	cookie, err := modules.ConnCookie()
 	if err != nil {
 		zap.S().Error("获取 Cookie 失败：", err)
 		return

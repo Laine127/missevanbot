@@ -4,16 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
 
 	"missevan-fm/config"
 )
 
 // PostRequest 发送 POST 请求，传递 data
 func PostRequest(_url string, header http.Header, data []byte) (body []byte, err error) {
-	cookie := readCookie()
+	cookie := config.Cookie()
 	if cookie == "" {
 		err = errors.New("cookie is empty")
 		return
@@ -38,19 +36,4 @@ func PostRequest(_url string, header http.Header, data []byte) (body []byte, err
 
 	body, err = ioutil.ReadAll(resp.Body)
 	return
-}
-
-// readCookie 读取当前目录下的 Cookie 文件，返回内容
-func readCookie() string {
-	file, err := os.Open(config.Cookie())
-	if err != nil {
-		log.Println("read cookie failed", err.Error())
-		os.Exit(1)
-	}
-	content, err := ioutil.ReadAll(file)
-	if err != nil {
-		log.Println("read cookie failed", err.Error())
-		os.Exit(1)
-	}
-	return string(content)
 }

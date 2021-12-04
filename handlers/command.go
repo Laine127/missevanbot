@@ -23,7 +23,7 @@ type command struct {
 }
 
 // info 处理直播间相关的命令
-func (cmd *command) info(info *modules.Info) {
+func (cmd *command) info(info *models.FmInfo) {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
 	}
@@ -40,9 +40,9 @@ func (cmd *command) info(info *modules.Info) {
 	cmd.Output <- text
 }
 
-// sign 处理签到命令
-func (cmd *command) sign(user models.FmUser) {
-	ret, err := modules.Sign(cmd.Room.ID, user.UserID, user.Username)
+// checkin 处理签到命令
+func (cmd *command) checkin(user models.FmUser) {
+	ret, err := modules.Checkin(cmd.Room.ID, user.UserID, user.Username)
 	if err != nil {
 		zap.S().Errorf("签到出错了：%s", err)
 		return
@@ -50,10 +50,10 @@ func (cmd *command) sign(user models.FmUser) {
 	cmd.Output <- fmt.Sprintf("@%s %s", user.Username, ret)
 }
 
-// rank 处理排行榜命令
-func (cmd *command) rank() {
+// checkinRank 处理排行榜命令
+func (cmd *command) checkinRank() {
 	var text string
-	if rank := modules.Rank(cmd.Room.ID); rank != "" {
+	if rank := modules.CheckinRank(cmd.Room.ID); rank != "" {
 		text = fmt.Sprintf("每日签到榜单：%s", rank)
 	} else {
 		text = models.TplRankEmpty
@@ -61,8 +61,8 @@ func (cmd *command) rank() {
 	cmd.Output <- text
 }
 
-// star 生成星座运势
-func (cmd *command) star(str string) {
+// horoscopes 生成星座运势
+func (cmd *command) horoscopes(str string) {
 	if utf8.RuneCountInString(str) == 2 {
 		str += "座"
 	}
@@ -94,17 +94,19 @@ func (cmd *command) star(str string) {
 	}
 }
 
-// bait 处理演员模式启停命令
-func (cmd *command) bait() {
+// baitSwitch 处理演员模式启停命令
+func (cmd *command) baitSwitch() {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
 	}
 	room := cmd.Room
 	if room.Bait && room.Timer != nil {
+		// 演员模式已经启动了，执行关闭
 		cmd.Output <- models.TplBaitStop
 		room.Bait = false
 		room.Timer.Stop()
 	} else {
+		// 演员模式还未启动，执行启动
 		room.Bait = true
 		if room.RainbowMaxInterval <= 0 {
 			room.RainbowMaxInterval = 10
@@ -213,7 +215,7 @@ func (cmd *command) piaStop() {
 }
 
 // userRole 判断当前用户的角色
-func userRole(info *modules.Info, userID int) int {
+func userRole(info *models.FmInfo, userID int) int {
 	switch userID {
 	case config.Admin():
 		return models.RoleSuper // 机器人管理员

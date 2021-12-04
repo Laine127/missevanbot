@@ -1,53 +1,55 @@
 package models
 
-// FmTextMessage 直播间Websocket消息主体
-type FmTextMessage struct {
-	Type       string       `json:"type"`
-	Event      string       `json:"event"`
-	RoomID     int          `json:"room_id"`
-	Message    string       `json:"message"`
-	MessageID  string       `json:"msg_id"`
-	User       FmUser       `json:"user"`
-	Queue      []FmQueue    `json:"queue"`
-	Gift       FmGift       `json:"gift"`
-	Statistics FmStatistics `json:"statistics"`
-}
+type (
+	// FmTextMessage 直播间Websocket消息体
+	FmTextMessage struct {
+		Type       string       `json:"type"`
+		Event      string       `json:"event"`
+		RoomID     int          `json:"room_id"`
+		Message    string       `json:"message"`
+		MessageID  string       `json:"msg_id"`
+		User       FmUser       `json:"user"`
+		Queue      []FmQueue    `json:"queue"`
+		Gift       FmGift       `json:"gift"`
+		Statistics FmStatistics `json:"statistics"`
+	}
 
-// FmUser 直播间Websocket用户消息体
-type FmUser struct {
-	IconUrl string `json:"iconurl"`
-	Titles  []struct {
-		Type  string `json:"type"`
-		Name  string `json:"name"`
-		Level int    `json:"level"`
-	} `json:"titles"`
-	UserID   int    `json:"user_id"`
-	Username string `json:"username"`
-}
+	// FmUser 直播间Websocket用户消息体
+	FmUser struct {
+		IconUrl string `json:"iconurl"`
+		Titles  []struct {
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			Level int    `json:"level"`
+		} `json:"titles"`
+		UserID   int    `json:"user_id"`
+		Username string `json:"username"`
+	}
 
-// FmQueue 直播间Websocket观众队列消息体
-type FmQueue struct {
-	Contribution int    `json:"contribution"`
-	IconUrl      string `json:"iconurl"`
-	UserId       int    `json:"user_id"`
-	Username     string `json:"username"`
-}
+	// FmQueue 直播间Websocket观众队列消息体
+	FmQueue struct {
+		Contribution int    `json:"contribution"`
+		IconUrl      string `json:"iconurl"`
+		UserId       int    `json:"user_id"`
+		Username     string `json:"username"`
+	}
 
-// FmGift 直播间Websocket礼物消息体
-type FmGift struct {
-	GiftID int    `json:"gift_id"`
-	Name   string `json:"name"`
-	Price  int    `json:"price"`
-	Number int    `json:"num"`
-}
+	// FmGift 直播间Websocket礼物消息体
+	FmGift struct {
+		GiftID int    `json:"gift_id"`
+		Name   string `json:"name"`
+		Price  int    `json:"price"`
+		Number int    `json:"num"`
+	}
 
-// FmStatistics 直播间Websocket静态信息消息体
-type FmStatistics struct {
-	Accumulation int `json:"accumulation"`
-	Online       int `json:"online"`
-	Vip          int `json:"vip"`
-	Score        int `json:"score"`
-}
+	// FmStatistics 直播间Websocket静态信息消息体
+	FmStatistics struct {
+		Accumulation int `json:"accumulation"`
+		Online       int `json:"online"`
+		Vip          int `json:"vip"`
+		Score        int `json:"score"`
+	}
+)
 
 // Event 定义事件
 const (

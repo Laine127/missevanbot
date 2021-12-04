@@ -39,7 +39,7 @@ type Fortune struct {
 }
 
 // Zodiac 获取星座运势
-func Zodiac(star string, level int) (fort *Fortune, err error) {
+func Zodiac(star string, level int) (fort Fortune, err error) {
 	_url := fmt.Sprintf("https://datamuse.guokr.com/api/front/common/muse/constellation/v1/fortune?constellation=%s&level=%d", star, level)
 	resp, err := http.Get(_url)
 	if err != nil {
@@ -52,7 +52,10 @@ func Zodiac(star string, level int) (fort *Fortune, err error) {
 		return
 	}
 
-	fort = new(Fortune)
-	err = json.Unmarshal(body, fort)
-	return
+	f := new(Fortune)
+	if err = json.Unmarshal(body, f); err != nil {
+		return
+	}
+
+	return *f, nil
 }

@@ -121,7 +121,7 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 	cmd := &command{
 		Room:   store,
 		User:   user,
-		Role:   userRole(info, user.UserID), // 获取当前发信用户的角色
+		Role:   userRole(&info, user.UserID), // 获取当前发信用户的角色
 		Output: outputMsg,
 	}
 
@@ -132,18 +132,18 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 
 	switch cmdType {
 	case models.CmdInfo:
-		cmd.info(info)
+		cmd.info(&info)
 	case models.CmdSign:
-		cmd.sign(textMsg.User)
+		cmd.checkin(textMsg.User)
 	case models.CmdRank:
-		cmd.rank()
+		cmd.checkinRank()
 	case models.CmdStar:
 		// check args
 		if len(arr) == 2 {
-			cmd.star(arr[1])
+			cmd.horoscopes(arr[1])
 		}
 	case models.CmdBait:
-		cmd.bait()
+		cmd.baitSwitch()
 	case models.CmdWeather:
 		// check args
 		if len(arr) == 2 {

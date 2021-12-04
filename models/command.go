@@ -40,7 +40,9 @@ const HelpText = `命令帮助：
 本子 ID -- 获取戏文，开启pia戏模式
 n -- 下一条内容
 n 数字 -- 多条内容
-结束 -- 结束pia戏模式`
+结束 -- 结束pia戏模式
+
+Author: Secriy`
 
 // _cmdMap 帮助映射
 var _cmdMap = map[string]int{

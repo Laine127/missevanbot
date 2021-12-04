@@ -42,9 +42,11 @@ const (
 const TplDefaultPoem = "孜孜不倦，不易乎世。"
 
 var _lucks = [...]string{
-	"大凶", "大吉", "不详",
-	"吉兆", "无事", "隆运",
-	"破财", "稳步", "跌宕",
+	"连理之木", "景星庆云", "有凤来仪",
+	"避凶趋吉", "逢凶化吉", "时来运转",
+	"大凶", "不祥", "趋凶", "平平",
+	"大吉", "兆祥", "趋吉", "平平",
+	"稳步", "跌宕", "生财", "破财",
 	"未可知", "不可说", "玄之又玄",
 	"怎么说呢还不错", "怎么说呢就很好", "怎么说呢一般般",
 	"我的天呐运气爆棚", "我的天呐不是很好", "我的天呐蛮不错的",
@@ -64,12 +66,12 @@ var _chats = [...]string{
 // LuckString 返回运势字符串
 func LuckString() string {
 	result := "今日运势："
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return result + _lucks[r.Intn(len(_lucks))]
+	rand.Seed(time.Now().UnixNano())
+	return result + _lucks[rand.Intn(len(_lucks))]
 }
 
 // ChatString 返回聊天字符串
 func ChatString() string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return _chats[r.Intn(len(_chats))]
+	rand.Seed(time.Now().UnixNano())
+	return _chats[rand.Intn(len(_chats))]
 }

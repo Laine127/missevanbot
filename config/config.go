@@ -2,15 +2,19 @@ package config
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 
 	"github.com/spf13/viper"
 )
 
 var botConfig BotConfig
 
+var cookie string
+
 type BotConfig struct {
 	Name   string        `mapstructure:"name"`   // 机器人的昵称
-	Cookie string        `mapstructure:"cookie"` // 文件的存储位置
+	Cookie string        `mapstructure:"cookie"` // Cookie文件的存储位置
 	Admin  int           `mapstructure:"admin"`  // 机器人控制人
 	Log    *LogConfig    `mapstructure:"log"`    // 日志配置
 	Redis  *RedisConfig  `mapstructure:"redis"`  // Redis服务配置
@@ -44,6 +48,31 @@ type RoomConfig struct {
 	Watch              bool   `mapstructure:"watch"`                // 是否监控开播/下播
 }
 
+// Config return copy of the configurations.
+func Config() BotConfig {
+	return botConfig
+}
+
+// Push return copy of the push configurations.
+func Push() PushConfig {
+	return *botConfig.Push
+}
+
+// Cookie return the cookie in string format.
+func Cookie() string {
+	return cookie
+}
+
+// Name return name of the bot.
+func Name() string {
+	return botConfig.Name
+}
+
+// Admin return ID of the bot admin.
+func Admin() int {
+	return botConfig.Admin
+}
+
 // LoadConfig is used to load configuration file
 func LoadConfig() {
 	conf := new(BotConfig)
@@ -59,29 +88,19 @@ func LoadConfig() {
 		panic(fmt.Errorf("fatal error unmarshal configration file: %s", err))
 	}
 	botConfig = *conf
+
+	initCookie()
 }
 
-// Config return copy of the configurations.
-func Config() BotConfig {
-	return botConfig
-}
-
-// Push return copy of the push configurations.
-func Push() PushConfig {
-	return *botConfig.Push
-}
-
-// Cookie return path string of the cookie file.
-func Cookie() string {
-	return botConfig.Cookie
-}
-
-// Name return name of the bot.
-func Name() string {
-	return botConfig.Name
-}
-
-// Admin return ID of the bot admin.
-func Admin() int {
-	return botConfig.Admin
+// initCookie 读取当前目录下的 Cookie 文件，存储到全局变量
+func initCookie() {
+	file, err := os.Open(botConfig.Cookie)
+	if err != nil {
+		panic(fmt.Errorf("read cookie file failed: %s", err))
+	}
+	content, err := ioutil.ReadAll(file)
+	if err != nil {
+		panic(fmt.Errorf("read cookie file failed: %s", err))
+	}
+	cookie = string(content)
 }
