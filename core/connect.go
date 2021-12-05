@@ -69,6 +69,9 @@ func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
 				zap.S().Errorf("%s 解析失败：%s", string(msgData), err)
 				continue
 			}
+			if textMsg.User.UserID == modules.UserID() {
+				continue // 过滤掉机器人自己的消息
+			}
 			inputMsg <- textMsg
 		case websocket.BinaryMessage:
 		case websocket.CloseMessage:

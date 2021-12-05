@@ -3,30 +3,73 @@ package modules
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
 	"missevan-fm/models"
 )
 
+var bot models.FmUser // 存储机器人用户名
+
+// Name return name of the bot.
+func Name() string {
+	return bot.Username
+}
+
+// UserID return UID of the bot.
+func UserID() int {
+	return bot.UserID
+}
+
+// InitBot initialize information of the bot.
+func InitBot() {
+	// get name of the bot.
+	user, err := UserInfo()
+	if err != nil {
+		panic(fmt.Errorf("got bot name failed: %s", err))
+	}
+	bot = user
+	log.Println(user)
+}
+
+// UserInfo 获取机器人信息
+func UserInfo() (user models.FmUser, err error) {
+	_url := "https://fm.missevan.com/api/user/info"
+
+	body, err := GetRequest(_url, nil)
+	if err != nil {
+		return
+	}
+
+	info := struct {
+		Code int `json:"code"`
+		Info struct {
+			User models.FmUser `json:"user"`
+		} `json:"info"`
+	}{}
+
+	err = json.Unmarshal(body, &info)
+	user = info.Info.User
+	return
+}
+
 // RoomInfo 获取直播间信息
 func RoomInfo(roomID int) (info models.FmInfo, err error) {
 	_url := fmt.Sprintf("https://fm.missevan.com/api/v2/live/%d", roomID)
-	resp, err := http.Get(_url)
+
+	body, err := GetRequest(_url, nil)
 	if err != nil {
 		return
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
+
+	room := models.FmRoom{}
+	if err = json.Unmarshal(body, &room); err != nil {
 		return
 	}
-	res := models.FmRoom{}
-	if err = json.Unmarshal(body, &res); err != nil {
-		return
-	}
-	return res.Info, nil
+
+	info = room.Info
+	return
 }
 
 // ConnCookie 获取初始连接的 Cookie 字符串

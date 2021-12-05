@@ -8,12 +8,12 @@ import (
 	"github.com/spf13/viper"
 )
 
-var botConfig BotConfig
-
-var cookie string
+var (
+	botConfig BotConfig
+	cookie    string
+)
 
 type BotConfig struct {
-	Name   string        `mapstructure:"name"`   // 机器人的昵称
 	Cookie string        `mapstructure:"cookie"` // Cookie文件的存储位置
 	Admin  int           `mapstructure:"admin"`  // 机器人控制人
 	Log    *LogConfig    `mapstructure:"log"`    // 日志配置
@@ -61,11 +61,6 @@ func Push() PushConfig {
 // Cookie return the cookie in string format.
 func Cookie() string {
 	return cookie
-}
-
-// Name return name of the bot.
-func Name() string {
-	return botConfig.Name
 }
 
 // Admin return ID of the bot admin.

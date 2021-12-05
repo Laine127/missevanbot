@@ -108,6 +108,8 @@ func HandleMessage(outputMsg chan<- string, room *models.Room, textMsg models.Fm
 			handleChat(outputMsg, room, textMsg)
 			return
 		}
+		// 剩余的文本发送到关键词处理函数
+		handleKeyword(outputMsg, room, textMsg)
 	}
 }
 
@@ -202,6 +204,13 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 // handleChat 处理聊天请求
 func handleChat(outputMsg chan<- string, store *models.Room, textMsg models.FmTextMessage) {
 	outputMsg <- Chat(textMsg.User.Username)
+}
+
+// handleKeyword 处理关键词
+func handleKeyword(outputMsg chan<- string, store *models.Room, textMsg models.FmTextMessage) {
+	if strings.Contains(textMsg.Message, "emo") {
+		keyEmotional(outputMsg, textMsg.User)
+	}
 }
 
 // handleGame 处理游戏请求

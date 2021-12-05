@@ -61,10 +61,11 @@ type (
 
 	// fmStatistics 直播间统计信息消息体
 	fmStatistics struct {
-		Accumulation int `json:"accumulation"` // 累计人数
-		Vip          int `json:"vip"`          // 贵宾数量
-		Score        int `json:"score"`        // 分数
-		Online       int `json:"online"`       // 在线
+		Accumulation   int `json:"accumulation"`    // 累计人数
+		Vip            int `json:"vip"`             // 贵宾数量
+		Score          int `json:"score"`           // 分数
+		Online         int `json:"online"`          // 在线
+		AttentionCount int `json:"attention_count"` // 关注数
 	}
 
 	// fmStatus 直播间状态消息体

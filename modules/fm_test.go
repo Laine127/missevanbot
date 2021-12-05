@@ -8,7 +8,7 @@ import (
 )
 
 func TestCookie(t *testing.T) {
-	cookie, err := Cookie()
+	cookie, err := ConnCookie()
 	log.Println(err)
 	log.Println(cookie)
 }

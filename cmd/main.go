@@ -7,6 +7,7 @@ import (
 	"missevan-fm/config"
 	"missevan-fm/core"
 	"missevan-fm/models"
+	"missevan-fm/modules"
 	"missevan-fm/utils/logger"
 )
 
@@ -25,6 +26,9 @@ func main() {
 		log.Println("init logger failed: ", err)
 		return
 	}
+
+	// init the bot information.
+	modules.InitBot()
 
 	for _, roomConf := range conf.Rooms {
 		inputMsg := make(chan models.FmTextMessage, 1)

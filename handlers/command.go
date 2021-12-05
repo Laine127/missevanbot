@@ -27,17 +27,19 @@ func (cmd *command) roomInfo(info *models.FmInfo) {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
 	}
-	text := fmt.Sprintf(models.TplRoomInfo,
+	text := strings.Builder{}
+	text.WriteString(fmt.Sprintf(models.TplRoomInfo,
 		info.Room.Name,
 		info.Creator.Username,
+		info.Room.Statistics.AttentionCount,
 		info.Room.Status.Channel.Platform,
 		cmd.Room.Online,
 		info.Room.Statistics.Accumulation,
-	)
+	))
 	for _, v := range info.Room.Members.Admin {
-		text += fmt.Sprintf("\n--- %s", v.Username)
+		text.WriteString(fmt.Sprintf("\n--- %s", v.Username))
 	}
-	cmd.Output <- text
+	cmd.Output <- text.String()
 }
 
 // checkin 处理签到命令

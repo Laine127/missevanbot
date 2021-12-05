@@ -5,20 +5,21 @@ import (
 	"time"
 )
 
-// Handler related
+// handlers related
 const (
 	TplBotStart    = "芝士机器人在线啦，可以在直播间输入 “帮助” 或者 @我 来获取支持哦～" // 机器人启动
-	TplWelcome     = "欢迎 @%s 进入直播间~"                        // 欢迎用户
-	TplWelcomeAnon = "欢迎新同学进入直播间~"                          // 欢迎匿名用户
-	TplThankFollow = "感谢 @%s 的关注~"                          // 感谢关注
+	TplWelcome     = "欢迎 @%s 同学进入直播间~"                      // 欢迎用户
+	TplWelcomeAnon = "欢迎新来的小可爱们进入直播间呀~"                     // 欢迎匿名用户
+	TplThankFollow = "谢谢 @%s 的关注呀~"                         // 感谢关注
 	TplThankGift   = "感谢 @%s 赠送的%d个%s~"                     // 感谢礼物
 )
 
-// Command related
+// commands related
 const (
 	TplRoomInfo = `当前直播间信息：
 - 房间名：%s
 - 主播：%s
+- 粉丝数：%d
 - 直播平台：%s
 - 当前在线：%d
 - 累计人数：%d
@@ -30,12 +31,12 @@ const (
 	TplMusicDone = "完成了一首歌曲~"
 )
 
-// Modules related
+// modules related
 const (
 	TplSignDuplicate = "已经签到过啦\n\n您已经连续签到%s天\n\n%s"
 	TplSignSuccess   = "签到成功啦，已经连续签到%d天~\n\n%s\n\n%s"
 	TplStarFortune   = "%s今日幸运值：%s\n\n%s"
-	TplPiaStart      = "pia戏模式启动成功啦～\n本文角色：%s\n请注意，如果输出文本时没有出现结果，很可能是存在违禁词，请使用重定位命令定位到需要的位置，再通过 t 指令进行单条输出~"
+	TplPiaStart      = "pia戏模式启动成功啦～\n本文角色：%s\n请注意，如果输出文本时没有出现结果，很可能是存在违禁词，请使用重定位命令 r 定位到需要的位置，再通过 s 指令进行单条输出~"
 	TplPiaEmpty      = "pia戏模式还没有启动哦，输入“帮助”来获取帮助吧~"
 	TplPiaDone       = "本篇文章已经结束啦～"
 	TplPiaOutBounds  = "选择的位置超过范围啦"
@@ -45,6 +46,7 @@ const (
 
 const TplDefaultPoem = "孜孜不倦，不易乎世。"
 
+// _lucks 运势词汇池
 var _lucks = [...]string{
 	"连理之木", "景星庆云", "有凤来仪",
 	"避凶趋吉", "逢凶化吉", "时来运转",
@@ -59,12 +61,23 @@ var _lucks = [...]string{
 	"还是不要知道为好", "还是少打听比较好", "还是不让你知道比较好",
 }
 
+// _chats 对话语句池
 var _chats = [...]string{
 	"你好呀～",
 	"QAQ",
 	"有什么事情嘛～",
 	"不好意思呀我暂时没办法理你～",
 	"抱歉现在有点忙～",
+}
+
+// _comforts 宽慰语句池
+var _comforts = [...]string{
+	"不可以emo哦~",
+	"怎么啦，为什么要说emo呢",
+	"可以为了我不要伤心嘛",
+	"有什么难过的事情可以告诉主播呀",
+	"不开心的事就忘光光吧",
+	"我不知道怎么安慰你才好，但是生活总得继续",
 }
 
 // LuckString 返回运势字符串
@@ -78,4 +91,10 @@ func LuckString() string {
 func ChatString() string {
 	rand.Seed(time.Now().UnixNano())
 	return _chats[rand.Intn(len(_chats))]
+}
+
+// ComfortString 返回宽慰语句字符串
+func ComfortString() string {
+	rand.Seed(time.Now().UnixNano())
+	return _comforts[rand.Intn(len(_comforts))]
 }
