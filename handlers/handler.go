@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"go.uber.org/zap"
@@ -22,8 +21,7 @@ func HandleRoom(outputMsg chan<- string, room *models.Room, textMsg models.FmTex
 
 	switch textMsg.Event {
 	case models.EventStatistic:
-		// 更新在线人数
-		room.Online = textMsg.Statistics.Online
+		room.Online = textMsg.Statistics.Online // 更新在线人数
 	case models.EventOpen:
 		outputMsg <- models.TplBotStart
 		// 通知推送
@@ -62,7 +60,7 @@ func HandleMember(outputMsg chan<- string, store *models.Room, textMsg models.Fm
 				text := fmt.Sprintf(models.TplWelcome, username)
 				if store.Pinyin {
 					// 如果注音功能开启了，发送注音消息
-					text += fmt.Sprintf("\n注音：[%s]", utils.Pinyin(username))
+					text += fmt.Sprintf("\n注音：[ %s ]", utils.Pinyin(username))
 				}
 				outputMsg <- text
 			} else if store.Count > 1 && store.Count%2 == 0 {
@@ -104,7 +102,7 @@ func HandleMessage(outputMsg chan<- string, room *models.Room, textMsg models.Fm
 			return
 		}
 		// 判断是否是沟通请求，进行处理
-		if first == fmt.Sprintf("@%s", config.Name()) {
+		if first == fmt.Sprintf("@%s", modules.Name()) {
 			handleChat(outputMsg, room, textMsg)
 			return
 		}
@@ -123,81 +121,28 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 	}
 
 	user := &textMsg.User // 当前发信的用户
+
+	args := strings.Fields(strings.TrimSpace(textMsg.Message))
+	if len(args) == 0 {
+		return
+	}
+
 	cmd := &command{
+		Args:   args[1:],
 		Room:   store,
+		Info:   &info,
 		User:   user,
-		Role:   userRole(&info, user.UserID), // 获取当前发信用户的角色
+		Role:   role(&info, user.UserID), // 获取当前发信用户的角色
 		Output: outputMsg,
 	}
 
-	arr := strings.Fields(strings.TrimSpace(textMsg.Message))
-
 	switch cmdType {
-	case models.CmdRoomInfo:
-		cmd.roomInfo(&info)
-	case models.CmdCheckin:
-		cmd.checkin(textMsg.User)
-	case models.CmdCheckinRank:
-		cmd.checkinRank()
-	case models.CmdHoroscope:
-		// check args
-		if len(arr) == 2 {
-			cmd.horoscopes(arr[1])
-		}
-	case models.CmdBaitSwitch:
-		cmd.baitSwitch()
-	case models.CmdWeather:
-		// check args
-		if len(arr) == 2 {
-			cmd.weather(arr[1])
-		}
-	case models.CmdMusicAdd:
-		// check args
-		if len(arr) == 2 {
-			cmd.musicAdd(arr[1])
-		}
-	case models.CmdMusicAll:
-		cmd.musicAll()
-	case models.CmdMusicPop:
-		cmd.musicPop()
-	case models.CmdPiaStart:
-		// check args
-		if len(arr) == 2 {
-			id, err := strconv.Atoi(arr[1])
-			if err != nil {
-				return
-			}
-			cmd.piaStart(id)
-		}
-	case models.CmdPiaNext:
-		if len(arr) == 1 {
-			cmd.piaNext(1, false)
-		}
-		if len(arr) == 2 {
-			dur, err := strconv.Atoi(arr[1])
-			if err != nil {
-				return
-			}
-			cmd.piaNext(dur, false)
-		}
-	case models.CmdPiaNextSafe:
-		cmd.piaNextSafe()
-	case models.CmdPiaRelocate:
-		if len(arr) == 2 {
-			idx, err := strconv.Atoi(arr[1])
-			if err != nil {
-				return
-			}
-			cmd.piaRelocate(idx)
-		}
-	case models.CmdPiaStop:
-		cmd.piaStop()
 	case models.CmdLove:
 		outputMsg <- "❤️~"
 	case models.CmdHelper:
-		fallthrough
-	default:
 		outputMsg <- models.HelpText
+	default:
+		_cmdMap[cmdType](cmd)
 	}
 }
 
@@ -216,4 +161,22 @@ func handleKeyword(outputMsg chan<- string, store *models.Room, textMsg models.F
 // handleGame 处理游戏请求
 func handleGame(outputMsg chan<- string, store *models.Room, textMsg *models.FmTextMessage) {
 
+}
+
+// role 判断当前用户的角色
+func role(info *models.FmInfo, userID int) int {
+	switch userID {
+	case config.Admin():
+		return models.RoleSuper // 机器人管理员
+	case info.Creator.UserID:
+		return models.RoleCreator // 主播
+	default:
+		// 判断是否是房管
+		for _, v := range info.Room.Members.Admin {
+			if v.UserID == userID {
+				return models.RoleAdmin
+			}
+		}
+		return models.RoleMember // 普通用户
+	}
 }

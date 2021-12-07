@@ -22,7 +22,7 @@ func main() {
 	config.InitRDBClient(conf.Redis)
 
 	// init the logger
-	if err := logger.Init(conf.Log); err != nil {
+	if err := logger.Init(conf.Level); err != nil {
 		log.Println("init logger failed: ", err)
 		return
 	}

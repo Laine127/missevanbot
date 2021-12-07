@@ -1,27 +1,25 @@
 package logger
 
 import (
+	"fmt"
 	"os"
-
-	"github.com/natefinch/lumberjack"
-	"missevan-fm/config"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-func Init(conf *config.LogConfig) (err error) {
+func Init(lvl string) (err error) {
 	level := new(zapcore.Level) // set level
-	err = level.UnmarshalText([]byte(conf.Level))
+	err = level.UnmarshalText([]byte(lvl))
 	if err != nil {
 		return
 	}
 
-	writeSyncer := getLogWriter(conf)
-	defaultEncoder := getLogEncoder()
+	writeSyncer := logWriter()
+	defaultEncoder := logEncoder()
 
 	var core zapcore.Core
-	if conf.Level == "debug" {
+	if lvl == "debug" {
 		// use both of two zapcore in dev mode
 		consoleEncoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
 		core = zapcore.NewTee(
@@ -37,7 +35,7 @@ func Init(conf *config.LogConfig) (err error) {
 	return
 }
 
-func getLogEncoder() zapcore.Encoder {
+func logEncoder() zapcore.Encoder {
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05.0000")
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
@@ -46,12 +44,10 @@ func getLogEncoder() zapcore.Encoder {
 	return zapcore.NewJSONEncoder(encoderConfig)
 }
 
-func getLogWriter(conf *config.LogConfig) zapcore.WriteSyncer {
-	lumberJackLogger := &lumberjack.Logger{
-		Filename:   conf.File,
-		MaxSize:    conf.MaxSize,
-		MaxBackups: conf.MaxBackups,
-		MaxAge:     conf.MaxAge,
+func logWriter() zapcore.WriteSyncer {
+	file, err := os.Create("missevan.log")
+	if err != nil {
+		panic(fmt.Errorf("create log file failed: %s", err))
 	}
-	return zapcore.AddSync(lumberJackLogger)
+	return zapcore.AddSync(file)
 }

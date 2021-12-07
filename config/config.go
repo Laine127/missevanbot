@@ -16,18 +16,10 @@ var (
 type BotConfig struct {
 	Cookie string        `mapstructure:"cookie"` // Cookie文件的存储位置
 	Admin  int           `mapstructure:"admin"`  // 机器人控制人
-	Log    *LogConfig    `mapstructure:"log"`    // 日志配置
+	Level  string        `mapstructure:"level"`  // 日志等级
 	Redis  *RedisConfig  `mapstructure:"redis"`  // Redis服务配置
 	Push   *PushConfig   `mapstructure:"push"`   // 消息推送配置
 	Rooms  []*RoomConfig `mapstructure:"rooms"`  // 启用的房间列表配置
-}
-
-type LogConfig struct {
-	Level      string `mapstructure:"level"`
-	File       string `mapstructure:"file"`
-	MaxSize    int    `mapstructure:"max_size"`
-	MaxAge     int    `mapstructure:"max_age"`
-	MaxBackups int    `mapstructure:"max_backups"`
 }
 
 type RedisConfig struct {

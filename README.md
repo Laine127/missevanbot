@@ -25,14 +25,8 @@
 编译本项目，在可执行文件同目录下创建 _config.yaml_ 文件，填入配置信息，执行可执行文件即可。
 
 ```yaml
-name: "芝士Bot" # Bot 昵称，必须与帐号昵称完全相同
 cookie: ".cookie" # 存储 Cookie 的文件路径 
-log:
-  level: "info"
-  file: "./logs/missevan.log"
-  max_size: 200
-  max_age: 30
-  max_backups: 7
+level: "info" # 日志输出等级
 redis: # Redis 相关配置
   host: ""
   passwd:
