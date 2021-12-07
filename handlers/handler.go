@@ -8,6 +8,7 @@ import (
 	"missevan-fm/config"
 	"missevan-fm/models"
 	"missevan-fm/modules"
+	"missevan-fm/modules/game"
 	"missevan-fm/utils"
 )
 
@@ -106,6 +107,10 @@ func HandleMessage(outputMsg chan<- string, room *models.Room, textMsg models.Fm
 			handleChat(outputMsg, room, textMsg)
 			return
 		}
+		// 判断是否为游戏请求，进行处理
+		if gameType := game.Command(first); gameType >= 0 || room.GameStore.Game != game.Null {
+			handleGame(outputMsg, room, textMsg)
+		}
 		// 剩余的文本发送到关键词处理函数
 		handleKeyword(outputMsg, room, textMsg)
 	}
@@ -121,12 +126,7 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 	}
 
 	user := &textMsg.User // 当前发信的用户
-
 	args := strings.Fields(strings.TrimSpace(textMsg.Message))
-	if len(args) == 0 {
-		return
-	}
-
 	cmd := &command{
 		Args:   args[1:],
 		Room:   store,
@@ -159,8 +159,40 @@ func handleKeyword(outputMsg chan<- string, store *models.Room, textMsg models.F
 }
 
 // handleGame 处理游戏请求
-func handleGame(outputMsg chan<- string, store *models.Room, textMsg *models.FmTextMessage) {
+func handleGame(outputMsg chan<- string, store *models.Room, textMsg models.FmTextMessage) {
+	info, err := modules.RoomInfo(store.ID)
+	if err != nil {
+		zap.S().Error("获取直播间信息错误：", err)
+		return
+	}
 
+	user := &textMsg.User // 当前发信的用户
+	args := strings.Fields(strings.TrimSpace(textMsg.Message))
+	cmd := &command{
+		Args:   args[1:],
+		Room:   store,
+		Info:   &info,
+		User:   user,
+		Role:   role(&info, user.UserID), // 获取当前发信用户的角色
+		Output: outputMsg,
+	}
+
+	switch gameType := game.Command(args[0]); gameType {
+	case game.CmdHelper:
+		outputMsg <- game.HelpText
+	case game.CmdNumberBomb:
+		gameCreate(cmd, gameType, textMsg)
+	case game.CmdJoin:
+		gameJoin(cmd, textMsg)
+	case game.CmdStart:
+		gameStart(cmd, textMsg)
+	case game.CmdStop:
+		gameStop(cmd, textMsg)
+	case game.CmdPlayers:
+		gamePlayers(cmd, textMsg)
+	default:
+		gameAction(cmd, textMsg)
+	}
 }
 
 // role 判断当前用户的角色

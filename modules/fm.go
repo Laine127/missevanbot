@@ -3,7 +3,6 @@ package modules
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -30,7 +29,6 @@ func InitBot() {
 		panic(fmt.Errorf("got bot name failed: %s", err))
 	}
 	bot = user
-	log.Println(user)
 }
 
 // UserInfo 获取机器人信息

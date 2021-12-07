@@ -8,6 +8,7 @@ import (
 	"missevan-fm/core"
 	"missevan-fm/models"
 	"missevan-fm/modules"
+	"missevan-fm/modules/game"
 	"missevan-fm/utils/logger"
 )
 
@@ -36,6 +37,7 @@ func main() {
 
 		room := &models.Room{
 			RoomConfig: roomConf,
+			GameStore:  new(game.Store),
 		}
 
 		wg.Add(3)

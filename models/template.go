@@ -44,6 +44,19 @@ const (
 	TplPiaStop       = "pia戏模式结束成功啦～"
 )
 
+const (
+	TplGameExists       = "当前游戏未结束，请先结束"
+	TplGameCreate       = "游戏创建成功啦~"
+	TplGameJoin         = "玩家 @%s 加入成功~"
+	TplGameStart        = "游戏开始啦~"
+	TplGameNext         = "请玩家 @%s 进行操作"
+	TplGameStop         = "终止游戏成功啦~"
+	TplGameNotEnough    = "人数不足，无法开始游戏~"
+	TplGameInputIllegal = "拜托，输入正确的内容好嘛"
+	TplGameBomb         = "@%s 踩到了炸弹~"
+	TplGameBombRange    = "炸弹在 [%d, %d] 区间内（包含边界）哦~"
+)
+
 const TplDefaultPoem = "孜孜不倦，不易乎世。"
 
 // _lucks 运势词汇池

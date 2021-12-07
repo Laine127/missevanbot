@@ -10,8 +10,7 @@ import (
 
 func Init(lvl string) (err error) {
 	level := new(zapcore.Level) // set level
-	err = level.UnmarshalText([]byte(lvl))
-	if err != nil {
+	if err = level.UnmarshalText([]byte(lvl)); err != nil {
 		return
 	}
 
