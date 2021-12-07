@@ -61,6 +61,12 @@ type Store struct {
 }
 
 // AddPlayer 添加玩家
-func (s *Store) AddPlayer(player string) {
+func (s *Store) AddPlayer(player string) bool {
+	for _, v := range s.Players {
+		if v == player {
+			return false
+		}
+	}
 	s.Players = append(s.Players, player)
+	return true
 }

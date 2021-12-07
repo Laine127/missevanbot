@@ -68,7 +68,9 @@ go build
 - handlers：处理房间各类消息的模块
     - chat.go：处理聊天信息
     - command.go：命令消息处理
+    - game.go：游戏消息处理
     - message.go：消息处理入口
+    - keyword.go：关键词消息处理
 - models：结构体模型
     - command.go：命令相关
     - message.go：直播间消息相关
@@ -77,8 +79,9 @@ go build
 - modules：各独立模块
     - game：游戏模块
     - thirdparty：第三方组件
-        - api：第三方接口
-        - push：消息推送
+        - api.go：第三方接口
+        - push.go：消息推送
+        - zodiac.go：星座运势
     - checkin.go：签到模块
     - fm.go：猫耳 FM 相关模块
     - http.go：HTTP 请求模块
@@ -87,4 +90,5 @@ go build
     - push.go：消息推送模块
 - utils：辅助工具
     - logger：日志组件
+    - pinyin.go：拼音处理
     - uuid.go：消息 ID 生成

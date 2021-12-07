@@ -44,7 +44,10 @@ func gameJoin(cmd *command, textMsg models.FmTextMessage) {
 		return
 	}
 
-	store.AddPlayer(textMsg.User.Username)
+	if !store.AddPlayer(textMsg.User.Username) {
+		cmd.Output <- models.TplGameJoinDup
+		return
+	}
 
 	if len(store.Players) >= 2 {
 		store.State = game.StateReady
@@ -71,14 +74,16 @@ func gameStart(cmd *command, textMsg models.FmTextMessage) {
 	store.State = game.StateRunning // state transfer
 	store.Player = 0                // 设置第一个玩家
 
+	var min, max int
 	switch store.Game {
 	case game.NumberBomb:
-		game.BombGenerate(store.Value, len(store.Players))
+		min, max = game.BombGenerate(store.Value, len(store.Players))
 	default:
 		return
 	}
 
 	cmd.Output <- models.TplGameStart
+	cmd.Output <- fmt.Sprintf(models.TplGameBombRange, min, max)
 	cmd.Output <- fmt.Sprintf(models.TplGameNext, store.Players[0])
 }
 

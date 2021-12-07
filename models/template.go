@@ -48,6 +48,7 @@ const (
 	TplGameExists       = "当前游戏未结束，请先结束"
 	TplGameCreate       = "游戏创建成功啦~"
 	TplGameJoin         = "玩家 @%s 加入成功~"
+	TplGameJoinDup      = "加入过的玩家不要再加入啦"
 	TplGameStart        = "游戏开始啦~"
 	TplGameNext         = "请玩家 @%s 进行操作"
 	TplGameStop         = "终止游戏成功啦~"

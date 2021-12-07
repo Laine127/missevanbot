@@ -6,7 +6,7 @@ import (
 )
 
 // BombGenerate 返回一个值为 1 - max 的随机数
-func BombGenerate(m map[string]int, players int) {
+func BombGenerate(m map[string]int, players int) (int, int) {
 	rand.Seed(time.Now().UnixNano())
 	max := players * 30
 	bomb := rand.Intn(max) + 1
@@ -14,6 +14,8 @@ func BombGenerate(m map[string]int, players int) {
 	m["bomb_min"] = 1
 	m["bomb_num"] = bomb
 	m["bomb_max"] = max
+
+	return 1, max
 }
 
 // BombGuess 猜数字
