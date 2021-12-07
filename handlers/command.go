@@ -24,52 +24,6 @@ type command struct {
 	Output chan<- string
 }
 
-// piaNextN 进行发送多条戏本文本的处理
-func (cmd *command) piaNextN(dur int, safe bool) {
-	if cmd.Role > models.RoleAdmin {
-		return // 权限不足
-	}
-	if cmd.Room.PiaIndex == 0 || cmd.Room.PiaList == nil {
-		// 没有启动
-		cmd.Output <- models.TplPiaEmpty
-		return
-	}
-
-	length := len(cmd.Room.PiaList)
-	start := cmd.Room.PiaIndex - 1
-	stop := start + dur
-	if stop > length {
-		stop = length // 索引越界，则边界定位到数组末尾
-	}
-
-	text := strings.Builder{}
-	for k, v := range (cmd.Room.PiaList)[start:stop] {
-		if k > 0 {
-			text.WriteString("\n")
-		}
-		if safe {
-			// 安全输出，防止屏蔽
-			for _, s := range v {
-				text.WriteString(string(s))
-				text.WriteString(" ")
-			}
-			continue
-		}
-		text.WriteString(v)
-	}
-	text.WriteString(fmt.Sprintf("\n\n进度：%d/%d", stop, length))
-
-	cmd.Room.PiaIndex = stop + 1
-	cmd.Output <- text.String()
-
-	if stop == length {
-		// 到达末尾，清空列表，关闭当前模式
-		cmd.Room.PiaList = nil
-		cmd.Room.PiaIndex = 0
-		cmd.Output <- models.TplPiaDone
-	}
-}
-
 // CmdHandler 命令处理函数
 type CmdHandler func(cmd *command)
 
@@ -155,7 +109,7 @@ func horoscopes(cmd *command) {
 
 	ctx := context.Background()
 	rdb := config.RDB
-	key := fmt.Sprintf("%szodiac:%s:%s", models.RedisPrefix, utils.Today(), str)
+	key := fmt.Sprintf("%szodiac:%s:%s", config.RedisPrefix, utils.Today(), str)
 
 	n, err := rdb.Exists(ctx, key).Result()
 	if err != nil {
@@ -268,19 +222,66 @@ func piaStart(cmd *command) {
 func piaNext(cmd *command) {
 	switch len(cmd.Args) {
 	case 0:
-		cmd.piaNextN(1, false)
+		piaNextN(cmd, 1, false)
 	case 1:
 		dur, err := strconv.Atoi(cmd.Args[0])
 		if err != nil {
 			return
 		}
-		cmd.piaNextN(dur, false)
+		piaNextN(cmd, dur, false)
 	}
 }
 
 // piaNextSafe 安全输出一条戏文
 func piaNextSafe(cmd *command) {
-	cmd.piaNextN(1, true)
+	piaNextN(cmd, 1, true)
+}
+
+// piaNextN 进行发送多条戏本文本的处理
+func piaNextN(cmd *command, dur int, safe bool) {
+	if cmd.Role > models.RoleAdmin {
+		return // 权限不足
+	}
+
+	if cmd.Room.PiaIndex == 0 || cmd.Room.PiaList == nil {
+		// 没有启动
+		cmd.Output <- models.TplPiaEmpty
+		return
+	}
+
+	length := len(cmd.Room.PiaList)
+	start := cmd.Room.PiaIndex - 1
+	stop := start + dur
+	if stop > length {
+		stop = length // 索引越界，则边界定位到数组末尾
+	}
+
+	text := strings.Builder{}
+	for k, v := range (cmd.Room.PiaList)[start:stop] {
+		if k > 0 {
+			text.WriteString("\n")
+		}
+		if safe {
+			// 安全输出，防止屏蔽
+			for _, s := range v {
+				text.WriteString(string(s))
+				text.WriteString(" ")
+			}
+			continue
+		}
+		text.WriteString(v)
+	}
+	text.WriteString(fmt.Sprintf("\n\n进度：%d/%d", stop, length))
+
+	cmd.Room.PiaIndex = stop + 1
+	cmd.Output <- text.String()
+
+	if stop == length {
+		// 到达末尾，清空列表，关闭当前模式
+		cmd.Room.PiaList = nil
+		cmd.Room.PiaIndex = 0
+		cmd.Output <- models.TplPiaDone
+	}
 }
 
 // piaRelocate 重定位文章位置

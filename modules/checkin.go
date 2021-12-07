@@ -15,13 +15,14 @@ import (
 
 var ctx = context.Background()
 
-// Checkin 用户签到
+// Checkin do the action of user checkin.
 func Checkin(roomID, uid int, uname string) (string, error) {
 	rdb := config.RDB
-	prefix := models.RedisPrefix + strconv.Itoa(roomID)
+	prefix := config.RedisPrefix + strconv.Itoa(roomID) // Redis namespace prefix, `missevan:[roomID]`
 
-	key := fmt.Sprintf("%s:checkin:%d", prefix, uid)
-	// 获取当前缓存中的签到信息
+	key := fmt.Sprintf("%s:checkin:%d", prefix, uid) // `missevan:[roomID]:checkin:[UID]`
+
+	// get the checkin data from the Redis cache.
 	cmd := rdb.HMGet(ctx, key, "count", "day", "luck")
 	var count, day, luck string
 	if v, ok := cmd.Val()[0].(string); ok {
@@ -33,24 +34,25 @@ func Checkin(roomID, uid int, uname string) (string, error) {
 	if v, ok := cmd.Val()[2].(string); ok {
 		luck = v
 	} else {
-		// 还没有运势记录
+		// there is no `luck` record.
 		luck = models.LuckString()
 		rdb.HSet(ctx, key, "luck", luck)
 	}
-	// 判断是否重复签到
+	// check if already checkin that day.
 	if day == utils.Today() {
 		return fmt.Sprintf(models.TplSignDuplicate, count, luck), nil
 	}
-	// 判断是否连续签到
+	// check if checkin for consecutive days,
+	// if not, set the `count` to 0.
 	if day != time.Now().AddDate(0, 0, -1).Format("2006-01-02") {
 		rdb.HSet(ctx, key, "count", 0)
 	}
-	// 生成今天的运势
+	// generate the string of `luck` that day.
 	luck = models.LuckString()
 	rdb.HMSet(ctx, key, "day", utils.Today(), "luck", luck)
-	// 增加签到天数
+	// increase the count of consecutive checkin days.
 	countCMD := rdb.HIncrBy(ctx, key, "count", 1)
-	// 放入排行榜
+	// push the UID and Username into the rank list.
 	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:id", prefix, utils.Today()), uid)
 	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:name", prefix, utils.Today()), uname)
 
@@ -65,7 +67,7 @@ func Checkin(roomID, uid int, uname string) (string, error) {
 // CheckinRank return the rank of checkin task today.
 func CheckinRank(roomID int) string {
 	rdb := config.RDB
-	prefix := models.RedisPrefix + strconv.Itoa(roomID)
+	prefix := config.RedisPrefix + strconv.Itoa(roomID)
 
 	key := fmt.Sprintf("%s:rank:%s:id", prefix, utils.Today())
 	nKey := fmt.Sprintf("%s:rank:%s:name", prefix, utils.Today())

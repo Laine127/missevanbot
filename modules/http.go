@@ -38,8 +38,6 @@ func request(_url string, header http.Header, data []byte, reqType int) (body []
 		req, err = http.NewRequest("GET", _url, nil)
 	case ReqPost:
 		req, err = http.NewRequest("POST", _url, bytes.NewReader(data))
-	default:
-		req, err = http.NewRequest("GET", _url, nil)
 	}
 	if err != nil {
 		return

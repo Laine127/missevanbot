@@ -180,16 +180,18 @@ func handleGame(outputMsg chan<- string, store *models.Room, textMsg models.FmTe
 	switch gameType := game.Command(args[0]); gameType {
 	case game.CmdHelper:
 		outputMsg <- game.HelpText
-	case game.CmdNumberBomb:
-		gameCreate(cmd, gameType, textMsg)
+	case game.CmdNumberBomb, game.CmdPassParcel:
+		gameCreate(cmd, gameType)
 	case game.CmdJoin:
 		gameJoin(cmd, textMsg)
 	case game.CmdStart:
-		gameStart(cmd, textMsg)
+		gameStart(cmd)
 	case game.CmdStop:
-		gameStop(cmd, textMsg)
+		gameStop(cmd)
 	case game.CmdPlayers:
-		gamePlayers(cmd, textMsg)
+		gamePlayers(cmd)
+	case game.CmdRank:
+		gameRank(cmd)
 	default:
 		gameAction(cmd, textMsg)
 	}

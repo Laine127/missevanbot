@@ -8,6 +8,8 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+const RedisPrefix = "missevan:"
+
 var RDB *redis.Client
 
 // InitRDBClient 初始化 Redis 客户端
@@ -21,7 +23,7 @@ func InitRDBClient(conf *RedisConfig) {
 	defer cancel()
 
 	if _, err := rdb.Ping(ctx).Result(); err != nil {
-		panic(fmt.Errorf("连接Redis不成功: %s \n", err))
+		panic(fmt.Errorf("connect to Redis server failed: %s", err))
 	}
 
 	RDB = rdb

@@ -2,14 +2,17 @@ package modules
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/PuerkitoBio/goquery"
 	"missevan-fm/models"
 )
 
-var bot models.FmUser // 存储机器人用户名
+// bot is used to store the basic information of the bot user.
+var bot models.FmUser
 
 // Name return name of the bot.
 func Name() string {
@@ -31,7 +34,7 @@ func InitBot() {
 	bot = user
 }
 
-// UserInfo 获取机器人信息
+// UserInfo return the information of the bot user.
 func UserInfo() (user models.FmUser, err error) {
 	_url := "https://fm.missevan.com/api/user/info"
 
@@ -52,7 +55,7 @@ func UserInfo() (user models.FmUser, err error) {
 	return
 }
 
-// RoomInfo 获取直播间信息
+// RoomInfo return the information of the fm room.
 func RoomInfo(roomID int) (info models.FmInfo, err error) {
 	_url := fmt.Sprintf("https://fm.missevan.com/api/v2/live/%d", roomID)
 
@@ -70,7 +73,7 @@ func RoomInfo(roomID int) (info models.FmInfo, err error) {
 	return
 }
 
-// ConnCookie 获取初始连接的 Cookie 字符串
+// ConnCookie return the string of the websocket connection cookie.
 func ConnCookie() (string, error) {
 	_url := "https://fm.missevan.com/api/user/info"
 
@@ -85,15 +88,68 @@ func ConnCookie() (string, error) {
 	return cookie.String(), nil
 }
 
-// Follow 关注动作，返回错误
-func Follow(uid int) (ret []byte, err error) {
+// ChangeAttention change the attention state,
+// tp = 0 is unfollow，tp = 1 is follow.
+func ChangeAttention(uid, tp int) (ret []byte, err error) {
 	_url := "https://www.missevan.com/person/ChangeAttention"
 
-	data := []byte(fmt.Sprintf("attentionid=%d&type=1", uid))
+	data := []byte(fmt.Sprintf("attentionid=%d&type=%d", uid, tp))
 
 	header := http.Header{}
 	header.Set("content-type", "application/x-www-form-urlencoded; charset=UTF-8")
 
 	ret, err = PostRequest(_url, header, data)
 	return
+}
+
+// UnfollowAll unfollow all the user which bot followed.
+func UnfollowAll() error {
+	_url := fmt.Sprintf("https://www.missevan.com/person/getuserattention?type=0&user_id=%d&page_size=100&p=1", UserID())
+
+	body, err := GetRequest(_url, nil)
+	if err != nil {
+		return err
+	}
+
+	follows := struct {
+		Success bool `json:"success"`
+		Info    struct {
+			Datas []struct {
+				ID       int    `json:"id"`
+				Username string `json:"username"`
+			} `json:"Datas"`
+		} `json:"info"`
+	}{}
+
+	if err = json.Unmarshal(body, &follows); err != nil {
+		return err
+	}
+
+	for _, v := range follows.Info.Datas {
+		_, _ = ChangeAttention(v.ID, 0)
+	}
+	return nil
+}
+
+// QueryUsername return the username queried by UID.
+func QueryUsername(uid int) (string, error) {
+	_url := fmt.Sprintf("https://www.missevan.com/%d/", uid)
+
+	resp, err := http.Get(_url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	username := doc.Find("#t_u_n>a").Text()
+	if username == "" {
+		return "", errors.New("username empty")
+	}
+
+	return username, nil
 }

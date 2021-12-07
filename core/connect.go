@@ -23,7 +23,7 @@ func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
 
 	cookie, err := modules.ConnCookie()
 	if err != nil {
-		zap.S().Error("获取 Cookie 失败：", err)
+		zap.S().Error("get the connection cookie failed: ", err)
 		return
 	}
 
@@ -100,13 +100,14 @@ func follow(roomID int) {
 		return
 	}
 
-	uid := info.Creator.UserID
+	if err := modules.UnfollowAll(); err != nil {
+		zap.S().Error("取关操作出错：", err)
+	}
 
-	ret, err := modules.Follow(uid)
+	ret, err := modules.ChangeAttention(info.Creator.UserID, 1)
 	if err != nil {
-		zap.S().Error("关注用户出错", err)
+		zap.S().Error("关注用户出错：", err)
 		return
 	}
 	zap.S().Debug(string(ret))
-	zap.S().Info("已关注用户 ", fmt.Sprintf("%d", uid))
 }
