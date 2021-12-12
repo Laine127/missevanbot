@@ -44,7 +44,7 @@ func logEncoder() zapcore.Encoder {
 }
 
 func logWriter() zapcore.WriteSyncer {
-	file, err := os.Create("missevan.log")
+	file, err := os.OpenFile("missevan.log", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		panic(fmt.Errorf("create log file failed: %s", err))
 	}

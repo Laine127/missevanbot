@@ -13,11 +13,15 @@ import (
 	"missevan-fm/modules"
 )
 
-var mu = &sync.Mutex{}
+type Connection struct {
+	conn *websocket.Conn
+	mu   sync.Mutex
+}
 
-// Connect Websocket 连接处理
+// Connect handle the Websocket connection,
+// put the received message into inputMsg channel.
 func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
-	follow(roomID) // 关注主播
+	follow(roomID) // follow the room creator.
 
 	dialer := new(websocket.Dialer)
 
@@ -35,23 +39,24 @@ func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
 	h.Add("Cache-Control", "no-cache")
 	h.Add("Cookie", cookie)
 
-	conn, _, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", roomID), h)
+	c := new(Connection)
+	c.conn, _, err = dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", roomID), h)
 	if err != nil {
 		zap.S().Error(err)
 		return
 	}
-	defer conn.Close()
+	defer c.conn.Close()
 
 	joinMsg := fmt.Sprintf(`{"action":"join","uuid":"35e77342-30af-4b0b-a0eb-f80a826a68c7","type":"room","room_id":%d}`, roomID)
-	if err := conn.WriteMessage(websocket.TextMessage, []byte(joinMsg)); err != nil {
+	if err := c.conn.WriteMessage(websocket.TextMessage, []byte(joinMsg)); err != nil {
 		zap.S().Error(err)
 		return
 	}
 
-	go heart(conn) // 定时发送心跳，防止断开
+	go heart(c) // keep connected
 
 	for {
-		msgType, msgData, err := conn.ReadMessage()
+		msgType, msgData, err := c.conn.ReadMessage()
 		if err != nil {
 			zap.S().Error(err)
 			continue
@@ -62,15 +67,15 @@ func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
 		switch msgType {
 		case websocket.TextMessage:
 			if string(msgData) == "❤️" {
-				continue // 过滤掉心跳消息
+				continue
 			}
 			textMsg := models.FmTextMessage{}
 			if err := json.Unmarshal(msgData, &textMsg); err != nil {
-				zap.S().Errorf("%s 解析失败：%s", string(msgData), err)
+				zap.S().Errorf("%s unmarshal failed: %s", string(msgData), err)
 				continue
 			}
 			if textMsg.User.UserID == modules.UserID() {
-				continue // 过滤掉机器人自己的消息
+				continue // filter out messages sent by the bot.
 			}
 			inputMsg <- textMsg
 		case websocket.BinaryMessage:
@@ -82,31 +87,29 @@ func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
 	}
 }
 
-// heart 每隔一段时间就发送心跳
-func heart(conn *websocket.Conn) {
-	for {
-		mu.Lock()
-		_ = conn.WriteMessage(websocket.TextMessage, []byte("❤️"))
-		mu.Unlock()
-		time.Sleep(time.Second * 30) // 间隔时间 30s
+// heart send a heartbeat every 30 seconds.
+func heart(c *Connection) {
+	ticker := time.NewTicker(time.Second * 30)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		c.mu.Lock()
+		_ = c.conn.WriteMessage(websocket.TextMessage, []byte("❤️"))
+		c.mu.Unlock()
 	}
 }
 
-// follow 用于启动时关注主播
+// follow follow the creator of the room.
 func follow(roomID int) {
 	info, err := modules.RoomInfo(roomID)
 	if err != nil {
-		zap.S().Error("获取直播间信息错误：", err)
+		zap.S().Error("fetch room info failed: ", err)
 		return
 	}
 
-	if err := modules.UnfollowAll(); err != nil {
-		zap.S().Error("取关操作出错：", err)
-	}
-
-	ret, err := modules.ChangeAttention(info.Creator.UserID, 1)
+	ret, err := modules.ChangeAttention(info.Creator.UserID, modules.Follow)
 	if err != nil {
-		zap.S().Error("关注用户出错：", err)
+		zap.S().Error("follow user failed: ", err)
 		return
 	}
 	zap.S().Debug(string(ret))

@@ -6,7 +6,8 @@ import (
 	"missevan-fm/models"
 )
 
-// Match 处理输出的消息
+// Match receive the message from the channel inputMsg,
+// handle the message event and send results into the channel outputMsg.
 func Match(inputMsg <-chan models.FmTextMessage, outputMsg chan<- string, room *models.Room) {
 	for msg := range inputMsg {
 		matchLoop(msg, outputMsg, room)

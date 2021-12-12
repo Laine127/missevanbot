@@ -1,6 +1,6 @@
 package models
 
-// 指令类型
+// command constants.
 const (
 	CmdHelper      = iota // 帮助提示
 	CmdRoomInfo           // 直播间信息
@@ -20,15 +20,13 @@ const (
 	CmdLove               // 比心答复
 )
 
-// 用户角色
 const (
-	RoleSuper   = iota // 机器人管理员
-	RoleCreator        // 主播
-	RoleAdmin          // 房管
-	RoleMember         // 普通成员
+	RoleSuper   = iota // admin of the bot
+	RoleCreator        // room creator
+	RoleAdmin          // room admin
+	RoleMember         // general member
 )
 
-// HelpText 帮助文本
 const HelpText = `命令帮助：
 
 帮助 -- 获取帮助信息
@@ -54,7 +52,7 @@ r 数字 -- 定位到指定的位置
 
 Author: Secriy`
 
-// _cmdMap 帮助映射
+// _cmdMap is for command mapping.
 var _cmdMap = map[string]int{
 	"帮助": CmdHelper,
 	"房间": CmdRoomInfo,
@@ -70,13 +68,13 @@ var _cmdMap = map[string]int{
 	"s":  CmdPiaNextSafe,
 	"r":  CmdPiaRelocate,
 	"结束": CmdPiaStop,
-	// 下面是隐藏的命令
+	// hidden commands
 	"比心": CmdLove,
 	"笔芯": CmdLove,
 	"咳咳": CmdBaitSwitch,
 }
 
-// Command 使用 Key 获取对应的命令
+// Command use key to get command constant.
 func Command(key string) int {
 	if v, ok := _cmdMap[key]; ok {
 		return v

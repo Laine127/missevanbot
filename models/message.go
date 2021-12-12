@@ -1,7 +1,7 @@
 package models
 
 type (
-	// FmTextMessage 直播间Websocket消息体
+	// FmTextMessage represents the Websocket message from the live room.
 	FmTextMessage struct {
 		Type       string       `json:"type"`
 		Event      string       `json:"event"`
@@ -14,7 +14,7 @@ type (
 		Statistics FmStatistics `json:"statistics"`
 	}
 
-	// FmUser 直播间Websocket用户消息体
+	// FmUser represents the information of a user.
 	FmUser struct {
 		IconUrl string `json:"iconurl"`
 		Titles  []struct {
@@ -26,7 +26,7 @@ type (
 		Username string `json:"username"`
 	}
 
-	// FmQueue 直播间Websocket观众队列消息体
+	// FmQueue represents basic information of the user who is joining.
 	FmQueue struct {
 		Contribution int    `json:"contribution"`
 		IconUrl      string `json:"iconurl"`
@@ -34,7 +34,7 @@ type (
 		Username     string `json:"username"`
 	}
 
-	// FmGift 直播间Websocket礼物消息体
+	// FmGift represents the information of gift.
 	FmGift struct {
 		GiftID int    `json:"gift_id"`
 		Name   string `json:"name"`
@@ -42,7 +42,7 @@ type (
 		Number int    `json:"num"`
 	}
 
-	// FmStatistics 直播间Websocket静态信息消息体
+	// FmStatistics represents the statistics of the live room.
 	FmStatistics struct {
 		Accumulation int `json:"accumulation"`
 		Online       int `json:"online"`
@@ -51,27 +51,27 @@ type (
 	}
 )
 
-// Event 定义事件
+// Event define the message events.
 const (
-	EventSend      = "send"       // 发送
-	EventNew       = "new"        // 普通新消息
-	EventStatistic = "statistics" // 直播间信息
-	EventJoin      = "join"       // 主动连接直播间
-	EventJoinQueue = "join_queue" // 用户进入直播间
-	EventFollowed  = "followed"   // 用户关注了主播
-	EventOpen      = "open"       // 直播间开启
-	EventClose     = "close"      // 直播间关闭
-	EventNewRank   = "new_rank"   // 直播间排行
-	EventLeave     = "leave"      // 用户离开直播间
+	EventSend      = "send"       // gift send.
+	EventNew       = "new"        // new message received.
+	EventStatistic = "statistics" // statistics of the live room.
+	EventJoin      = "join"       // connect to the live room channel.
+	EventJoinQueue = "join_queue" // members join the live room.
+	EventFollowed  = "followed"   // user followed the room creator.
+	EventOpen      = "open"       // the live room opened.
+	EventClose     = "close"      // the live room closed.
+	EventNewRank   = "new_rank"   // the new rank information of the live room.
+	EventLeave     = "leave"      // user leaved the live room.
 )
 
-// Type 定义消息类型
+// Type define the message types.
 const (
-	TypeRoom    = "room"    // 直播间相关
-	TypeCreator = "creator" // 创作者
-	TypeGift    = "gift"    // 礼物
-	TypeMessage = "message" // 消息
-	TypeNotify  = "notify"  // 公屏提示
-	TypeMember  = "member"  // 成员/用户
-	TypeChannel = "channel" // 连接隧道
+	TypeRoom    = "room"
+	TypeCreator = "creator"
+	TypeGift    = "gift"
+	TypeMessage = "message"
+	TypeNotify  = "notify"
+	TypeMember  = "member"
+	TypeChannel = "channel"
 )

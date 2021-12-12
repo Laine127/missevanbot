@@ -14,16 +14,18 @@ const (
 	ReqPost = 2
 )
 
-// PostRequest 发送 POST 请求，传递 data
+// PostRequest do the POST request with the data.
 func PostRequest(_url string, header http.Header, data []byte) (body []byte, err error) {
 	return request(_url, header, data, ReqPost)
 }
 
-// GetRequest 发送 GET 请求
+// GetRequest do the GET request.
 func GetRequest(_url string, header http.Header) (body []byte, err error) {
 	return request(_url, header, nil, ReqGet)
 }
 
+// request do the GET or the POST request according to reqType,
+// first of all, read the cookie of the bot user.
 func request(_url string, header http.Header, data []byte, reqType int) (body []byte, err error) {
 	cookie := config.Cookie()
 	if cookie == "" {

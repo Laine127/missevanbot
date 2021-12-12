@@ -12,76 +12,73 @@ import (
 	"missevan-fm/utils"
 )
 
-// HandleRoom 处理直播间相关事件
+// HandleRoom handle the event related to room.
 func HandleRoom(outputMsg chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	info, err := modules.RoomInfo(room.ID)
 	if err != nil {
-		zap.S().Error("获取直播间信息错误：", err)
+		zap.S().Error("fetch the room information failed: ", err)
 		return
 	}
 
 	switch textMsg.Event {
 	case models.EventStatistic:
-		room.Online = textMsg.Statistics.Online // 更新在线人数
+		room.Online = textMsg.Statistics.Online // update the number of online members.
 	case models.EventOpen:
 		outputMsg <- models.TplBotStart
-		// 通知推送
 		if room.Watch {
 			text := fmt.Sprintf("%s 开播啦~", info.Creator.Username)
 			if err := modules.Push(modules.TitleOpen, text); err != nil {
-				zap.S().Error("Bark 推送失败", err)
+				zap.S().Error("Bark push failed: ", err)
 			}
 		}
 	case models.EventClose:
-		// 通知推送
 		if room.Watch {
 			text := fmt.Sprintf("%s 下播啦~", info.Creator.Username)
 			if err := modules.Push(modules.TitleClose, text); err != nil {
-				zap.S().Error("Bark 推送失败", err)
+				zap.S().Error("Bark push failed: ", err)
 			}
 		}
-		// 关闭定时任务
+		// stop the timer.
 		room.Bait = false
 		if timer := room.Timer; timer != nil {
 			timer.Stop()
 		}
-		// 删除点歌歌单
+		// clear playlist.
 		modules.MusicClear(room.ID)
+		// clear count.
+		room.Count = 0
 	}
 }
 
-// HandleMember 处理用户相关的事件
+// HandleMember handle the event related to member.
 func HandleMember(outputMsg chan<- string, store *models.Room, textMsg models.FmTextMessage) {
 	switch textMsg.Event {
 	case models.EventJoinQueue:
-		// 有用户进入直播间
 		for _, v := range textMsg.Queue {
-			store.Count++ // 计数
+			store.Count++
 			if username := v.Username; username != "" {
 				text := fmt.Sprintf(models.TplWelcome, username)
 				if store.Pinyin {
-					// 如果注音功能开启了，发送注音消息
 					text += fmt.Sprintf("\n注音：[ %s ]", utils.Pinyin(username))
 				}
 				outputMsg <- text
 			} else if store.Count > 1 && store.Count%2 == 0 {
-				// 屏蔽第一次匿名用户欢迎，减半欢迎匿名用户次数
+				// start sending welcome message from the second joined user,
+				// and halve the number of messages sent.
 				outputMsg <- models.TplWelcomeAnon
 			}
 		}
 	case models.EventFollowed:
-		// 有新关注
 		if username := textMsg.User.Username; username != "" {
 			outputMsg <- fmt.Sprintf(models.TplThankFollow, username)
 		}
 	}
 }
 
-// HandleGift 处理礼物相关的事件
+// HandleGift handle the event related to gift.
 func HandleGift(outputMsg chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	switch textMsg.Event {
 	case models.EventSend:
-		// 有用户送礼物
 		if username := textMsg.User.Username; username != "" {
 			gift := textMsg.Gift
 			outputMsg <- fmt.Sprintf(models.TplThankGift, username, gift.Number, gift.Name)
@@ -89,7 +86,7 @@ func HandleGift(outputMsg chan<- string, room *models.Room, textMsg models.FmTex
 	}
 }
 
-// HandleMessage 处理消息事件
+// HandleMessage handle the event related to message.
 func HandleMessage(outputMsg chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	switch textMsg.Event {
 	case models.EventNew:
@@ -97,42 +94,42 @@ func HandleMessage(outputMsg chan<- string, room *models.Room, textMsg models.Fm
 		if first == "" {
 			return
 		}
-		// 判断是否是命令，进行处理
+		// determine whether it is a command and handle it.
 		if cmdType := models.Command(first); cmdType >= 0 {
 			handleCommand(outputMsg, room, cmdType, textMsg)
 			return
 		}
-		// 判断是否是沟通请求，进行处理
+		// determine whether it is a chat request and handle it.
 		if first == fmt.Sprintf("@%s", modules.Name()) {
 			handleChat(outputMsg, room, textMsg)
 			return
 		}
-		// 判断是否为游戏请求，进行处理
+		// determine whether it is a game-related message and handle it.
 		if gameType := game.Command(first); gameType >= 0 || room.GameStore.Game != game.Null {
 			handleGame(outputMsg, room, textMsg)
 		}
-		// 剩余的文本发送到关键词处理函数
+		// search for keywords in other messages and handle them.
 		handleKeyword(outputMsg, room, textMsg)
 	}
 }
 
-// handleCommand 处理消息中的命令，
-// 简单的逻辑在本函数中处理，其余在 command.go 中处理
+// handleCommand handle the commands,
+// handle simple logic in this function, handle other logic in command.go.
 func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, textMsg models.FmTextMessage) {
 	info, err := modules.RoomInfo(store.ID)
 	if err != nil {
-		zap.S().Error("获取直播间信息错误：", err)
+		zap.S().Error("fetch the room information failed: ", err)
 		return
 	}
 
-	user := &textMsg.User // 当前发信的用户
+	user := textMsg.User // message sender
 	args := strings.Fields(strings.TrimSpace(textMsg.Message))
 	cmd := &command{
 		Args:   args[1:],
 		Room:   store,
-		Info:   &info,
+		Info:   info,
 		User:   user,
-		Role:   role(&info, user.UserID), // 获取当前发信用户的角色
+		Role:   role(info, user.UserID), // get the role of the message sender.
 		Output: outputMsg,
 	}
 
@@ -146,34 +143,34 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 	}
 }
 
-// handleChat 处理聊天请求
+// handleChat handle the chat requests.
 func handleChat(outputMsg chan<- string, store *models.Room, textMsg models.FmTextMessage) {
 	outputMsg <- Chat(textMsg.User.Username)
 }
 
-// handleKeyword 处理关键词
+// handleKeyword handle the message which contains keyword.
 func handleKeyword(outputMsg chan<- string, store *models.Room, textMsg models.FmTextMessage) {
 	if strings.Contains(textMsg.Message, "emo") {
 		keyEmotional(outputMsg, textMsg.User)
 	}
 }
 
-// handleGame 处理游戏请求
+// handleGame handle the game-related message.
 func handleGame(outputMsg chan<- string, store *models.Room, textMsg models.FmTextMessage) {
 	info, err := modules.RoomInfo(store.ID)
 	if err != nil {
-		zap.S().Error("获取直播间信息错误：", err)
+		zap.S().Error("fetch the room information failed: ", err)
 		return
 	}
 
-	user := &textMsg.User // 当前发信的用户
+	user := textMsg.User
 	args := strings.Fields(strings.TrimSpace(textMsg.Message))
 	cmd := &command{
 		Args:   args[1:],
 		Room:   store,
-		Info:   &info,
+		Info:   info,
 		User:   user,
-		Role:   role(&info, user.UserID), // 获取当前发信用户的角色
+		Role:   role(info, user.UserID),
 		Output: outputMsg,
 	}
 
@@ -197,20 +194,23 @@ func handleGame(outputMsg chan<- string, store *models.Room, textMsg models.FmTe
 	}
 }
 
-// role 判断当前用户的角色
-func role(info *models.FmInfo, userID int) int {
+// role return the role of the user which specified by userID.
+func role(info models.FmInfo, userID int) int {
 	switch userID {
 	case config.Admin():
-		return models.RoleSuper // 机器人管理员
+		// bot administrator.
+		return models.RoleSuper
 	case info.Creator.UserID:
-		return models.RoleCreator // 主播
+		// room creator.
+		return models.RoleCreator
 	default:
-		// 判断是否是房管
+		// determine whether it is an room administrator
 		for _, v := range info.Room.Members.Admin {
 			if v.UserID == userID {
 				return models.RoleAdmin
 			}
 		}
-		return models.RoleMember // 普通用户
+		// general member.
+		return models.RoleMember
 	}
 }

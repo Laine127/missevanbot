@@ -6,7 +6,7 @@ import (
 	"missevan-fm/models"
 )
 
-// keyEmotional 处理emo关键词
+// keyEmotional handle the keyword `emo`.
 func keyEmotional(outputMsg chan<- string, user models.FmUser) {
 	outputMsg <- fmt.Sprintf("@%s %s", user.Username, models.ComfortString())
 }

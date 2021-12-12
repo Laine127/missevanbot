@@ -5,16 +5,16 @@ import (
 	"time"
 )
 
-// handlers related
+// handlers related templates.
 const (
-	TplBotStart    = "芝士机器人在线啦，可以在直播间输入 “帮助” 或者 @我 来获取支持哦～" // 机器人启动
-	TplWelcome     = "欢迎 @%s 同学进入直播间~"                      // 欢迎用户
-	TplWelcomeAnon = "欢迎新来的小可爱们进入直播间呀~"                     // 欢迎匿名用户
-	TplThankFollow = "谢谢 @%s 的关注呀~"                         // 感谢关注
-	TplThankGift   = "感谢 @%s 赠送的%d个%s~"                     // 感谢礼物
+	TplBotStart    = "芝士机器人在线啦，可以在直播间输入 “帮助” 或者 @我 来获取支持哦～"
+	TplWelcome     = "欢迎 @%s 同学进入直播间~"
+	TplWelcomeAnon = "欢迎新来的小可爱们进入直播间呀~"
+	TplThankFollow = "谢谢 @%s 的关注呀~"
+	TplThankGift   = "感谢 @%s 赠送的%d个%s~"
 )
 
-// commands related
+// commands related templates.
 const (
 	TplRoomInfo = `当前直播间信息：
 - 房间名：%s
@@ -23,15 +23,15 @@ const (
 - 直播平台：%s
 - 当前在线：%d
 - 累计人数：%d
-- 管理员：`  // 直播间信息模板
-	TplRankEmpty = "今天的榜单好像空空的~" // 榜单为空
-	TplBaitStop  = "我突然有点困了"     // 关闭演员模式
+- 管理员：`
+	TplRankEmpty = "今天的榜单好像空空的~"
+	TplBaitStop  = "我突然有点困了" // switch the bait mode off.
 	TplMusicAdd  = "点歌 %s 成功啦~"
 	TplMusicNone = "当前还没有人点歌哦~"
 	TplMusicDone = "完成了一首歌曲~"
 )
 
-// modules related
+// modules related templates.
 const (
 	TplSignDuplicate = "已经签到过啦\n\n您已经连续签到%s天\n\n%s"
 	TplSignSuccess   = "签到成功啦，已经连续签到%d天~\n\n%s\n\n%s"
@@ -44,6 +44,7 @@ const (
 	TplPiaStop       = "pia戏模式结束成功啦～"
 )
 
+// games related templates.
 const (
 	TplGameNull         = "当前还没有进行中的游戏哦～"
 	TplGameExists       = "当前游戏未结束，请先结束"
@@ -64,7 +65,6 @@ const (
 
 const TplDefaultPoem = "孜孜不倦，不易乎世。"
 
-// _lucks 运势词汇池
 var _lucks = [...]string{
 	"连理之木", "景星庆云", "有凤来仪",
 	"避凶趋吉", "逢凶化吉", "时来运转",
@@ -79,7 +79,7 @@ var _lucks = [...]string{
 	"还是不要知道为好", "还是少打听比较好", "还是不让你知道比较好",
 }
 
-// _chats 对话语句池
+// _chats contains simple chat text.
 var _chats = [...]string{
 	"你好呀～",
 	"QAQ",
@@ -88,7 +88,7 @@ var _chats = [...]string{
 	"抱歉现在有点忙～",
 }
 
-// _comforts 宽慰语句池
+// _comforts contains comfort sentences.
 var _comforts = [...]string{
 	"不可以emo哦~",
 	"怎么啦，为什么要说emo呢",
@@ -98,20 +98,20 @@ var _comforts = [...]string{
 	"我不知道怎么安慰你才好，但是生活总得继续",
 }
 
-// LuckString 返回运势字符串
+// LuckString return a luck word in string type which chose from _lucks.
 func LuckString() string {
 	result := "今日运势："
 	rand.Seed(time.Now().UnixNano())
 	return result + _lucks[rand.Intn(len(_lucks))]
 }
 
-// ChatString 返回聊天字符串
+// ChatString return a sentence in string type which chose from _chats.
 func ChatString() string {
 	rand.Seed(time.Now().UnixNano())
 	return _chats[rand.Intn(len(_chats))]
 }
 
-// ComfortString 返回宽慰语句字符串
+// ComfortString return a sentence in string type which chosen from _comforts.
 func ComfortString() string {
 	rand.Seed(time.Now().UnixNano())
 	return _comforts[rand.Intn(len(_comforts))]

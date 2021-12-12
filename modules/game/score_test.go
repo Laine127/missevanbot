@@ -1,8 +1,6 @@
 package game
 
 import (
-	"fmt"
-	"log"
 	"testing"
 
 	"missevan-fm/config"
@@ -21,10 +19,10 @@ func TestUpdateScore(t *testing.T) {
 func TestScoreRank(t *testing.T) {
 	res, err := ScoreRank(461808808)
 	if err != nil {
-		log.Println(err)
+		t.Error(err)
 		return
 	}
 	for _, v := range res {
-		fmt.Println(v)
+		t.Log(v)
 	}
 }

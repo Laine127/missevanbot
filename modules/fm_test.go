@@ -7,31 +7,35 @@ import (
 	"missevan-fm/config"
 )
 
+func init() {
+	config.LoadConfig()
+}
+
 func TestCookie(t *testing.T) {
 	cookie, err := ConnCookie()
-	log.Println(err)
-	log.Println(cookie)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(cookie)
 }
 
 func TestChangeAttention(t *testing.T) {
-	config.LoadConfig()
 	t.Run("follow", func(t *testing.T) {
-		ret, err := ChangeAttention(11111, 1)
-		log.Println(string(ret))
-		log.Println(err)
+		ret, err := ChangeAttention(11111, Follow)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		t.Log(string(ret))
 	})
 	t.Run("unfollow", func(t *testing.T) {
-		ret, err := ChangeAttention(11111, 1)
-		log.Println(string(ret))
-		log.Println(err)
-	})
-}
-
-func TestUnfollowAll(t *testing.T) {
-	config.LoadConfig()
-	InitBot()
-	t.Run("unfollow_all", func(t *testing.T) {
-		log.Println(UnfollowAll())
+		ret, err := ChangeAttention(11111, Unfollow)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		t.Log(string(ret))
 	})
 }
 

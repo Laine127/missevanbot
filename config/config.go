@@ -14,12 +14,12 @@ var (
 )
 
 type BotConfig struct {
-	Cookie string        `mapstructure:"cookie"` // Cookie文件的存储位置
-	Admin  int           `mapstructure:"admin"`  // 机器人控制人
-	Level  string        `mapstructure:"level"`  // 日志等级
-	Redis  *RedisConfig  `mapstructure:"redis"`  // Redis服务配置
-	Push   *PushConfig   `mapstructure:"push"`   // 消息推送配置
-	Rooms  []*RoomConfig `mapstructure:"rooms"`  // 启用的房间列表配置
+	Cookie string        `mapstructure:"cookie"` // path of the cookie file.
+	Admin  int           `mapstructure:"admin"`  // admin of the bot.
+	Level  string        `mapstructure:"level"`  // log level.
+	Redis  *RedisConfig  `mapstructure:"redis"`  // configurations of Redis client.
+	Push   *PushConfig   `mapstructure:"push"`   // configurations of message push module.
+	Rooms  []*RoomConfig `mapstructure:"rooms"`  // configurations of all the live rooms.
 }
 
 type RedisConfig struct {
@@ -33,11 +33,12 @@ type PushConfig struct {
 }
 
 type RoomConfig struct {
-	ID                 int    `mapstructure:"id"`                   // 直播间ID
-	Name               string `mapstructure:"name"`                 // 主播自定义昵称
-	Pinyin             bool   `mapstructure:"pinyin"`               // 是否开启注音功能
-	RainbowMaxInterval int    `mapstructure:"rainbow_max_interval"` // 彩虹屁最长发送间隔
-	Watch              bool   `mapstructure:"watch"`                // 是否监控开播/下播
+	ID                 int    `mapstructure:"id"`                   // ID of the room.
+	Name               string `mapstructure:"name"`                 // nickname of the room creator.
+	Enable             bool   `mapstructure:"enable"`               // whether to enable the bot.
+	Pinyin             bool   `mapstructure:"pinyin"`               // whether to enable the pinyin function.
+	RainbowMaxInterval int    `mapstructure:"rainbow_max_interval"` // the max interval for bait mode.
+	Watch              bool   `mapstructure:"watch"`                // whether to enable live room status monitoring.
 }
 
 // Config return copy of the configurations.
@@ -79,7 +80,8 @@ func LoadConfig() {
 	initCookie()
 }
 
-// initCookie 读取当前目录下的 Cookie 文件，存储到全局变量
+// initCookie read the content of cookie file which specified by botConfig.Cookie
+// and store it in a global variable.
 func initCookie() {
 	file, err := os.Open(botConfig.Cookie)
 	if err != nil {

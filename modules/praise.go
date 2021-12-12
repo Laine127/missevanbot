@@ -8,7 +8,7 @@ import (
 	"missevan-fm/modules/thirdparty"
 )
 
-// Praise 彩虹屁模块
+// Praise praise module, use timer to send messages regularly.
 func Praise(outputMsg chan<- string, room *config.RoomConfig, timer *time.Timer) {
 	for {
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -12,168 +11,161 @@ import (
 	"missevan-fm/modules/game"
 )
 
-// gameCreate 创建游戏实例，当前状态必须为 game.StateNotCreated 即未创建，
-// 需要对存储的 GameStore 进行初始化操作
+// gameCreate initialize a GameStore instance,
+// current state must be StateNotCreated.
 func gameCreate(cmd *command, gameType int) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
 
-	store := cmd.Room.GameStore
-	if store.State != game.StateNotCreated {
-		// 游戏已经存在了
+	gs := cmd.Room.GameStore
+	if gs.State != game.StateNotCreated {
 		cmd.Output <- models.TplGameExists
 		return
 	}
 
 	switch gameType {
 	case game.CmdNumberBomb:
-		store.Game = game.NumberBomb
+		gs.Game = game.NumberBomb
 	case game.CmdPassParcel:
-		store.Game = game.PassParcel
-	default:
-		return
+		gs.Game = game.PassParcel
 	}
-	store.State = game.StateCreated // state transfer
-	store.Players = make([]game.Player, 0)
-	store.Value = make(map[string]int)
+
+	gs.State = game.StateCreated // state transfer
+	gs.Players = make([]game.Player, 0)
+	gs.Value = make(map[string]int)
 
 	cmd.Output <- models.TplGameCreate
 }
 
-// gameJoin 进行玩家加入操作，当前状态必须为 game.StateCreated 即已创建，
-// 将玩家 ID 加入玩家列表当中，当数量不小于 2 时切换为 game.StateReady 已就绪状态
+// gameJoin put message sender into the player list,
+// current state must be StateCreated,
+// if the number of players not less than 2 then switch to the state StateReady.
 func gameJoin(cmd *command, textMsg models.FmTextMessage) {
-	store := cmd.Room.GameStore
-	if store.State != game.StateCreated && store.State != game.StateReady {
+	gs := cmd.Room.GameStore
+	if gs.State != game.StateCreated && gs.State != game.StateReady {
 		return
 	}
 
 	user := textMsg.User
-	if !store.AddPlayer(game.Player{ID: user.UserID, Name: user.Username}) {
+	if !gs.AddPlayer(game.Player{ID: user.UserID, Name: user.Username}) {
 		cmd.Output <- models.TplGameJoinDup
 		return
 	}
 
-	if len(store.Players) >= 2 {
-		store.State = game.StateReady
+	// if the number of players is not less than 2,
+	// switch to the ready state
+	if len(gs.Players) >= 2 {
+		gs.State = game.StateReady
 	}
 
 	cmd.Output <- fmt.Sprintf(models.TplGameJoin, user.Username)
 }
 
-// gameStart 进行游戏开始操作，当前状态必须为 game.StateReady 即已就绪，
-// 进行状态转移变为 game.StateRunning
+// gameStart start the game, current state must be StateReady,
+// if there is no error then switch to the state StateRunning.
 func gameStart(cmd *command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
 
-	store := cmd.Room.GameStore
-	if store.State != game.StateReady {
-		if len(store.Players) < 2 {
+	gs := cmd.Room.GameStore
+	if gs.State != game.StateReady {
+		if len(gs.Players) < 2 {
 			cmd.Output <- models.TplGameNotEnough
 		}
 		return
 	}
+	gs.State = game.StateRunning // state transfer
+	gs.Index = 0                 // set the first player.
 
-	store.State = game.StateRunning // state transfer
-	store.Index = 0                 // 设置第一个玩家
-
-	var min, max int // set for number bomb game
-	switch store.Game {
+	var min, max int // set for number bomb game.
+	switch gs.Game {
 	case game.NumberBomb:
-		min, max = game.BombGenerate(store.Value, len(store.Players))
+		min, max = game.BombGenerate(gs.Value, len(gs.Players))
 	case game.PassParcel:
 		go func() {
-			// 定时，每五个玩家设置一分钟
-			timer := time.NewTimer(time.Minute * time.Duration(len(store.Players)/5+1))
+			// set timer, add one minutes every five players.
+			timer := time.NewTimer(time.Minute * time.Duration(len(gs.Players)/5+1))
 			<-timer.C
-			cmd.Output <- fmt.Sprintf(models.TplGameParcelOver, store.Players[store.Index].Name)
-			// 为其他玩家加分
-			if store.Index > 0 {
-				addScore(cmd.Room.ID, store.Players[:store.Index], 5) // 加分
+			// game over.
+			cmd.Output <- fmt.Sprintf(models.TplGameParcelOver, gs.Players[gs.Index].Name)
+			// add score for winning players.
+			if gs.Index > 0 {
+				addScore(cmd.Room.ID, gs.Players[:gs.Index], game.ScorePassParcel)
 			}
-			if store.Index < len(store.Players)-1 {
-				addScore(cmd.Room.ID, store.Players[store.Index+1:], 5) // 加分
+			if gs.Index < len(gs.Players)-1 {
+				addScore(cmd.Room.ID, gs.Players[gs.Index+1:], game.ScorePassParcel)
 			}
-			// stop the game
+			// stop that game.
 			stop(cmd.Room.GameStore)
-			return
 		}()
-	default:
-		return
 	}
 
-	cmd.Output <- models.TplGameStart
+	text := strings.Builder{}
+	text.WriteString(fmt.Sprintln(models.TplGameStart))
 
-	switch store.Game {
+	switch gs.Game {
 	case game.NumberBomb:
-		cmd.Output <- fmt.Sprintf(models.TplGameBombRange, min, max)
+		text.WriteString(fmt.Sprintf(models.TplGameBombRange+"\n", min, max))
 	case game.PassParcel:
-		cmd.Output <- fmt.Sprintf(models.TplGameParcelNumber, game.ParcelNumber(store.Value))
+		text.WriteString(fmt.Sprintf(models.TplGameParcelNumber+"\n", game.ParcelNumber(gs.Value)))
 	}
 
-	time.Sleep(time.Millisecond * 100)
+	text.WriteString(fmt.Sprintf(models.TplGameNext, gs.Players[0].Name))
 
-	cmd.Output <- fmt.Sprintf(models.TplGameNext, store.Players[0].Name)
+	cmd.Output <- text.String()
 }
 
-// gameAction 处理游戏中的操作，当前状态必须为 game.StateRunning，
-// 操作玩家必须为 Index 指定的玩家
+// gameAction handle all game actions, current state must be StateRunning,
+// message sender must be the player pointed to by the index.
 func gameAction(cmd *command, textMsg models.FmTextMessage) {
-	store := cmd.Room.GameStore
-	if store.State != game.StateRunning {
+	gs := cmd.Room.GameStore
+	if gs.State != game.StateRunning {
 		return
 	}
 
-	if store.Players[store.Index].ID != textMsg.User.UserID {
-		// 错误的玩家
+	if gs.Players[gs.Index].ID != textMsg.User.UserID {
 		return
 	}
 
-	switch store.Game {
+	text := strings.Builder{}
+	switch gs.Game {
 	case game.NumberBomb:
-		num, err := strconv.Atoi(textMsg.Message)
-		if err != nil {
-			cmd.Output <- models.TplGameInputIllegal
-			return
-		}
-		ok, min, max := game.BombGuess(store.Value, num)
-		if ok {
+		if ok, min, max := game.BombGuess(gs.Value, textMsg.Message); ok {
 			cmd.Output <- fmt.Sprintf(models.TplGameBomb, textMsg.User.Username)
-			// 为其他玩家加分
-			if store.Index > 0 {
-				addScore(cmd.Room.ID, store.Players[:store.Index], 10) // 加分
+			// add score for winning players.
+			if gs.Index > 0 {
+				addScore(cmd.Room.ID, gs.Players[:gs.Index], game.ScoreNumberBomb)
 			}
-			if store.Index < len(store.Players)-1 {
-				addScore(cmd.Room.ID, store.Players[store.Index+1:], 10) // 加分
+			if gs.Index < len(gs.Players)-1 {
+				addScore(cmd.Room.ID, gs.Players[gs.Index+1:], game.ScoreNumberBomb)
 			}
-			// stop the game
+			// stop the game.
 			stop(cmd.Room.GameStore)
 			return
-		}
-		if min == -1 {
+		} else if min == -1 {
 			cmd.Output <- models.TplGameInputIllegal
 			return
+		} else {
+			text.WriteString(fmt.Sprintf(models.TplGameBombRange+"\n", min, max))
 		}
-		cmd.Output <- fmt.Sprintf(models.TplGameBombRange, min, max)
 	case game.PassParcel:
-		if !game.IsParcelCorrect(store.Value, textMsg.Message) {
-			// 输入不正确
+		if !game.IsParcelCorrect(gs.Value, textMsg.Message) {
 			cmd.Output <- models.TplGameInputIllegal
 			return
 		}
-		cmd.Output <- fmt.Sprintf(models.TplGameParcelNumber, game.ParcelNumber(store.Value))
-	default:
-		return
+		text.WriteString(fmt.Sprintf(models.TplGameParcelNumber+"\n", game.ParcelNumber(gs.Value)))
 	}
 
-	store.Index = (store.Index + 1) % len(store.Players) // change to next player
-	cmd.Output <- fmt.Sprintf(models.TplGameNext, store.Players[store.Index].Name)
+	gs.Index = (gs.Index + 1) % len(gs.Players) // switch to the next player.
+
+	text.WriteString(fmt.Sprintf(models.TplGameNext, gs.Players[gs.Index].Name)) // output name of the next player.
+
+	cmd.Output <- text.String()
 }
 
-// gameStop 将状态全部归为原值
+// gameStop clear all fields of GameStore.
 func gameStop(cmd *command) {
 	if cmd.Role > models.RoleAdmin {
 		return
@@ -189,7 +181,7 @@ func gameStop(cmd *command) {
 	cmd.Output <- models.TplGameStop
 }
 
-// gamePlayers 输出所有玩家列表
+// gamePlayers output the list of all participating players.
 func gamePlayers(cmd *command) {
 	if cmd.Role > models.RoleAdmin {
 		return
@@ -204,7 +196,7 @@ func gamePlayers(cmd *command) {
 	cmd.Output <- text.String()
 }
 
-// gameRank 输出当前直播间的游戏排行榜
+// gameRank output the game ranking in current room.
 func gameRank(cmd *command) {
 	rank, err := game.ScoreRank(cmd.Room.ID)
 	if err != nil {
@@ -222,7 +214,7 @@ func gameRank(cmd *command) {
 	for k, v := range rank {
 		username, err := modules.QueryUsername(v.UID)
 		if err != nil {
-			zap.S().Error("get score rank failed: ", err)
+			zap.S().Error("get game ranking failed: ", err)
 			username = "UNKNOWN"
 		}
 		text.WriteString(fmt.Sprintf("\n%d. %s %d分", k+1, username, v.Score))

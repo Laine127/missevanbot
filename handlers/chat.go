@@ -6,7 +6,7 @@ import (
 	"missevan-fm/models"
 )
 
-// Chat 简单回复
+// Chat return a simple response.
 func Chat(username string) string {
 	return fmt.Sprintf("@%s %s", username, models.ChatString())
 }

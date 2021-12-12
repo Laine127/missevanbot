@@ -18,13 +18,14 @@ import (
 type command struct {
 	Args   []string
 	Room   *models.Room
-	User   *models.FmUser
-	Info   *models.FmInfo
+	User   models.FmUser
+	Info   models.FmInfo
 	Role   int
 	Output chan<- string
 }
 
-// CmdHandler 命令处理函数
+// CmdHandler is the function type which receive *command
+// and handle the command event.
 type CmdHandler func(cmd *command)
 
 var _cmdMap = map[int]CmdHandler{
@@ -44,10 +45,10 @@ var _cmdMap = map[int]CmdHandler{
 	models.CmdPiaStop:     piaStop,
 }
 
-// roomInfo 处理直播间相关的命令
+// roomInfo handle the room-info command.
 func roomInfo(cmd *command) {
 	if cmd.Role > models.RoleAdmin {
-		return // 权限不足
+		return
 	}
 
 	info := cmd.Info
@@ -67,7 +68,7 @@ func roomInfo(cmd *command) {
 	cmd.Output <- text.String()
 }
 
-// checkin 处理签到命令
+// checkin handle the checkin command.
 func checkin(cmd *command) {
 	user := cmd.User
 	ret, err := modules.Checkin(cmd.Room.ID, user.UserID, user.Username)
@@ -79,7 +80,7 @@ func checkin(cmd *command) {
 	cmd.Output <- fmt.Sprintf("@%s %s", user.Username, ret)
 }
 
-// checkinRank 处理排行榜命令
+// checkinRank handle the checkin-rank command.
 func checkinRank(cmd *command) {
 	var text string
 	if rank := modules.CheckinRank(cmd.Room.ID); rank != "" {
@@ -91,7 +92,7 @@ func checkinRank(cmd *command) {
 	cmd.Output <- text
 }
 
-// horoscopes 生成星座运势
+// horoscopes handle the horoscopes commands.
 func horoscopes(cmd *command) {
 	if len(cmd.Args) != 1 {
 		return
@@ -131,7 +132,7 @@ func horoscopes(cmd *command) {
 	}
 }
 
-// weather 处理天气查询命令
+// weather handle the weather command.
 func weather(cmd *command) {
 	if len(cmd.Args) != 1 {
 		return
@@ -158,16 +159,18 @@ func musicAdd(cmd *command) {
 	cmd.Output <- fmt.Sprintf(models.TplMusicAdd, music)
 }
 
-// musicAll 处理歌单获取命令
+// musicAll handle the query of music list command.
 func musicAll(cmd *command) {
 	if cmd.Role > models.RoleAdmin {
-		return // 权限不足
+		return
 	}
+
 	musics := modules.MusicAll(cmd.Room.ID)
 	if len(musics) == 0 {
 		cmd.Output <- models.TplMusicNone
 		return
 	}
+
 	text := strings.Builder{}
 	for k, v := range musics {
 		if k > 0 {
@@ -179,19 +182,20 @@ func musicAll(cmd *command) {
 	cmd.Output <- text.String()
 }
 
-// musicPop 处理弹出歌曲命令
+// musicPop handle the music pop command.
 func musicPop(cmd *command) {
 	if cmd.Role > models.RoleAdmin {
-		return // 权限不足
+		return
 	}
+
 	modules.MusicPop(cmd.Room.ID)
 	cmd.Output <- models.TplMusicDone
 }
 
-// piaStart 处理开启pia戏命令
+// piaStart handle the start command of drama.
 func piaStart(cmd *command) {
 	if cmd.Role > models.RoleAdmin {
-		return // 权限不足
+		return
 	}
 
 	// check args
@@ -334,17 +338,17 @@ func baitSwitch(cmd *command) {
 
 	room := cmd.Room
 	if room.Bait && room.Timer != nil {
-		// 演员模式已经启动了，执行关闭
+		// bait mode is on, switch it off.
 		cmd.Output <- models.TplBaitStop
 		room.Bait = false
 		room.Timer.Stop()
 	} else {
-		// 演员模式还未启动，执行启动
+		// bait mode is off, switch it on.
 		room.Bait = true
 		if room.RainbowMaxInterval <= 0 {
 			room.RainbowMaxInterval = 10
 		}
-		// 启用定时任务
+		// start the timer.
 		timer := time.NewTimer(1)
 		room.Timer = timer
 		go modules.Praise(cmd.Output, room.RoomConfig, timer)

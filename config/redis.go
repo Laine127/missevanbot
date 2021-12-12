@@ -12,7 +12,7 @@ const RedisPrefix = "missevan:"
 
 var RDB *redis.Client
 
-// InitRDBClient 初始化 Redis 客户端
+// InitRDBClient initialize the Redis client.
 func InitRDBClient(conf *RedisConfig) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     conf.Host,

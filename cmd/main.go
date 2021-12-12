@@ -15,14 +15,14 @@ import (
 var wg = &sync.WaitGroup{}
 
 func main() {
-	// load the configurations
+	// load the configurations.
 	config.LoadConfig()
 	conf := config.Config()
 
-	// init the Redis client
+	// init the Redis client.
 	config.InitRDBClient(conf.Redis)
 
-	// init the logger
+	// init the logger.
 	if err := logger.Init(conf.Level); err != nil {
 		log.Println("init logger failed: ", err)
 		return
@@ -32,6 +32,10 @@ func main() {
 	modules.InitBot()
 
 	for _, roomConf := range conf.Rooms {
+		if !roomConf.Enable {
+			continue
+		}
+
 		inputMsg := make(chan models.FmTextMessage, 1)
 		outputMsg := make(chan string, 1)
 

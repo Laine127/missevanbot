@@ -11,6 +11,11 @@ import (
 	"missevan-fm/models"
 )
 
+const (
+	Unfollow = 0
+	Follow   = 1
+)
+
 // bot is used to store the basic information of the bot user.
 var bot models.FmUser
 
@@ -100,35 +105,6 @@ func ChangeAttention(uid, tp int) (ret []byte, err error) {
 
 	ret, err = PostRequest(_url, header, data)
 	return
-}
-
-// UnfollowAll unfollow all the user which bot followed.
-func UnfollowAll() error {
-	_url := fmt.Sprintf("https://www.missevan.com/person/getuserattention?type=0&user_id=%d&page_size=100&p=1", UserID())
-
-	body, err := GetRequest(_url, nil)
-	if err != nil {
-		return err
-	}
-
-	follows := struct {
-		Success bool `json:"success"`
-		Info    struct {
-			Datas []struct {
-				ID       int    `json:"id"`
-				Username string `json:"username"`
-			} `json:"Datas"`
-		} `json:"info"`
-	}{}
-
-	if err = json.Unmarshal(body, &follows); err != nil {
-		return err
-	}
-
-	for _, v := range follows.Info.Datas {
-		_, _ = ChangeAttention(v.ID, 0)
-	}
-	return nil
 }
 
 // QueryUsername return the username queried by UID.

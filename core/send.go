@@ -15,7 +15,8 @@ type message struct {
 	MessageID string `json:"msg_id"`
 }
 
-// Send 从 outputMsg 中取出消息并发送
+// Send keep taking messages from the channel outputMsg,
+// send messages to the live room according to roomID on MissEvan.
 func Send(outputMsg <-chan string, roomID int) {
 	for msg := range outputMsg {
 		if msg == "" {

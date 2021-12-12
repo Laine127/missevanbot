@@ -1,21 +1,21 @@
 package game
 
-// 游戏种类
+// game type constants.
 const (
-	Null       = iota // 无游戏
-	NumberBomb        // 数字炸弹
-	PassParcel        // 击鼓传花
+	Null       = iota // no game is set.
+	NumberBomb        // game Number Bomb.
+	PassParcel        // game Pass the Parcel.
 )
 
-// 游戏状态
+// game state constants.
 const (
-	StateNotCreated = iota // 未创建
-	StateCreated           // 已创建
-	StateReady             // 准备就绪，等待加入
-	StateRunning           // 正在进行
+	StateNotCreated = iota // game is not created.
+	StateCreated           // game is created.
+	StateReady             // game is ready, waiting to start.
+	StateRunning           // game is running.
 )
 
-// 游戏指令
+// game command constants.
 const (
 	CmdHelper = iota
 	CmdNumberBomb
@@ -27,7 +27,12 @@ const (
 	CmdRank
 )
 
-// HelpText 帮助文本
+// game score constants.
+const (
+	ScoreNumberBomb = 10
+	ScorePassParcel = 5
+)
+
 const HelpText = `游戏帮助：
 
 游戏 -- 获取游戏相关帮助信息
@@ -43,7 +48,7 @@ const HelpText = `游戏帮助：
 
 Author: Secriy`
 
-// _cmdMap 命令映射
+// _cmdMap is for command mapping.
 var _cmdMap = map[string]int{
 	"游戏":   CmdHelper,
 	"数字炸弹": CmdNumberBomb,
@@ -55,7 +60,7 @@ var _cmdMap = map[string]int{
 	"战绩":   CmdRank,
 }
 
-// Command 使用 Key 获取对应的命令
+// Command use key to get command constant.
 func Command(key string) int {
 	if v, ok := _cmdMap[key]; ok {
 		return v
@@ -69,20 +74,23 @@ type Player struct {
 }
 
 type Store struct {
-	Game    int            // 游戏种类
-	State   int            // 游戏状态
-	Players []Player       // 玩家ID列表，按顺序
-	Index   int            // 下一个玩家的下标
-	Value   map[string]int // 存储数据
+	Game    int            // game type.
+	State   int            // game state.
+	Players []Player       // store a list of players in order, contains ID and name of each player.
+	Index   int            // the index of next player.
+	Value   map[string]int // used to store some game values of type int.
 }
 
-// AddPlayer 添加玩家
+// AddPlayer add the player to the list of players,
+// if the player has already joined, return false.
 func (s *Store) AddPlayer(player Player) bool {
+	// check if the player has joined the game
 	for _, v := range s.Players {
 		if v.ID == player.ID {
 			return false
 		}
 	}
+
 	s.Players = append(s.Players, player)
 	return true
 }

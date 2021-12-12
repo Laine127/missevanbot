@@ -2,6 +2,7 @@ package game
 
 import (
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -11,7 +12,9 @@ const (
 	KeyBombNum = "bomb_num"
 )
 
-// BombGenerate 返回一个值为 1 - max 的随机数
+// BombGenerate set the range by the number of players,
+// generate a random number in the range,
+// store values into m, return the range boundary.
 func BombGenerate(m map[string]int, players int) (int, int) {
 	rand.Seed(time.Now().UnixNano())
 	max := players * 30
@@ -24,14 +27,15 @@ func BombGenerate(m map[string]int, players int) (int, int) {
 	return 1, max
 }
 
-// BombGuess 猜数字
-func BombGuess(m map[string]int, n int) (bool, int, int) {
+// BombGuess check if bomb corrected,
+// if not, return the new range boundary.
+func BombGuess(m map[string]int, s string) (bool, int, int) {
 	min := m[KeyBombMin]
 	bomb := m[KeyBombNum]
 	max := m[KeyBombMax]
 
-	if n < min || n > max {
-		// 越界
+	n, err := strconv.Atoi(s)
+	if err != nil || n < min || n > max {
 		return false, -1, -1
 	}
 
