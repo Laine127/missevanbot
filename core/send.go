@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -15,18 +16,23 @@ type message struct {
 	MessageID string `json:"msg_id"`
 }
 
-// Send keep taking messages from the channel outputMsg,
+// Send keep taking messages from the channel output,
 // send messages to the live room according to roomID on MissEvan.
-func Send(outputMsg <-chan string, roomID int) {
-	for msg := range outputMsg {
-		if msg == "" {
-			continue
+func Send(ctx context.Context, output <-chan string, roomID int) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msg := <-output:
+			if msg == "" {
+				continue
+			}
+			send(msg, roomID)
 		}
-		sendLoop(msg, roomID)
 	}
 }
 
-func sendLoop(msg string, roomID int) {
+func send(msg string, roomID int) {
 	defer func() {
 		if p := recover(); p != nil {
 			zap.S().Error(p)

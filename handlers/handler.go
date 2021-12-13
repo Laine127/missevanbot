@@ -13,7 +13,7 @@ import (
 )
 
 // HandleRoom handle the event related to room.
-func HandleRoom(outputMsg chan<- string, room *models.Room, textMsg models.FmTextMessage) {
+func HandleRoom(output chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	info, err := modules.RoomInfo(room.ID)
 	if err != nil {
 		zap.S().Error("fetch the room information failed: ", err)
@@ -24,7 +24,7 @@ func HandleRoom(outputMsg chan<- string, room *models.Room, textMsg models.FmTex
 	case models.EventStatistic:
 		room.Online = textMsg.Statistics.Online // update the number of online members.
 	case models.EventOpen:
-		outputMsg <- models.TplBotStart
+		output <- models.TplBotStart
 		if room.Watch {
 			text := fmt.Sprintf("%s 开播啦~", info.Creator.Username)
 			if err := modules.Push(modules.TitleOpen, text); err != nil {
@@ -51,7 +51,7 @@ func HandleRoom(outputMsg chan<- string, room *models.Room, textMsg models.FmTex
 }
 
 // HandleMember handle the event related to member.
-func HandleMember(outputMsg chan<- string, store *models.Room, textMsg models.FmTextMessage) {
+func HandleMember(output chan<- string, store *models.Room, textMsg models.FmTextMessage) {
 	switch textMsg.Event {
 	case models.EventJoinQueue:
 		for _, v := range textMsg.Queue {
@@ -61,33 +61,33 @@ func HandleMember(outputMsg chan<- string, store *models.Room, textMsg models.Fm
 				if store.Pinyin {
 					text += fmt.Sprintf("\n注音：[ %s ]", utils.Pinyin(username))
 				}
-				outputMsg <- text
+				output <- text
 			} else if store.Count > 1 && store.Count%2 == 0 {
 				// start sending welcome message from the second joined user,
 				// and halve the number of messages sent.
-				outputMsg <- models.TplWelcomeAnon
+				output <- models.TplWelcomeAnon
 			}
 		}
 	case models.EventFollowed:
 		if username := textMsg.User.Username; username != "" {
-			outputMsg <- fmt.Sprintf(models.TplThankFollow, username)
+			output <- fmt.Sprintf(models.TplThankFollow, username)
 		}
 	}
 }
 
 // HandleGift handle the event related to gift.
-func HandleGift(outputMsg chan<- string, room *models.Room, textMsg models.FmTextMessage) {
+func HandleGift(output chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	switch textMsg.Event {
 	case models.EventSend:
 		if username := textMsg.User.Username; username != "" {
 			gift := textMsg.Gift
-			outputMsg <- fmt.Sprintf(models.TplThankGift, username, gift.Number, gift.Name)
+			output <- fmt.Sprintf(models.TplThankGift, username, gift.Number, gift.Name)
 		}
 	}
 }
 
 // HandleMessage handle the event related to message.
-func HandleMessage(outputMsg chan<- string, room *models.Room, textMsg models.FmTextMessage) {
+func HandleMessage(output chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	switch textMsg.Event {
 	case models.EventNew:
 		first := strings.Split(textMsg.Message, " ")[0]
@@ -96,26 +96,26 @@ func HandleMessage(outputMsg chan<- string, room *models.Room, textMsg models.Fm
 		}
 		// determine whether it is a command and handle it.
 		if cmdType := models.Command(first); cmdType >= 0 {
-			handleCommand(outputMsg, room, cmdType, textMsg)
+			handleCommand(output, room, cmdType, textMsg)
 			return
 		}
 		// determine whether it is a chat request and handle it.
 		if first == fmt.Sprintf("@%s", modules.Name()) {
-			handleChat(outputMsg, room, textMsg)
+			handleChat(output, room, textMsg)
 			return
 		}
 		// determine whether it is a game-related message and handle it.
 		if gameType := game.Command(first); gameType >= 0 || room.GameStore.Game != game.Null {
-			handleGame(outputMsg, room, textMsg)
+			handleGame(output, room, textMsg)
 		}
 		// search for keywords in other messages and handle them.
-		handleKeyword(outputMsg, room, textMsg)
+		handleKeyword(output, room, textMsg)
 	}
 }
 
 // handleCommand handle the commands,
 // handle simple logic in this function, handle other logic in command.go.
-func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, textMsg models.FmTextMessage) {
+func handleCommand(output chan<- string, store *models.Room, cmdType int, textMsg models.FmTextMessage) {
 	info, err := modules.RoomInfo(store.ID)
 	if err != nil {
 		zap.S().Error("fetch the room information failed: ", err)
@@ -130,33 +130,33 @@ func handleCommand(outputMsg chan<- string, store *models.Room, cmdType int, tex
 		Info:   info,
 		User:   user,
 		Role:   role(info, user.UserID), // get the role of the message sender.
-		Output: outputMsg,
+		Output: output,
 	}
 
 	switch cmdType {
 	case models.CmdLove:
-		outputMsg <- "❤️~"
+		output <- "❤️~"
 	case models.CmdHelper:
-		outputMsg <- models.HelpText
+		output <- models.HelpText
 	default:
 		_cmdMap[cmdType](cmd)
 	}
 }
 
 // handleChat handle the chat requests.
-func handleChat(outputMsg chan<- string, store *models.Room, textMsg models.FmTextMessage) {
-	outputMsg <- Chat(textMsg.User.Username)
+func handleChat(output chan<- string, store *models.Room, textMsg models.FmTextMessage) {
+	output <- Chat(textMsg.User.Username)
 }
 
 // handleKeyword handle the message which contains keyword.
-func handleKeyword(outputMsg chan<- string, store *models.Room, textMsg models.FmTextMessage) {
+func handleKeyword(output chan<- string, store *models.Room, textMsg models.FmTextMessage) {
 	if strings.Contains(textMsg.Message, "emo") {
-		keyEmotional(outputMsg, textMsg.User)
+		keyEmotional(output, textMsg.User)
 	}
 }
 
 // handleGame handle the game-related message.
-func handleGame(outputMsg chan<- string, store *models.Room, textMsg models.FmTextMessage) {
+func handleGame(output chan<- string, store *models.Room, textMsg models.FmTextMessage) {
 	info, err := modules.RoomInfo(store.ID)
 	if err != nil {
 		zap.S().Error("fetch the room information failed: ", err)
@@ -171,12 +171,12 @@ func handleGame(outputMsg chan<- string, store *models.Room, textMsg models.FmTe
 		Info:   info,
 		User:   user,
 		Role:   role(info, user.UserID),
-		Output: outputMsg,
+		Output: output,
 	}
 
 	switch gameType := game.Command(args[0]); gameType {
 	case game.CmdHelper:
-		outputMsg <- game.HelpText
+		output <- game.HelpText
 	case game.CmdNumberBomb, game.CmdPassParcel:
 		gameCreate(cmd, gameType)
 	case game.CmdJoin:

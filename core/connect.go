@@ -1,7 +1,9 @@
 package core
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -13,17 +15,17 @@ import (
 	"missevan-fm/modules"
 )
 
-type Connection struct {
+type RoomConnection struct {
 	conn *websocket.Conn
-	mu   sync.Mutex
+	mu   *sync.Mutex
 }
 
 // Connect handle the Websocket connection,
-// put the received message into inputMsg channel.
-func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
-	follow(roomID) // follow the room creator.
+// put the received message into input channel.
+func Connect(ctx context.Context, cancel context.CancelFunc, input chan<- models.FmTextMessage, roomID int) {
+	defer cancel()
 
-	dialer := new(websocket.Dialer)
+	mustFollow(roomID) // follow the room creator.
 
 	cookie, err := modules.ConnCookie()
 	if err != nil {
@@ -39,24 +41,30 @@ func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
 	h.Add("Cache-Control", "no-cache")
 	h.Add("Cookie", cookie)
 
-	c := new(Connection)
-	c.conn, _, err = dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", roomID), h)
+	dialer := new(websocket.Dialer)
+	conn, resp, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", roomID), h)
 	if err != nil {
 		zap.S().Error(err)
 		return
 	}
-	defer c.conn.Close()
+	defer conn.Close()
 
+	if resp.StatusCode != 101 {
+		zap.S().Error(errors.New("websocket connect failed"))
+		return
+	}
+
+	rc := &RoomConnection{conn, &sync.Mutex{}}
 	joinMsg := fmt.Sprintf(`{"action":"join","uuid":"35e77342-30af-4b0b-a0eb-f80a826a68c7","type":"room","room_id":%d}`, roomID)
-	if err := c.conn.WriteMessage(websocket.TextMessage, []byte(joinMsg)); err != nil {
+	if err := rc.conn.WriteMessage(websocket.TextMessage, []byte(joinMsg)); err != nil {
 		zap.S().Error(err)
 		return
 	}
 
-	go heart(c) // keep connected
+	go heart(ctx, rc) // keep connected
 
 	for {
-		msgType, msgData, err := c.conn.ReadMessage()
+		msgType, msgData, err := rc.conn.ReadMessage()
 		if err != nil {
 			zap.S().Error(err)
 			continue
@@ -77,7 +85,7 @@ func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
 			if textMsg.User.UserID == modules.UserID() {
 				continue // filter out messages sent by the bot.
 			}
-			inputMsg <- textMsg
+			input <- textMsg
 		case websocket.BinaryMessage:
 		case websocket.CloseMessage:
 		case websocket.PingMessage:
@@ -87,20 +95,30 @@ func Connect(inputMsg chan<- models.FmTextMessage, roomID int) {
 	}
 }
 
-// heart send a heartbeat every 30 seconds.
-func heart(c *Connection) {
+// heart send a heartbeat to the room Websocket connection every 30 seconds,
+// also receive a WithCancel Context, when the Connect goroutine is down,
+// return the heart function and stop the ticker.
+func heart(ctx context.Context, c *RoomConnection) {
 	ticker := time.NewTicker(time.Second * 30)
 	defer ticker.Stop()
 
-	for range ticker.C {
-		c.mu.Lock()
-		_ = c.conn.WriteMessage(websocket.TextMessage, []byte("❤️"))
-		c.mu.Unlock()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			c.mu.Lock()
+			_ = c.conn.WriteMessage(websocket.TextMessage, []byte("❤️"))
+			c.mu.Unlock()
+		}
 	}
 }
 
-// follow follow the creator of the room.
-func follow(roomID int) {
+// mustFollow get the ID of the room creator using room information api,
+// and follow the creator according to the ID.
+//
+// If there is an error, write the logs and return.
+func mustFollow(roomID int) {
 	info, err := modules.RoomInfo(roomID)
 	if err != nil {
 		zap.S().Error("fetch room info failed: ", err)

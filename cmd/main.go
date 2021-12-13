@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"sync"
 
@@ -31,24 +32,25 @@ func main() {
 	// init the bot information.
 	modules.InitBot()
 
+	ctx := context.Background()
 	for _, roomConf := range conf.Rooms {
 		if !roomConf.Enable {
 			continue
 		}
 
-		inputMsg := make(chan models.FmTextMessage, 1)
-		outputMsg := make(chan string, 1)
+		wg.Add(3)
 
+		input := make(chan models.FmTextMessage, 1)
+		output := make(chan string, 1)
 		room := &models.Room{
 			RoomConfig: roomConf,
 			GameStore:  new(game.Store),
 		}
+		ctx, cancel := context.WithCancel(ctx)
 
-		wg.Add(3)
-
-		go core.Connect(inputMsg, room.ID)
-		go core.Match(inputMsg, outputMsg, room)
-		go core.Send(outputMsg, room.ID)
+		go core.Connect(ctx, cancel, input, room.ID)
+		go core.Match(ctx, input, output, room)
+		go core.Send(ctx, output, room.ID)
 	}
 
 	defer wg.Done()

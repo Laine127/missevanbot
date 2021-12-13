@@ -1,20 +1,27 @@
 package core
 
 import (
+	"context"
+
 	"go.uber.org/zap"
 	"missevan-fm/handlers"
 	"missevan-fm/models"
 )
 
-// Match receive the message from the channel inputMsg,
-// handle the message event and send results into the channel outputMsg.
-func Match(inputMsg <-chan models.FmTextMessage, outputMsg chan<- string, room *models.Room) {
-	for msg := range inputMsg {
-		matchLoop(msg, outputMsg, room)
+// Match receive the message from the channel input,
+// handle the message event and send results into the channel output.
+func Match(ctx context.Context, input <-chan models.FmTextMessage, output chan<- string, room *models.Room) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msg := <-input:
+			match(msg, output, room)
+		}
 	}
 }
 
-func matchLoop(msg models.FmTextMessage, outputMsg chan<- string, room *models.Room) {
+func match(msg models.FmTextMessage, output chan<- string, room *models.Room) {
 	defer func() {
 		if p := recover(); p != nil {
 			zap.S().Error(p)
@@ -25,13 +32,13 @@ func matchLoop(msg models.FmTextMessage, outputMsg chan<- string, room *models.R
 	case models.TypeNotify:
 		return
 	case models.TypeRoom:
-		handlers.HandleRoom(outputMsg, room, msg)
+		handlers.HandleRoom(output, room, msg)
 	case models.TypeMember:
-		handlers.HandleMember(outputMsg, room, msg)
+		handlers.HandleMember(output, room, msg)
 	case models.TypeGift:
-		handlers.HandleGift(outputMsg, room, msg)
+		handlers.HandleGift(output, room, msg)
 	case models.TypeMessage:
-		handlers.HandleMessage(outputMsg, room, msg)
+		handlers.HandleMessage(output, room, msg)
 	default:
 	}
 

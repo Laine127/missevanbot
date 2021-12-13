@@ -98,14 +98,14 @@ var _comforts = [...]string{
 	"我不知道怎么安慰你才好，但是生活总得继续",
 }
 
-// LuckString return a luck word in string type which chose from _lucks.
+// LuckString return a luck word in string type which chosen from _lucks.
 func LuckString() string {
 	result := "今日运势："
 	rand.Seed(time.Now().UnixNano())
 	return result + _lucks[rand.Intn(len(_lucks))]
 }
 
-// ChatString return a sentence in string type which chose from _chats.
+// ChatString return a sentence in string type which chosen from _chats.
 func ChatString() string {
 	rand.Seed(time.Now().UnixNano())
 	return _chats[rand.Intn(len(_chats))]
