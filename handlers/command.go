@@ -15,18 +15,9 @@ import (
 	"missevan-fm/utils"
 )
 
-type command struct {
-	Args   []string
-	Room   *models.Room
-	User   models.FmUser
-	Info   models.FmInfo
-	Role   int
-	Output chan<- string
-}
-
 // CmdHandler is the function type which receive *command
 // and handle the command event.
-type CmdHandler func(cmd *command)
+type CmdHandler func(cmd *models.Command)
 
 var _cmdMap = map[int]CmdHandler{
 	models.CmdRoomInfo:    roomInfo,
@@ -43,10 +34,11 @@ var _cmdMap = map[int]CmdHandler{
 	models.CmdPiaNextSafe: piaNextSafe,
 	models.CmdPiaRelocate: piaRelocate,
 	models.CmdPiaStop:     piaStop,
+	models.CmdGameRank:    gameRank,
 }
 
 // roomInfo handle the room-info command.
-func roomInfo(cmd *command) {
+func roomInfo(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
@@ -69,7 +61,7 @@ func roomInfo(cmd *command) {
 }
 
 // checkin handle the checkin command.
-func checkin(cmd *command) {
+func checkin(cmd *models.Command) {
 	user := cmd.User
 	ret, err := modules.Checkin(cmd.Room.ID, user.UserID, user.Username)
 	if err != nil {
@@ -81,7 +73,7 @@ func checkin(cmd *command) {
 }
 
 // checkinRank handle the checkin-rank command.
-func checkinRank(cmd *command) {
+func checkinRank(cmd *models.Command) {
 	var text string
 	if rank := modules.CheckinRank(cmd.Room.ID); rank != "" {
 		text = fmt.Sprintf("每日签到榜单：%s", rank)
@@ -93,7 +85,7 @@ func checkinRank(cmd *command) {
 }
 
 // horoscopes handle the horoscopes commands.
-func horoscopes(cmd *command) {
+func horoscopes(cmd *models.Command) {
 	if len(cmd.Args) != 1 {
 		return
 	}
@@ -133,7 +125,7 @@ func horoscopes(cmd *command) {
 }
 
 // weather handle the weather command.
-func weather(cmd *command) {
+func weather(cmd *models.Command) {
 	if len(cmd.Args) != 1 {
 		return
 	}
@@ -148,7 +140,7 @@ func weather(cmd *command) {
 }
 
 // musicAdd 处理点歌命令
-func musicAdd(cmd *command) {
+func musicAdd(cmd *models.Command) {
 	if len(cmd.Args) != 1 {
 		return
 	}
@@ -160,7 +152,7 @@ func musicAdd(cmd *command) {
 }
 
 // musicAll handle the query of music list command.
-func musicAll(cmd *command) {
+func musicAll(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
@@ -183,7 +175,7 @@ func musicAll(cmd *command) {
 }
 
 // musicPop handle the music pop command.
-func musicPop(cmd *command) {
+func musicPop(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
@@ -193,7 +185,7 @@ func musicPop(cmd *command) {
 }
 
 // piaStart handle the start command of drama.
-func piaStart(cmd *command) {
+func piaStart(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
@@ -223,7 +215,7 @@ func piaStart(cmd *command) {
 }
 
 // piaNext 处理下一条戏文命令
-func piaNext(cmd *command) {
+func piaNext(cmd *models.Command) {
 	switch len(cmd.Args) {
 	case 0:
 		piaNextN(cmd, 1, false)
@@ -237,12 +229,12 @@ func piaNext(cmd *command) {
 }
 
 // piaNextSafe 安全输出一条戏文
-func piaNextSafe(cmd *command) {
+func piaNextSafe(cmd *models.Command) {
 	piaNextN(cmd, 1, true)
 }
 
 // piaNextN 进行发送多条戏本文本的处理
-func piaNextN(cmd *command, dur int, safe bool) {
+func piaNextN(cmd *models.Command, dur int, safe bool) {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
 	}
@@ -289,7 +281,7 @@ func piaNextN(cmd *command, dur int, safe bool) {
 }
 
 // piaRelocate 重定位文章位置
-func piaRelocate(cmd *command) {
+func piaRelocate(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
 	}
@@ -321,7 +313,7 @@ func piaRelocate(cmd *command) {
 }
 
 // piaStop 处理停止pia戏命令
-func piaStop(cmd *command) {
+func piaStop(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
 	}
@@ -331,7 +323,7 @@ func piaStop(cmd *command) {
 }
 
 // baitSwitch 处理演员模式启停命令
-func baitSwitch(cmd *command) {
+func baitSwitch(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
 	}
@@ -353,4 +345,30 @@ func baitSwitch(cmd *command) {
 		room.Timer = timer
 		go modules.Praise(cmd.Output, room.RoomConfig, timer)
 	}
+}
+
+func gameRank(cmd *models.Command) {
+	rank, err := modules.ScoreRank(cmd.Room.ID)
+	if err != nil {
+		zap.S().Error("get score rank failed: ", err)
+		return
+	}
+	if len(rank) == 0 {
+		// check if rank list empty.
+		cmd.Output <- models.TplGameRankEmpty
+		return
+	}
+
+	text := strings.Builder{}
+	text.WriteString("游戏排行榜：")
+	for k, v := range rank {
+		username, err := modules.QueryUsername(v.UID)
+		if err != nil {
+			zap.S().Error("get game ranking failed: ", err)
+			username = "UNKNOWN"
+		}
+		text.WriteString(fmt.Sprintf("\n%d. %s %d分", k+1, username, v.Score))
+	}
+
+	cmd.Output <- text.String()
 }

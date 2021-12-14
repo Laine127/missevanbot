@@ -9,7 +9,6 @@ import (
 	"missevan-fm/core"
 	"missevan-fm/models"
 	"missevan-fm/modules"
-	"missevan-fm/modules/game"
 	"missevan-fm/utils/logger"
 )
 
@@ -42,10 +41,7 @@ func main() {
 
 		input := make(chan models.FmTextMessage, 1)
 		output := make(chan string, 1)
-		room := &models.Room{
-			RoomConfig: roomConf,
-			GameStore:  new(game.Store),
-		}
+		room := &models.Room{RoomConfig: roomConf}
 		ctx, cancel := context.WithCancel(ctx)
 
 		go core.Connect(ctx, cancel, input, room.ID)

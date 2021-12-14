@@ -71,9 +71,9 @@ go build
     - match.go：处理消息
     - send.go：发送消息
 - handlers：处理房间各类消息的模块
+    - game：游戏相关模块
     - chat.go：处理聊天信息
     - command.go：命令消息处理
-    - game.go：游戏消息处理
     - message.go：消息处理入口
     - keyword.go：关键词消息处理
 - models：结构体模型
@@ -82,7 +82,6 @@ go build
     - room.go：直播间实例
     - template.go：消息模板
 - modules：各独立模块
-    - game：游戏模块
     - thirdparty：第三方组件
         - api.go：第三方接口
         - push.go：消息推送

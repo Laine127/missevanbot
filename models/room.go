@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"missevan-fm/config"
-	"missevan-fm/modules/game"
 )
 
 // Room 直播间实例结构体
@@ -16,7 +15,7 @@ type Room struct {
 	Timer              *time.Timer // 定时任务计时器
 	PiaList            []string    // 戏文
 	PiaIndex           int         // 位置
-	GameStore          *game.Store // 存储游戏状态
+	Gamer              Gamer       // 存储游戏状态
 }
 
 type (

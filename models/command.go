@@ -17,6 +17,7 @@ const (
 	CmdPiaNextSafe        // 下一条（安全输出）
 	CmdPiaRelocate        // 重定位
 	CmdPiaStop            // 结束pia戏模式
+	CmdGameRank           // 游戏排行
 	CmdLove               // 比心答复
 )
 
@@ -27,55 +28,40 @@ const (
 	RoleMember         // general member
 )
 
-const HelpText = `命令帮助：
-
-帮助 -- 获取帮助信息
-游戏 -- 获取游戏帮助信息
-房间 -- 查询直播间信息
-签到 -- 在当前直播间签到
-排行 -- 查看当天签到排行
-星座 星座名 -- 查询星座今日运势
-天气 城市名 -- 查询该城市的当日天气
-
-+++++ 点歌相关 +++++
-点歌 歌名 -- 添加歌曲到排队歌单
-歌单 -- 查询排队歌单
-完成 -- 删除排队清单第一首歌曲
-
-+++++ pia戏相关 +++++
-本子 本号 -- 获取戏文，开启pia戏模式
-s -- 下一条文本（防屏蔽版）
-n -- 下一条文本
-n 数字 -- 多条文本
-r 数字 -- 定位到指定的位置
-结束 -- 结束pia戏模式
-
-Author: Secriy`
+type Command struct {
+	Args   []string
+	Room   *Room
+	User   FmUser
+	Info   FmInfo
+	Role   int
+	Output chan<- string
+}
 
 // _cmdMap is for command mapping.
 var _cmdMap = map[string]int{
-	"帮助": CmdHelper,
-	"房间": CmdRoomInfo,
-	"签到": CmdCheckin,
-	"排行": CmdCheckinRank,
-	"星座": CmdHoroscope,
-	"天气": CmdWeather,
-	"点歌": CmdMusicAdd,
-	"歌单": CmdMusicAll,
-	"完成": CmdMusicPop,
-	"本子": CmdPiaStart,
-	"n":  CmdPiaNext,
-	"s":  CmdPiaNextSafe,
-	"r":  CmdPiaRelocate,
-	"结束": CmdPiaStop,
+	"帮助":  CmdHelper,
+	"房间":  CmdRoomInfo,
+	"签到":  CmdCheckin,
+	"签到榜": CmdCheckinRank,
+	"星座":  CmdHoroscope,
+	"天气":  CmdWeather,
+	"点歌":  CmdMusicAdd,
+	"歌单":  CmdMusicAll,
+	"完成":  CmdMusicPop,
+	"贴本":  CmdPiaStart,
+	"n":   CmdPiaNext,
+	"s":   CmdPiaNextSafe,
+	"r":   CmdPiaRelocate,
+	"结束":  CmdPiaStop,
+	"排行":  CmdGameRank,
 	// hidden commands
 	"比心": CmdLove,
 	"笔芯": CmdLove,
 	"咳咳": CmdBaitSwitch,
 }
 
-// Command use key to get command constant.
-func Command(key string) int {
+// Cmd use key to get command constant.
+func Cmd(key string) int {
 	if v, ok := _cmdMap[key]; ok {
 		return v
 	}

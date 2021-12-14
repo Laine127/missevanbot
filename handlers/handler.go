@@ -6,9 +6,9 @@ import (
 
 	"go.uber.org/zap"
 	"missevan-fm/config"
+	"missevan-fm/handlers/game"
 	"missevan-fm/models"
 	"missevan-fm/modules"
-	"missevan-fm/modules/game"
 	"missevan-fm/utils"
 )
 
@@ -94,23 +94,28 @@ func HandleMessage(output chan<- string, room *models.Room, textMsg models.FmTex
 		if first == "" {
 			return
 		}
-		// determine whether it is a command and handle it.
-		if cmdType := models.Command(first); cmdType >= 0 {
-			handleCommand(output, room, cmdType, textMsg)
-			return
-		}
 		// determine whether it is a chat request and handle it.
 		if first == fmt.Sprintf("@%s", modules.Name()) {
 			handleChat(output, room, textMsg)
 			return
 		}
+		// determine whether it is a command and handle it.
+		if cmdType := models.Cmd(first); cmdType >= 0 {
+			handleCommand(output, room, cmdType, textMsg)
+			return
+		}
 		// determine whether it is a game-related message and handle it.
-		if gameType := game.Command(first); gameType >= 0 || room.GameStore.Game != game.Null {
-			handleGame(output, room, textMsg)
+		if cmdType := models.CmdGame(first); cmdType >= 0 || room.Gamer != nil {
+			handleGame(output, room, textMsg, cmdType)
 		}
 		// search for keywords in other messages and handle them.
 		handleKeyword(output, room, textMsg)
 	}
+}
+
+// handleChat handle the chat requests.
+func handleChat(output chan<- string, store *models.Room, textMsg models.FmTextMessage) {
+	output <- Chat(textMsg.User.Username)
 }
 
 // handleCommand handle the commands,
@@ -124,7 +129,7 @@ func handleCommand(output chan<- string, store *models.Room, cmdType int, textMs
 
 	user := textMsg.User // message sender
 	args := strings.Fields(strings.TrimSpace(textMsg.Message))
-	cmd := &command{
+	cmd := &models.Command{
 		Args:   args[1:],
 		Room:   store,
 		Info:   info,
@@ -137,26 +142,14 @@ func handleCommand(output chan<- string, store *models.Room, cmdType int, textMs
 	case models.CmdLove:
 		output <- "❤️~"
 	case models.CmdHelper:
-		output <- models.HelpText
+		output <- models.TplHelpText
 	default:
 		_cmdMap[cmdType](cmd)
 	}
 }
 
-// handleChat handle the chat requests.
-func handleChat(output chan<- string, store *models.Room, textMsg models.FmTextMessage) {
-	output <- Chat(textMsg.User.Username)
-}
-
-// handleKeyword handle the message which contains keyword.
-func handleKeyword(output chan<- string, store *models.Room, textMsg models.FmTextMessage) {
-	if strings.Contains(textMsg.Message, "emo") {
-		keyEmotional(output, textMsg.User)
-	}
-}
-
 // handleGame handle the game-related message.
-func handleGame(output chan<- string, store *models.Room, textMsg models.FmTextMessage) {
+func handleGame(output chan<- string, store *models.Room, textMsg models.FmTextMessage, cmdType int) {
 	info, err := modules.RoomInfo(store.ID)
 	if err != nil {
 		zap.S().Error("fetch the room information failed: ", err)
@@ -165,7 +158,7 @@ func handleGame(output chan<- string, store *models.Room, textMsg models.FmTextM
 
 	user := textMsg.User
 	args := strings.Fields(strings.TrimSpace(textMsg.Message))
-	cmd := &command{
+	cmd := &models.Command{
 		Args:   args[1:],
 		Room:   store,
 		Info:   info,
@@ -174,23 +167,39 @@ func handleGame(output chan<- string, store *models.Room, textMsg models.FmTextM
 		Output: output,
 	}
 
-	switch gameType := game.Command(args[0]); gameType {
-	case game.CmdHelper:
-		output <- game.HelpText
-	case game.CmdNumberBomb, game.CmdPassParcel:
-		gameCreate(cmd, gameType)
-	case game.CmdJoin:
-		gameJoin(cmd, textMsg)
-	case game.CmdStart:
-		gameStart(cmd)
-	case game.CmdStop:
-		gameStop(cmd)
-	case game.CmdPlayers:
-		gamePlayers(cmd)
-	case game.CmdRank:
-		gameRank(cmd)
+	if store.Gamer == nil {
+		switch cmdType {
+		case models.CmdGameNumberBomb:
+			store.Gamer = &game.NumberBomb{Store: new(game.Store)}
+		case models.CmdGamePassParcel:
+			store.Gamer = &game.PassParcel{Store: new(game.Store)}
+		default:
+			output <- models.TplGameNull
+			return
+		}
+		store.Gamer.Create(cmd)
+		return
+	}
+
+	gamer := store.Gamer
+	switch cmdType {
+	case models.CmdGameJoin:
+		gamer.Join(cmd, textMsg)
+	case models.CmdGameStart:
+		gamer.Start(cmd)
+	case models.CmdGameStop:
+		gamer.Stop(cmd)
+	case models.CmdGamePlayers:
+		gamer.AllPlayers(cmd)
 	default:
-		gameAction(cmd, textMsg)
+		gamer.Action(cmd, textMsg)
+	}
+}
+
+// handleKeyword handle the message which contains keyword.
+func handleKeyword(output chan<- string, store *models.Room, textMsg models.FmTextMessage) {
+	if strings.Contains(textMsg.Message, "emo") {
+		keyEmotional(output, textMsg.User)
 	}
 }
 

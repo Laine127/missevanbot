@@ -1,7 +1,6 @@
-package game
+package modules
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 
@@ -12,8 +11,6 @@ type RankMember struct {
 	UID   int
 	Score int
 }
-
-var ctx = context.Background()
 
 // UpdateScore update the score of a player which specified by UID.
 func UpdateScore(roomID, uid, score int) {
