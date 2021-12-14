@@ -12,6 +12,7 @@ const (
 const (
 	CmdGameNumberBomb = iota
 	CmdGamePassParcel
+	CmdGameGuessWord
 	CmdGameJoin
 	CmdGameStart
 	CmdGameStop
@@ -28,6 +29,7 @@ const (
 var _gameCmdMap = map[string]int{
 	"数字炸弹": CmdGameNumberBomb,
 	"击鼓传花": CmdGamePassParcel,
+	"你说我猜": CmdGameGuessWord,
 	"加入":   CmdGameJoin,
 	"开始":   CmdGameStart,
 	"停止":   CmdGameStop,

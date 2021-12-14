@@ -15,7 +15,7 @@ import (
 	"missevan-fm/utils"
 )
 
-// CmdHandler is the function type which receive *command
+// CmdHandler is the function type that receives *command
 // and handle the command event.
 type CmdHandler func(cmd *models.Command)
 
@@ -26,9 +26,9 @@ var _cmdMap = map[int]CmdHandler{
 	models.CmdHoroscope:   horoscopes,
 	models.CmdBaitSwitch:  baitSwitch,
 	models.CmdWeather:     weather,
-	models.CmdMusicAdd:    musicAdd,
-	models.CmdMusicAll:    musicAll,
-	models.CmdMusicPop:    musicPop,
+	models.CmdMusicAdd:    songAdd,
+	models.CmdMusicAll:    songAll,
+	models.CmdMusicPop:    songPop,
 	models.CmdPiaStart:    piaStart,
 	models.CmdPiaNext:     piaNext,
 	models.CmdPiaNextSafe: piaNextSafe,
@@ -139,25 +139,23 @@ func weather(cmd *models.Command) {
 	cmd.Output <- text
 }
 
-// musicAdd 处理点歌命令
-func musicAdd(cmd *models.Command) {
+func songAdd(cmd *models.Command) {
 	if len(cmd.Args) != 1 {
 		return
 	}
 
 	music := cmd.Args[0]
-	modules.MusicAdd(cmd.Room.ID, music)
+	modules.SongAdd(cmd.Room.ID, music)
 
 	cmd.Output <- fmt.Sprintf(models.TplMusicAdd, music)
 }
 
-// musicAll handle the query of music list command.
-func musicAll(cmd *models.Command) {
+func songAll(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
 
-	musics := modules.MusicAll(cmd.Room.ID)
+	musics := modules.SongAll(cmd.Room.ID)
 	if len(musics) == 0 {
 		cmd.Output <- models.TplMusicNone
 		return
@@ -174,13 +172,12 @@ func musicAll(cmd *models.Command) {
 	cmd.Output <- text.String()
 }
 
-// musicPop handle the music pop command.
-func musicPop(cmd *models.Command) {
+func songPop(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
 
-	modules.MusicPop(cmd.Room.ID)
+	modules.SongPop(cmd.Room.ID) // pop the first song in playlist.
 	cmd.Output <- models.TplMusicDone
 }
 
@@ -316,6 +313,9 @@ func piaRelocate(cmd *models.Command) {
 func piaStop(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
+	}
+	if cmd.Room.PiaList == nil {
+		return
 	}
 	cmd.Room.PiaList = nil
 	cmd.Room.PiaIndex = 0

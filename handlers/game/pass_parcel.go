@@ -57,7 +57,7 @@ func (p *PassParcel) Action(cmd *models.Command, textMsg models.FmTextMessage) {
 		return
 	}
 
-	if !p.correctPlayer(textMsg.User.UserID) {
+	if !p.isNowPlayer(textMsg.User.UserID) {
 		return
 	}
 

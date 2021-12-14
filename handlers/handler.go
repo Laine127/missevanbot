@@ -44,7 +44,7 @@ func HandleRoom(output chan<- string, room *models.Room, textMsg models.FmTextMe
 			timer.Stop()
 		}
 		// clear playlist.
-		modules.MusicClear(room.ID)
+		modules.SongClear(room.ID)
 		// clear count.
 		room.Count = 0
 	}
@@ -170,9 +170,11 @@ func handleGame(output chan<- string, store *models.Room, textMsg models.FmTextM
 	if store.Gamer == nil {
 		switch cmdType {
 		case models.CmdGameNumberBomb:
-			store.Gamer = &game.NumberBomb{Store: new(game.Store)}
+			store.Gamer = &game.NumberBomb{Game: new(game.Game)}
 		case models.CmdGamePassParcel:
-			store.Gamer = &game.PassParcel{Store: new(game.Store)}
+			store.Gamer = &game.PassParcel{Game: new(game.Game)}
+		case models.CmdGameGuessWord:
+			store.Gamer = &game.GuessWord{Game: new(game.Game)}
 		default:
 			output <- models.TplGameNull
 			return

@@ -44,7 +44,7 @@ func (s *NumberBomb) Action(cmd *models.Command, textMsg models.FmTextMessage) {
 		return
 	}
 
-	if !s.correctPlayer(textMsg.User.UserID) {
+	if !s.isNowPlayer(textMsg.User.UserID) {
 		return
 	}
 

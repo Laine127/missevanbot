@@ -129,3 +129,16 @@ func QueryUsername(uid int) (string, error) {
 
 	return username, nil
 }
+
+// SendMessage send a private message to a user according to uid.
+func SendMessage(uid int, content string) (ret []byte, err error) {
+	_url := "https://www.missevan.com/mperson/sendmessage"
+
+	data := []byte(fmt.Sprintf("user_id=%d&content=%s", uid, content))
+
+	header := http.Header{}
+	header.Set("content-type", "application/x-www-form-urlencoded; charset=UTF-8")
+
+	ret, err = PostRequest(_url, header, data)
+	return
+}

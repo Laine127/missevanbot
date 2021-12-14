@@ -49,7 +49,8 @@ func (s *Game) nextPlayer() {
 	s.Index = (s.Index + 1) % len(s.Players) // switch to the next player.
 }
 
-func (s *Game) correctPlayer(uid int) bool {
+// isNowPlayer return whether the UID of player that specified by Index equals to uid.
+func (s *Game) isNowPlayer(uid int) bool {
 	return s.Players[s.Index].ID == uid
 }
 
