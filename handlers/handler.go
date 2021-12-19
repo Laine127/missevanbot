@@ -45,6 +45,8 @@ func HandleRoom(output chan<- string, room *models.Room, textMsg models.FmTextMe
 		}
 		// clear playlist.
 		modules.SongClear(room.ID)
+		// stop the game instance.
+		room.Gamer = nil
 		// clear count.
 		room.Count = 0
 	}
@@ -104,7 +106,8 @@ func HandleMessage(output chan<- string, room *models.Room, textMsg models.FmTex
 			handleCommand(output, room, cmdType, textMsg)
 			return
 		}
-		// determine whether it is a game-related message and handle it.
+		// if message is a game-related command or room.Gamer is not null,
+		// that means there is a game instance exists, then handle the message.
 		if cmdType := models.CmdGame(first); cmdType >= 0 || room.Gamer != nil {
 			handleGame(output, room, textMsg, cmdType)
 		}
@@ -167,34 +170,50 @@ func handleGame(output chan<- string, store *models.Room, textMsg models.FmTextM
 		Output: output,
 	}
 
-	if store.Gamer == nil {
-		switch cmdType {
-		case models.CmdGameNumberBomb:
-			store.Gamer = &game.NumberBomb{Game: new(game.Game)}
-		case models.CmdGamePassParcel:
-			store.Gamer = &game.PassParcel{Game: new(game.Game)}
-		case models.CmdGameGuessWord:
-			store.Gamer = &game.GuessWord{Game: new(game.Game)}
-		default:
+	// these cases handle the game creating operation,
+	// other operations will be handling in the default case.
+	switch cmdType {
+	case models.CmdGameNumberBomb:
+		if store.Gamer != nil {
+			output <- models.TplGameExists
+			return
+		}
+		store.Gamer = &game.NumberBomb{Game: new(game.Game)}
+		store.Gamer.Create(cmd)
+		return
+	case models.CmdGamePassParcel:
+		if store.Gamer != nil {
+			output <- models.TplGameExists
+			return
+		}
+		store.Gamer = &game.PassParcel{Game: new(game.Game)}
+		store.Gamer.Create(cmd)
+		return
+	case models.CmdGameGuessWord:
+		if store.Gamer != nil {
+			output <- models.TplGameExists
+			return
+		}
+		store.Gamer = &game.GuessWord{Game: new(game.Game)}
+		store.Gamer.Create(cmd)
+	default:
+		gamer := store.Gamer
+		if gamer == nil {
 			output <- models.TplGameNull
 			return
 		}
-		store.Gamer.Create(cmd)
-		return
-	}
-
-	gamer := store.Gamer
-	switch cmdType {
-	case models.CmdGameJoin:
-		gamer.Join(cmd, textMsg)
-	case models.CmdGameStart:
-		gamer.Start(cmd)
-	case models.CmdGameStop:
-		gamer.Stop(cmd)
-	case models.CmdGamePlayers:
-		gamer.AllPlayers(cmd)
-	default:
-		gamer.Action(cmd, textMsg)
+		switch cmdType {
+		case models.CmdGameJoin:
+			gamer.Join(cmd, textMsg)
+		case models.CmdGameStart:
+			gamer.Start(cmd)
+		case models.CmdGameStop:
+			gamer.Stop(cmd)
+		case models.CmdGamePlayers:
+			gamer.AllPlayers(cmd)
+		default:
+			gamer.Action(cmd, textMsg)
+		}
 	}
 }
 

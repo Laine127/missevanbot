@@ -1,20 +1,21 @@
+NAME="missevan-pre"
 ifeq ($(OS),Windows_NT)
- 	EXECUTABLE="missevan.exe"
+ 	EXECUTABLE=$(NAME)+".exe"
 else
 	ifeq ($(shell uname),Darwin)
-		EXECUTABLE="missevan"
+		EXECUTABLE=$(NAME)
 	else
-		EXECUTABLE="missevan"
+		EXECUTABLE=$(NAME)
 	endif
 endif
 
 build:
 	go build -ldflags "-s -w" -o $(EXECUTABLE) cmd/main.go
-run:
-	screen -S missevan ./missevan
+start:
+	screen -S $(EXECUTABLE) ./$(EXECUTABLE)
 resume:
-	screen -R missevan
+	screen -R $(EXECUTABLE)
 stop:
-	screen -S missevan -X quit
+	screen -S $(EXECUTABLE) -X quit
 restart:
-	make stop && make build && make run
+	make stop && make build && make start
