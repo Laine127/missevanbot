@@ -2,50 +2,13 @@ package models
 
 import (
 	"math/rand"
+	"strings"
+	"text/template"
 	"time"
 )
 
-const TplHelpText = `命令帮助：
-
-帮助 -- 帮助信息
-房间 -- 直播间信息
-签到 -- 当前直播间签到
-签到榜 -- 当天签到榜单
-星座 [星座名] -- 该星座当日运势
-天气 [城市名] -- 该城市当日天气
-
-🎵 点歌相关
-点歌 [歌名] -- 添加歌曲到排队歌单
-歌单 -- 查询排队歌单
-完成 -- 删除排队歌单第一首歌曲
-
-🎭 pia戏相关
-贴本 [本号] -- 获取戏本，开启pia戏模式
-s -- 下一条文本（防屏蔽版）
-n -- 下一条文本
-n [数字] -- 多条文本
-r [数字] -- 定位到指定的位置
-结束 -- 结束pia戏模式
-
-🕹️ 游戏相关
-数字炸弹 -- 创建数字炸弹游戏房间
-击鼓传花 -- 创建击鼓传花游戏房间
-你说我猜 -- 创建你说我猜游戏房间
-
-加入 -- 加入当前创建的游戏
-开始 -- 开始当前选定的游戏
-停止 -- 结束当前进行的游戏
-玩家 -- 查看当前房间中的玩家
-排行 -- 查看当前房间游戏战绩排行
-
-Version: 1.0
-Author: Secriy
-Contact: me@secriy.com`
-
 // handlers related templates.
 const (
-	TplBotStart    = "芝士机器人在线啦，可以在直播间输入 “帮助” 或者 @我 来获取支持哦～"
-	TplWelcome     = "欢迎 @%s 同学进入直播间~"
 	TplWelcomeAnon = "欢迎新来的小可爱们进入直播间呀~"
 	TplThankFollow = "谢谢 @%s 的关注呀~"
 	TplThankGift   = "感谢 @%s 赠送的%d个%s~"
@@ -54,19 +17,10 @@ const (
 
 // commands related templates.
 const (
-	TplRoomInfo = `当前直播间信息：
-- 房间名：%s
-- 主播：%s
-- 粉丝数：%d
-- 直播平台：%s
-- 当前在线：%d
-- 累计人数：%d
-- 管理员：`
 	TplRankEmpty = "今天的榜单好像空空的~"
 	TplBaitStop  = "我突然有点困了" // switch the bait mode off.
-	TplMusicAdd  = "点歌 %s 成功啦~"
-	TplMusicNone = "当前还没有人点歌哦~"
-	TplMusicDone = "完成了一首歌曲~"
+	TplSongAdd   = "点歌 %s 成功啦~"
+	TplSongDone  = "完成了一首歌曲~"
 )
 
 // modules related templates.
@@ -107,7 +61,33 @@ const (
 	TplGameRankEmpty    = "当前游戏榜单为空"
 )
 
+const (
+	TmplBasePath = "templates/"
+	TmplStartUp  = "startup.tmpl"
+	TmplHelper   = "helper.tmpl"
+	TmplRoomInfo = "room_info.tmpl"
+	TmplPlaylist = "playlist.tmpl"
+	TmplWelcome  = "welcome.tmpl"
+)
+
 const TplDefaultPoem = "孜孜不倦，不易乎世。"
+
+var _replies = [...]string{
+	"我来啦我来啦 ο(=•ω＜=)ρ⌒☆",
+	"要抱抱 *(੭*ˊᵕˋ)੭*ଘ",
+	"ヾ(≧▽≦*)o 是要和我一起玩嘛",
+	"(｡･∀･)ﾉﾞ嗨",
+	"(❤️´艸｀❤️)",
+}
+
+var _welcomes = [...]string{
+	"(*ෆ´ ˘ `ෆ*)♡ 希望我们的相遇是彼此的幸运呀～",
+	"要好好相处 ヾ(≧O≦)〃嗷~",
+	"(`･ω･′)ゞ respect!",
+	"ε≡٩(๑>₃<)۶ 我刚跑了三公里来欢迎你哦～",
+	"( ｡ớ ₃ờ)ھ 可以为了我不要离开嘛～",
+	"一起来聊天叭 (๑•ᴗ•๑)♡～",
+}
 
 var _lucks = [...]string{
 	"连理之木", "景星庆云", "有凤来仪",
@@ -144,31 +124,75 @@ var _comforts = [...]string{
 
 // _words contains words use for the game guess-word.
 var _words = [...]string{
-	"测试1",
-	"测试2",
+	"亡羊补牢", "颠三倒四", "拔苗助长", "画蛇添足", "顺手牵羊",
+	"三长二短", "抱头鼠窜", "鸡鸣狗盗", "头破血流", "坐井观天",
+	"眼高手低", "目瞪口呆", "胸无点墨", "鸡飞狗跳", "鼠目寸光",
+	"盲人摸象", "画蛇添足", "画龙点睛", "抱头鼠窜", "狗急跳墙",
+	"虎背熊腰", "守株待兔", "亡羊补牢", "对牛弹琴", "如鱼得水",
+	"打草惊蛇", "打草惊蛇", "走马观花", "三头六臂", "丢三落四",
+	"红杏出墙", "三头六臂", "对牛弹琴", "如鱼得水", "画龙点睛",
+	"声东击西", "鸡飞狗跳", "鹿死谁手", "掩耳盗铃", "对牛弹琴",
+	"藕断丝连", "可歌可泣", "眉飞色舞", "连蹦带跳", "左顾右盼",
+	"嬉皮笑脸", "愁眉苦脸", "东倒西歪", "蹑手蹑脚", "喜出望外",
+	"垂头丧气", "暴跳如雷", "狼吞虎咽", "见钱眼开", "摇头晃脑",
+	"昂首挺胸", "捧腹大笑", "幸灾乐祸", "贼眉鼠眼", "牛头马面",
+	"虎头蛇尾", "兔死狐悲", "龙腾虎跃", "狗急跳墙", "号啕大哭",
+	"自言自语", "摇头晃脑", "撒腿就跑", "垂头丧气", "昂首挺胸",
+	"手舞足蹈", "张牙舞爪", "眉开眼笑", "大惊小怪", "从容不迫",
+	"目瞪口呆", "兴高采烈", "呆若木鸡", "幸灾乐祸", "神气十足",
+	"唉声叹气", "哭笑不得", "捧腹大笑", "指手划脚", "东张西望",
+	"一瘸一拐", "挤眉弄眼", "蹑手蹑脚", "废寝忘食", "闻鸡起舞",
+	"守株待兔", "掩耳盗铃", "长吁短叹", "盲人摸象", "狼吞虎咽",
+	"抓耳挠腮", "哈哈大笑", "恍然大悟", "一五一十", "三心二意",
+	"争先恐后", "一刀两断", "丢三落四", "坐井观天", "快马加鞭",
+}
+
+func ReplyString() string {
+	return _replies[randNum(len(_replies))]
+}
+
+// WelcomeString return a welcome word in string type which chosen from _welcomes.
+func WelcomeString() string {
+	return _welcomes[randNum(len(_welcomes))]
 }
 
 // LuckString return a luck word in string type which chosen from _lucks.
 func LuckString() string {
 	result := "今日运势："
-	rand.Seed(time.Now().UnixNano())
-	return result + _lucks[rand.Intn(len(_lucks))]
+	return result + _lucks[randNum(len(_lucks))]
 }
 
 // ChatString return a sentence in string type which chosen from _chats.
 func ChatString() string {
-	rand.Seed(time.Now().UnixNano())
-	return _chats[rand.Intn(len(_chats))]
+	return _chats[randNum(len(_chats))]
 }
 
 // ComfortString return a sentence in string type which chosen from _comforts.
 func ComfortString() string {
-	rand.Seed(time.Now().UnixNano())
-	return _comforts[rand.Intn(len(_comforts))]
+	return _comforts[randNum(len(_comforts))]
 }
 
 // WordString return a word in string type which chosen from _words.
 func WordString() string {
+	return _words[randNum(len(_words))]
+}
+
+func randNum(length int) int {
 	rand.Seed(time.Now().UnixNano())
-	return _words[rand.Intn(len(_words))]
+	return rand.Intn(length)
+}
+
+func NewTemplate(name string, data interface{}) (string, error) {
+	path := TmplBasePath + name
+	text := new(strings.Builder)
+	funcs := template.FuncMap{"add": add}
+	tmpl := template.Must(template.New(name).Funcs(funcs).ParseFiles(path)) // hello.tmpl
+	if err := tmpl.Execute(text, data); err != nil {
+		return "", err
+	}
+	return text.String(), nil
+}
+
+func add(x, y int) int {
+	return x + y
 }

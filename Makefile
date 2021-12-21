@@ -1,6 +1,6 @@
-NAME="missevan-pre"
+NAME=missevan-pre
 ifeq ($(OS),Windows_NT)
- 	EXECUTABLE=$(NAME)+".exe"
+ 	EXECUTABLE="$(NAME).exe"
 else
 	ifeq ($(shell uname),Darwin)
 		EXECUTABLE=$(NAME)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	"context"
 	"log"
 	"sync"
@@ -41,7 +42,10 @@ func main() {
 
 		input := make(chan models.FmTextMessage, 1)
 		output := make(chan string, 1)
-		room := &models.Room{RoomConfig: roomConf}
+		room := &models.Room{
+			RoomConfig: roomConf,
+			Playlist:   list.New(),
+		}
 		ctx, cancel := context.WithCancel(ctx)
 
 		go core.Connect(ctx, cancel, input, room.ID)

@@ -12,7 +12,7 @@ import (
 	"missevan-fm/utils"
 )
 
-// HandleRoom handle the event related to room.
+// The HandleRoom handles the events that related to live room.
 func HandleRoom(output chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	info, err := modules.RoomInfo(room.ID)
 	if err != nil {
@@ -24,44 +24,66 @@ func HandleRoom(output chan<- string, room *models.Room, textMsg models.FmTextMe
 	case models.EventStatistic:
 		room.Online = textMsg.Statistics.Online // update the number of online members.
 	case models.EventOpen:
-		output <- models.TplBotStart
-		if room.Watch {
-			text := fmt.Sprintf("%s 开播啦~", info.Creator.Username)
-			if err := modules.Push(modules.TitleOpen, text); err != nil {
-				zap.S().Error("Bark push failed: ", err)
-			}
+		sText, err := models.NewTemplate(models.TmplStartUp, config.Name())
+		if err != nil {
+			zap.S().Error(err)
+		} else {
+			output <- sText
+		}
+
+		if !room.Watch {
+			return
+		}
+		text := fmt.Sprintf("%s 开播啦~", info.Creator.Username)
+		if err := modules.Push(modules.TitleOpen, text); err != nil {
+			zap.S().Error("Bark push failed: ", err)
 		}
 	case models.EventClose:
-		if room.Watch {
-			text := fmt.Sprintf("%s 下播啦~", info.Creator.Username)
-			if err := modules.Push(modules.TitleClose, text); err != nil {
-				zap.S().Error("Bark push failed: ", err)
-			}
-		}
 		// stop the timer.
-		room.Bait = false
+		room.BaitMode = false
 		if timer := room.Timer; timer != nil {
 			timer.Stop()
 		}
 		// clear playlist.
-		modules.SongClear(room.ID)
+		room.Playlist = nil
 		// stop the game instance.
 		room.Gamer = nil
 		// clear count.
 		room.Count = 0
+
+		if !room.Watch {
+			return
+		}
+		// push notify to the message service.
+		text := fmt.Sprintf("%s 下播啦~", info.Creator.Username)
+		if err := modules.Push(modules.TitleClose, text); err != nil {
+			zap.S().Error("Bark push failed: ", err)
+		}
 	}
 }
 
-// HandleMember handle the event related to member.
+// The HandleMember handles the event related to member.
 func HandleMember(output chan<- string, store *models.Room, textMsg models.FmTextMessage) {
 	switch textMsg.Event {
 	case models.EventJoinQueue:
 		for _, v := range textMsg.Queue {
 			store.Count++
 			if username := v.Username; username != "" {
-				text := fmt.Sprintf(models.TplWelcome, username)
+				var pinyin string
 				if store.Pinyin {
-					text += fmt.Sprintf("\n注音：[ %s ]", utils.Pinyin(username))
+					pinyin = utils.Pinyin(username)
+				}
+
+				sText := struct {
+					Name   string
+					Pinyin string
+					Extend string
+				}{username, pinyin, models.WelcomeString()}
+
+				text, err := models.NewTemplate(models.TmplWelcome, sText)
+				if err != nil {
+					zap.S().Error(err)
+					return
 				}
 				output <- text
 			} else if store.Count > 1 && store.Count%2 == 0 {
@@ -77,7 +99,7 @@ func HandleMember(output chan<- string, store *models.Room, textMsg models.FmTex
 	}
 }
 
-// HandleGift handle the event related to gift.
+// The HandleGift handles the event related to gift.
 func HandleGift(output chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	switch textMsg.Event {
 	case models.EventSend:
@@ -88,7 +110,7 @@ func HandleGift(output chan<- string, room *models.Room, textMsg models.FmTextMe
 	}
 }
 
-// HandleMessage handle the event related to message.
+// The HandleMessage handles the event related to message.
 func HandleMessage(output chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	switch textMsg.Event {
 	case models.EventNew:
@@ -97,7 +119,7 @@ func HandleMessage(output chan<- string, room *models.Room, textMsg models.FmTex
 			return
 		}
 		// determine whether it is a chat request and handle it.
-		if first == fmt.Sprintf("@%s", modules.Name()) {
+		if first == fmt.Sprintf("@%s", modules.Name()) || first == config.Name() {
 			handleChat(output, room, textMsg)
 			return
 		}
@@ -116,13 +138,17 @@ func HandleMessage(output chan<- string, room *models.Room, textMsg models.FmTex
 	}
 }
 
-// handleChat handle the chat requests.
+// The handleChat handles the chat requests.
 func handleChat(output chan<- string, store *models.Room, textMsg models.FmTextMessage) {
+	if textMsg.Message == config.Name() {
+		output <- fmt.Sprintf("@%s %s", textMsg.User.Username, models.ReplyString())
+		return
+	}
 	output <- Chat(textMsg.User.Username)
 }
 
-// handleCommand handle the commands,
-// handle simple logic in this function, handle other logic in command.go.
+// The handleCommand handles the commands,
+// simple logics are handling in this function, others in command.go.
 func handleCommand(output chan<- string, store *models.Room, cmdType int, textMsg models.FmTextMessage) {
 	info, err := modules.RoomInfo(store.ID)
 	if err != nil {
@@ -145,13 +171,18 @@ func handleCommand(output chan<- string, store *models.Room, cmdType int, textMs
 	case models.CmdLove:
 		output <- "❤️~"
 	case models.CmdHelper:
-		output <- models.TplHelpText
+		text, err := models.NewTemplate(models.TmplHelper, nil)
+		if err != nil {
+			zap.S().Error(err)
+			return
+		}
+		output <- text
 	default:
 		_cmdMap[cmdType](cmd)
 	}
 }
 
-// handleGame handle the game-related message.
+// handleGame handles the game-related message.
 func handleGame(output chan<- string, store *models.Room, textMsg models.FmTextMessage, cmdType int) {
 	info, err := modules.RoomInfo(store.ID)
 	if err != nil {
@@ -217,7 +248,7 @@ func handleGame(output chan<- string, store *models.Room, textMsg models.FmTextM
 	}
 }
 
-// handleKeyword handle the message which contains keyword.
+// handleKeyword handles the message which contains keyword.
 func handleKeyword(output chan<- string, store *models.Room, textMsg models.FmTextMessage) {
 	if strings.Contains(textMsg.Message, "emo") {
 		keyEmotional(output, textMsg.User)

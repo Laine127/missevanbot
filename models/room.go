@@ -1,6 +1,7 @@
 package models
 
 import (
+	"container/list"
 	"time"
 
 	"missevan-fm/config"
@@ -11,10 +12,11 @@ type Room struct {
 	*config.RoomConfig             // 当前房间的配置
 	Count              int         // 统计进入的数量
 	Online             int         // 记录当前直播间在线人数
-	Bait               bool        // 是否开启演员模式
-	Timer              *time.Timer // 定时任务计时器
+	Playlist           *list.List  //
 	PiaList            []string    // 戏文
 	PiaIndex           int         // 位置
+	BaitMode           bool        // 是否开启演员模式
+	Timer              *time.Timer // 定时任务计时器
 	Gamer              Gamer       // 存储游戏状态
 }
 

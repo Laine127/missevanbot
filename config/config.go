@@ -14,6 +14,7 @@ var (
 )
 
 type BotConfig struct {
+	Name   string        `mapstructure:"name"`   // the nickname of the bot.
 	Cookie string        `mapstructure:"cookie"` // path of the cookie file.
 	Admin  int           `mapstructure:"admin"`  // admin of the bot.
 	Level  string        `mapstructure:"level"`  // log level.
@@ -49,6 +50,11 @@ func Config() BotConfig {
 // Push return copy of the push configurations.
 func Push() PushConfig {
 	return *botConfig.Push
+}
+
+// Name return the bot nickname in string format.
+func Name() string {
+	return botConfig.Name
 }
 
 // Cookie return the cookie in string format.

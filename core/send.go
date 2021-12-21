@@ -24,10 +24,9 @@ func Send(ctx context.Context, output <-chan string, roomID int) {
 		case <-ctx.Done():
 			return
 		case msg := <-output:
-			if msg == "" {
-				continue
+			if msg != "" {
+				send(msg, roomID)
 			}
-			send(msg, roomID)
 		}
 	}
 }

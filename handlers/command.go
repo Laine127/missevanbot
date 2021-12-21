@@ -37,42 +37,62 @@ var _cmdMap = map[int]CmdHandler{
 	models.CmdGameRank:    gameRank,
 }
 
-// roomInfo handle the room-info command.
+// The roomInfo handles the live room information fetching command.
 func roomInfo(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
 
 	info := cmd.Info
-	text := strings.Builder{}
-	text.WriteString(fmt.Sprintf(models.TplRoomInfo,
+	fmAdmins := info.Room.Members.Admin
+
+	// The admins slice only contains the name of
+	// each live room admin.
+	admins := make([]string, 0, len(fmAdmins))
+	for _, v := range fmAdmins {
+		admins = append(admins, v.Username)
+	}
+
+	data := struct {
+		Name         string
+		Creator      string
+		Followers    int
+		Platform     string
+		Online       int
+		Accumulation int
+		Admins       []string
+	}{
 		info.Room.Name,
 		info.Creator.Username,
 		info.Room.Statistics.AttentionCount,
 		info.Room.Status.Channel.Platform,
 		cmd.Room.Online,
 		info.Room.Statistics.Accumulation,
-	))
-	for _, v := range info.Room.Members.Admin {
-		text.WriteString(fmt.Sprintf("\n--- %s", v.Username))
+		admins,
 	}
 
-	cmd.Output <- text.String()
+	text, err := models.NewTemplate(models.TmplRoomInfo, data)
+	if err != nil {
+		zap.Error(err)
+		return
+	}
+
+	cmd.Output <- text
 }
 
-// checkin handle the checkin command.
+// The checkin handles the checkin command.
 func checkin(cmd *models.Command) {
 	user := cmd.User
 	ret, err := modules.Checkin(cmd.Room.ID, user.UserID, user.Username)
 	if err != nil {
-		zap.S().Errorf("签到出错了：%s", err)
+		zap.S().Error("checkin error: ", err)
 		return
 	}
 
 	cmd.Output <- fmt.Sprintf("@%s %s", user.Username, ret)
 }
 
-// checkinRank handle the checkin-rank command.
+// The checkinRank handles the checkin-rank querying command.
 func checkinRank(cmd *models.Command) {
 	var text string
 	if rank := modules.CheckinRank(cmd.Room.ID); rank != "" {
@@ -84,7 +104,7 @@ func checkinRank(cmd *models.Command) {
 	cmd.Output <- text
 }
 
-// horoscopes handle the horoscopes commands.
+// The horoscopes handle the horoscopes commands.
 func horoscopes(cmd *models.Command) {
 	if len(cmd.Args) != 1 {
 		return
@@ -124,7 +144,7 @@ func horoscopes(cmd *models.Command) {
 	}
 }
 
-// weather handle the weather command.
+// The weather handles the weather command.
 func weather(cmd *models.Command) {
 	if len(cmd.Args) != 1 {
 		return
@@ -139,15 +159,23 @@ func weather(cmd *models.Command) {
 	cmd.Output <- text
 }
 
+// The song is the struct that used for
+// storing the song's name and the command sender's name.
+type song struct {
+	Name string
+	User string
+}
+
 func songAdd(cmd *models.Command) {
 	if len(cmd.Args) != 1 {
 		return
 	}
 
 	music := cmd.Args[0]
-	modules.SongAdd(cmd.Room.ID, music)
+	playlist := cmd.Room.Playlist
+	playlist.PushBack(song{music, cmd.User.Username})
 
-	cmd.Output <- fmt.Sprintf(models.TplMusicAdd, music)
+	cmd.Output <- fmt.Sprintf(models.TplSongAdd, music)
 }
 
 func songAll(cmd *models.Command) {
@@ -155,21 +183,21 @@ func songAll(cmd *models.Command) {
 		return
 	}
 
-	musics := modules.SongAll(cmd.Room.ID)
-	if len(musics) == 0 {
-		cmd.Output <- models.TplMusicNone
+	playlist := cmd.Room.Playlist
+	s := playlist.Front()
+	songs := make([]song, 0, 10)
+	for i := 0; i < 10 && s != nil; i++ {
+		songs = append(songs, s.Value.(song))
+		s = s.Next()
+	}
+
+	text, err := models.NewTemplate(models.TmplPlaylist, songs)
+	if err != nil {
+		zap.S().Error(err)
 		return
 	}
 
-	text := strings.Builder{}
-	for k, v := range musics {
-		if k > 0 {
-			text.WriteString("\n")
-		}
-		text.WriteString(fmt.Sprintf("%d. %s", k+1, v))
-	}
-
-	cmd.Output <- text.String()
+	cmd.Output <- text
 }
 
 func songPop(cmd *models.Command) {
@@ -177,11 +205,12 @@ func songPop(cmd *models.Command) {
 		return
 	}
 
-	modules.SongPop(cmd.Room.ID) // pop the first song in playlist.
-	cmd.Output <- models.TplMusicDone
+	playlist := cmd.Room.Playlist
+	playlist.Remove(playlist.Front()) // pop the first song in playlist.
+
+	cmd.Output <- models.TplSongDone
 }
 
-// piaStart handle the start command of drama.
 func piaStart(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
@@ -329,14 +358,14 @@ func baitSwitch(cmd *models.Command) {
 	}
 
 	room := cmd.Room
-	if room.Bait && room.Timer != nil {
+	if room.BaitMode && room.Timer != nil {
 		// bait mode is on, switch it off.
 		cmd.Output <- models.TplBaitStop
-		room.Bait = false
+		room.BaitMode = false
 		room.Timer.Stop()
 	} else {
 		// bait mode is off, switch it on.
-		room.Bait = true
+		room.BaitMode = true
 		if room.RainbowMaxInterval <= 0 {
 			room.RainbowMaxInterval = 10
 		}
