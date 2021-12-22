@@ -30,8 +30,8 @@
 编译本项目，在可执行文件同目录下创建 _config.yaml_ 文件，填入配置信息，执行可执行文件即可。
 
 ```yaml
-name: "知世" # 机器人昵称
-cookie: ".cookie" # 存储 Cookie 的文件路径 
+nickname: "知世" # 机器人昵称
+cookie: ".cookie" # 存储 Cookie 的文件路径，需要单独创建该文件
 level: "info" # 日志输出等级
 redis: # Redis 相关配置
   host: ""
@@ -44,8 +44,6 @@ rooms: # 需要启用的直播间
   - id: 111111111
     name: "主播一号" # 主播昵称，可以随意自定义，暂时没有用处
     enable: true # 是否为当前直播间启用机器人
-    pinyin: false # 是否开启用户名注音功能
-    rainbow_max_interval: 10 # 彩虹屁发送的最大时间间隔，单位：分钟
     watch: true # 是否监控开播/下播
   - id: 222222222
     name: "主播二号"
@@ -62,6 +60,16 @@ go build
 ./missevanbot
 ```
 
+### Docker
+
+建议另外部署 Redis 容器，并将 *config.yaml* 中的 `redis.host` 改为 `"redis:6379"`。
+
+```shell
+cd missevan-fm/
+docker build -t missevan-bot .
+docker run -d --link redis-server:redis missevan-bot:latest
+```
+
 ## 目录结构
 
 - cmd：主函数入口
@@ -70,6 +78,7 @@ go build
     - redis.go：Redis 客户端
 - core
     - connect.go：Websocket 连接处理，获取消息
+    - cron.go：定时任务
     - match.go：处理消息
     - send.go：发送消息
 - handlers：处理房间各类消息的模块
@@ -80,6 +89,7 @@ go build
     - keyword.go：关键词消息处理
 - models：结构体模型
     - command.go：命令相关
+    - game.go：游戏相关结构
     - message.go：直播间消息相关
     - room.go：直播间实例
     - template.go：消息模板
@@ -88,8 +98,9 @@ go build
     - checkin.go：签到模块
     - fm.go：猫耳 FM 相关模块
     - http.go：HTTP 请求模块
+    - game.go：游戏相关模块
+    - mode.go：模式相关模块
     - push.go：消息推送模块
-    - score.go：游戏分数模块
     - tasks.go：定时任务模块
 - templates：模板文件
 - utils：辅助工具
