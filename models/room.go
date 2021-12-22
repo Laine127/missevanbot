@@ -9,15 +9,22 @@ import (
 
 // Room 直播间实例结构体
 type Room struct {
-	*config.RoomConfig             // 当前房间的配置
-	Count              int         // 统计进入的数量
-	Online             int         // 记录当前直播间在线人数
-	Playlist           *list.List  //
-	PiaList            []string    // 戏文
-	PiaIndex           int         // 位置
-	BaitMode           bool        // 是否开启演员模式
-	Timer              *time.Timer // 定时任务计时器
-	Gamer              Gamer       // 存储游戏状态
+	*config.RoomConfig              // 当前房间的配置
+	Count              int          // 统计进入的数量
+	Online             int          // 记录当前直播间在线人数
+	Playlist           *list.List   //
+	PiaList            []string     // 戏文
+	PiaIndex           int          // 位置
+	Ticker             *time.Ticker //
+	TickerCount        int          //
+	Gamer              Gamer        // 存储游戏状态
+}
+
+func NewRoom(roomConf *config.RoomConfig) *Room {
+	return &Room{
+		RoomConfig: roomConf,
+		Playlist:   list.New(),
+	}
 }
 
 type (

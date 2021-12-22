@@ -17,10 +17,10 @@ const (
 
 // commands related templates.
 const (
-	TplRankEmpty = "今天的榜单好像空空的~"
-	TplBaitStop  = "我突然有点困了" // switch the bait mode off.
-	TplSongAdd   = "点歌 %s 成功啦~"
-	TplSongDone  = "完成了一首歌曲~"
+	TplModeSwitch = "模式启停成功"
+	TplRankEmpty  = "今天的榜单好像空空的~"
+	TplSongAdd    = "点歌 %s 成功啦~"
+	TplSongDone   = "完成了一首歌曲~"
 )
 
 // modules related templates.
@@ -65,6 +65,7 @@ const (
 	TmplBasePath = "templates/"
 	TmplStartUp  = "startup.tmpl"
 	TmplHelper   = "helper.tmpl"
+	TmplModes    = "mode.tmpl"
 	TmplRoomInfo = "room_info.tmpl"
 	TmplPlaylist = "playlist.tmpl"
 	TmplWelcome  = "welcome.tmpl"

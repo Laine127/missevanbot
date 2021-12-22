@@ -8,7 +8,12 @@ import (
 const (
 	TitleOpen  = "开播通知"
 	TitleClose = "下播通知"
+	TitleError = "错误通知"
 )
+
+func MustPush(title, msg string) {
+	_ = Push(title, msg)
+}
 
 // Push 推送消息通知
 func Push(title, msg string) (err error) {

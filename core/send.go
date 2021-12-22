@@ -38,6 +38,15 @@ func send(msg string, roomID int) {
 		}
 	}()
 
+	mode, err := modules.Mode(roomID, modules.ModeMute)
+	if err != nil {
+		zap.S().Error(err)
+		return
+	}
+	if mode {
+		return
+	}
+
 	_url := "https://fm.missevan.com/api/chatroom/message/send"
 
 	data, _ := json.Marshal(message{

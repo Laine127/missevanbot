@@ -1,7 +1,6 @@
 package main
 
 import (
-	"container/list"
 	"context"
 	"log"
 	"sync"
@@ -38,19 +37,20 @@ func main() {
 			continue
 		}
 
-		wg.Add(3)
+		wg.Add(4)
 
 		input := make(chan models.FmTextMessage, 1)
 		output := make(chan string, 1)
-		room := &models.Room{
-			RoomConfig: roomConf,
-			Playlist:   list.New(),
-		}
+		room := models.NewRoom(roomConf)
+
 		ctx, cancel := context.WithCancel(ctx)
 
-		go core.Connect(ctx, cancel, input, room.ID)
+		modules.InitMode(room.ID)
+
+		go core.Connect(ctx, cancel, input, room)
 		go core.Match(ctx, input, output, room)
 		go core.Send(ctx, output, room.ID)
+		go core.Cron(ctx, output, room)
 	}
 
 	defer wg.Done()

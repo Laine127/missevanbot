@@ -1,23 +1,29 @@
 package modules
 
 import (
-	"math/rand"
-	"time"
-
-	"missevanbot/config"
+	"missevanbot/models"
 	"missevanbot/modules/thirdparty"
 )
 
-// Praise praise module, use timer to send messages regularly.
-func Praise(output chan<- string, room *config.RoomConfig, timer *time.Timer) {
-	for {
-		r := rand.New(rand.NewSource(time.Now().UnixNano()))
-		randNumber := r.Intn(room.RainbowMaxInterval)
-		timer.Reset(time.Duration(randNumber+1) * time.Minute)
-		<-timer.C
+const (
+	DurPraise = 5
+)
 
-		if text, err := thirdparty.PraiseText(); err == nil && text != "" {
-			output <- text
-		}
+func RunTasks(output chan<- string, room *models.Room) {
+	modes := ModeAll(room.ID)
+	count := room.TickerCount
+
+	if isEnabled(modes[ModeBait]) && shouldExec(count, DurPraise) {
+		taskPraise(output)
 	}
+}
+
+func taskPraise(output chan<- string) {
+	if text, err := thirdparty.PraiseText(); err == nil && text != "" {
+		output <- text
+	}
+}
+
+func shouldExec(count int, dur int) bool {
+	return count > 0 && count%dur == 0
 }

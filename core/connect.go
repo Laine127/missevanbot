@@ -22,10 +22,14 @@ type RoomConnection struct {
 
 // Connect handle the Websocket connection,
 // put the received message into input channel.
-func Connect(ctx context.Context, cancel context.CancelFunc, input chan<- models.FmTextMessage, roomID int) {
-	defer cancel()
+//
+// TODO: Websocket connection may throw EOF error.
+func Connect(ctx context.Context, cancel context.CancelFunc, input chan<- models.FmTextMessage, room *models.Room) {
+	defer cancel() // cancel Connect, Match and Send goroutines.
 
-	mustFollow(roomID) // follow the room creator.
+	roomID := room.ID
+
+	follow(roomID) // follow the room creator.
 
 	cookie, err := modules.ConnCookie()
 	if err != nil {
@@ -42,6 +46,8 @@ func Connect(ctx context.Context, cancel context.CancelFunc, input chan<- models
 	h.Add("Cookie", cookie)
 
 	dialer := new(websocket.Dialer)
+
+retry:
 	conn, resp, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", roomID), h)
 	if err != nil {
 		zap.S().Error(err)
@@ -61,13 +67,17 @@ func Connect(ctx context.Context, cancel context.CancelFunc, input chan<- models
 		return
 	}
 
+	ctx, cancel = context.WithCancel(context.Background())
+	defer cancel()
 	go heart(ctx, rc) // keep connected
 
 	for {
 		msgType, msgData, err := rc.conn.ReadMessage()
 		if err != nil {
 			zap.S().Error(err)
-			continue
+			modules.MustPush(fmt.Sprint(modules.TitleError, room.Name), err.Error())
+			cancel() // cancel the heart goroutine.
+			goto retry
 		}
 
 		zap.S().Debug(string(msgData))
@@ -96,7 +106,7 @@ func Connect(ctx context.Context, cancel context.CancelFunc, input chan<- models
 }
 
 // heart send a heartbeat to the room Websocket connection every 30 seconds,
-// also receive a WithCancel Context, when the Connect goroutine is down,
+// also receive a WithCancel Context, when the `Connect` goroutine is down,
 // return the heart function and stop the ticker.
 func heart(ctx context.Context, c *RoomConnection) {
 	ticker := time.NewTicker(time.Second * 30)
@@ -114,11 +124,11 @@ func heart(ctx context.Context, c *RoomConnection) {
 	}
 }
 
-// mustFollow get the ID of the room creator using room information api,
+// follow get the ID of the room creator using room information api,
 // and follow the creator according to the ID.
 //
 // If there is an error, write the logs and return.
-func mustFollow(roomID int) {
+func follow(roomID int) {
 	info, err := modules.RoomInfo(roomID)
 	if err != nil {
 		zap.S().Error("fetch room info failed: ", err)

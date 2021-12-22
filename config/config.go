@@ -14,13 +14,13 @@ var (
 )
 
 type BotConfig struct {
-	Name   string        `mapstructure:"name"`   // the nickname of the bot.
-	Cookie string        `mapstructure:"cookie"` // path of the cookie file.
-	Admin  int           `mapstructure:"admin"`  // admin of the bot.
-	Level  string        `mapstructure:"level"`  // log level.
-	Redis  *RedisConfig  `mapstructure:"redis"`  // configurations of Redis client.
-	Push   *PushConfig   `mapstructure:"push"`   // configurations of message push module.
-	Rooms  []*RoomConfig `mapstructure:"rooms"`  // configurations of all the live rooms.
+	Nickname string        `mapstructure:"nickname"` // the nickname of the bot.
+	Cookie   string        `mapstructure:"cookie"`   // path of the cookie file.
+	Admin    int           `mapstructure:"admin"`    // admin of the bot.
+	Level    string        `mapstructure:"level"`    // log level.
+	Redis    *RedisConfig  `mapstructure:"redis"`    // configurations of Redis client.
+	Push     *PushConfig   `mapstructure:"push"`     // configurations of message push module.
+	Rooms    []*RoomConfig `mapstructure:"rooms"`    // configurations of all the live rooms.
 }
 
 type RedisConfig struct {
@@ -34,12 +34,10 @@ type PushConfig struct {
 }
 
 type RoomConfig struct {
-	ID                 int    `mapstructure:"id"`                   // ID of the room.
-	Name               string `mapstructure:"name"`                 // nickname of the room creator.
-	Enable             bool   `mapstructure:"enable"`               // whether to enable the bot.
-	Pinyin             bool   `mapstructure:"pinyin"`               // whether to enable the pinyin function.
-	RainbowMaxInterval int    `mapstructure:"rainbow_max_interval"` // the max interval for bait mode.
-	Watch              bool   `mapstructure:"watch"`                // whether to enable live room status monitoring.
+	ID     int    `mapstructure:"id"`     // ID of the room.
+	Name   string `mapstructure:"name"`   // nickname of the room creator.
+	Enable bool   `mapstructure:"enable"` // whether to enable the bot.
+	Watch  bool   `mapstructure:"watch"`  // whether to enable live room status monitoring.
 }
 
 // Config return copy of the configurations.
@@ -52,9 +50,9 @@ func Push() PushConfig {
 	return *botConfig.Push
 }
 
-// Name return the bot nickname in string format.
-func Name() string {
-	return botConfig.Name
+// Nickname return the bot nickname in string format.
+func Nickname() string {
+	return botConfig.Nickname
 }
 
 // Cookie return the cookie in string format.

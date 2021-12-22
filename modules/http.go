@@ -14,18 +14,18 @@ const (
 	ReqPost = 2
 )
 
-// PostRequest do the POST request with the data.
+// PostRequest does the POST request with the data.
 func PostRequest(_url string, header http.Header, data []byte) (body []byte, err error) {
 	return request(_url, header, data, ReqPost)
 }
 
-// GetRequest do the GET request.
+// GetRequest does the GET request.
 func GetRequest(_url string, header http.Header) (body []byte, err error) {
 	return request(_url, header, nil, ReqGet)
 }
 
-// request do the GET or the POST request according to reqType,
-// first of all, read the cookie of the bot user.
+// request does the GET or the POST request according to reqType,
+// first, read the cookie of the bot user.
 func request(_url string, header http.Header, data []byte, reqType int) (body []byte, err error) {
 	cookie := config.Cookie()
 	if cookie == "" {

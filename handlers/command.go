@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"go.uber.org/zap"
 	"missevanbot/config"
@@ -24,16 +23,19 @@ var _cmdMap = map[int]CmdHandler{
 	models.CmdCheckin:     checkin,
 	models.CmdCheckinRank: checkinRank,
 	models.CmdHoroscope:   horoscopes,
-	models.CmdBaitSwitch:  baitSwitch,
 	models.CmdWeather:     weather,
-	models.CmdMusicAdd:    songAdd,
-	models.CmdMusicAll:    songAll,
-	models.CmdMusicPop:    songPop,
+	models.CmdSongAdd:     songAdd,
+	models.CmdSongAll:     songAll,
+	models.CmdSongPop:     songPop,
 	models.CmdPiaStart:    piaStart,
 	models.CmdPiaNext:     piaNext,
 	models.CmdPiaNextSafe: piaNextSafe,
 	models.CmdPiaRelocate: piaRelocate,
 	models.CmdPiaStop:     piaStop,
+	models.CmdModeAll:     modeAll,
+	models.CmdModeMute:    muteSwitch,
+	models.CmdModeBait:    baitSwitch,
+	models.CmdModePinyin:  pinyinSwitch,
 	models.CmdGameRank:    gameRank,
 }
 
@@ -60,6 +62,7 @@ func roomInfo(cmd *models.Command) {
 		Platform     string
 		Online       int
 		Accumulation int
+		Count        int
 		Admins       []string
 	}{
 		info.Room.Name,
@@ -68,6 +71,7 @@ func roomInfo(cmd *models.Command) {
 		info.Room.Status.Channel.Platform,
 		cmd.Room.Online,
 		info.Room.Statistics.Accumulation,
+		cmd.Room.Count,
 		admins,
 	}
 
@@ -161,7 +165,7 @@ func weather(cmd *models.Command) {
 
 // The song is the struct that used for
 // storing the song's name and the command sender's name.
-type song struct {
+type order struct {
 	Name string
 	User string
 }
@@ -171,11 +175,11 @@ func songAdd(cmd *models.Command) {
 		return
 	}
 
-	music := cmd.Args[0]
+	song := cmd.Args[0]
 	playlist := cmd.Room.Playlist
-	playlist.PushBack(song{music, cmd.User.Username})
+	playlist.PushBack(order{song, cmd.User.Username})
 
-	cmd.Output <- fmt.Sprintf(models.TplSongAdd, music)
+	cmd.Output <- fmt.Sprintf(models.TplSongAdd, song)
 }
 
 func songAll(cmd *models.Command) {
@@ -185,9 +189,9 @@ func songAll(cmd *models.Command) {
 
 	playlist := cmd.Room.Playlist
 	s := playlist.Front()
-	songs := make([]song, 0, 10)
+	songs := make([]order, 0, 10)
 	for i := 0; i < 10 && s != nil; i++ {
-		songs = append(songs, s.Value.(song))
+		songs = append(songs, s.Value.(order))
 		s = s.Next()
 	}
 
@@ -351,29 +355,48 @@ func piaStop(cmd *models.Command) {
 	cmd.Output <- models.TplPiaStop
 }
 
-// baitSwitch 处理演员模式启停命令
-func baitSwitch(cmd *models.Command) {
+func modeAll(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
-		return // 权限不足
+		return
 	}
 
-	room := cmd.Room
-	if room.BaitMode && room.Timer != nil {
-		// bait mode is on, switch it off.
-		cmd.Output <- models.TplBaitStop
-		room.BaitMode = false
-		room.Timer.Stop()
-	} else {
-		// bait mode is off, switch it on.
-		room.BaitMode = true
-		if room.RainbowMaxInterval <= 0 {
-			room.RainbowMaxInterval = 10
-		}
-		// start the timer.
-		timer := time.NewTimer(1)
-		room.Timer = timer
-		go modules.Praise(cmd.Output, room.RoomConfig, timer)
+	text, err := models.NewTemplate(models.TmplModes, modules.ModeAll(cmd.Room.ID))
+	if err != nil {
+		zap.S().Error(err)
+		return
 	}
+	cmd.Output <- text
+}
+
+func muteSwitch(cmd *models.Command) {
+	if cmd.Role > models.RoleCreator {
+		return
+	}
+
+	modules.SwitchMode(cmd.Room.ID, modules.ModeMute)
+
+	cmd.Output <- models.TplModeSwitch
+}
+
+// baitSwitch 处理演员模式启停命令
+func baitSwitch(cmd *models.Command) {
+	if cmd.Role > models.RoleCreator {
+		return
+	}
+
+	modules.SwitchMode(cmd.Room.ID, modules.ModeBait)
+
+	cmd.Output <- models.TplModeSwitch
+}
+
+func pinyinSwitch(cmd *models.Command) {
+	if cmd.Role > models.RoleCreator {
+		return
+	}
+
+	modules.SwitchMode(cmd.Room.ID, modules.ModePinyin)
+
+	cmd.Output <- models.TplModeSwitch
 }
 
 func gameRank(cmd *models.Command) {

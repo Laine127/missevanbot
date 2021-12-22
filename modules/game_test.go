@@ -6,6 +6,9 @@ import (
 	"missevanbot/config"
 )
 
+const TestRID = 1000
+const TestUID = 5163862
+
 func init() {
 	config.LoadConfig()
 	conf := config.Config()
@@ -13,11 +16,11 @@ func init() {
 }
 
 func TestUpdateScore(t *testing.T) {
-	UpdateScore(461808808, 5163862, 1)
+	UpdateScore(TestRID, TestUID, 1)
 }
 
 func TestScoreRank(t *testing.T) {
-	res, err := ScoreRank(461808808)
+	res, err := ScoreRank(TestRID)
 	if err != nil {
 		t.Error(err)
 		return
