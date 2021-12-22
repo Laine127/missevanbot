@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	"missevan-fm/config"
-	"missevan-fm/models"
-	"missevan-fm/modules"
-	"missevan-fm/modules/thirdparty"
-	"missevan-fm/utils"
+	"missevanbot/config"
+	"missevanbot/models"
+	"missevanbot/modules"
+	"missevanbot/modules/thirdparty"
+	"missevanbot/utils"
 )
 
 // CmdHandler is the function type that receives *command

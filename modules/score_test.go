@@ -3,7 +3,7 @@ package modules
 import (
 	"testing"
 
-	"missevan-fm/config"
+	"missevanbot/config"
 )
 
 func init() {

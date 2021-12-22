@@ -11,8 +11,8 @@ import (
 
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
-	"missevan-fm/models"
-	"missevan-fm/modules"
+	"missevanbot/models"
+	"missevanbot/modules"
 )
 
 type RoomConnection struct {

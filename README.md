@@ -1,6 +1,6 @@
-# MissEvan-FM
+# missevanbot
 
-猫耳 FM 直播间机器人 Go 语言实现，仅作为娱乐用途。未来看心情更新~
+猫耳 FM 直播间机器人（MissEvan Bot）Go 语言实现，仅作为娱乐用途。未来看心情更新~
 
 ## 功能
 
@@ -30,6 +30,7 @@
 编译本项目，在可执行文件同目录下创建 _config.yaml_ 文件，填入配置信息，执行可执行文件即可。
 
 ```yaml
+name: "知世" # 机器人昵称
 cookie: ".cookie" # 存储 Cookie 的文件路径 
 level: "info" # 日志输出等级
 redis: # Redis 相关配置
@@ -54,11 +55,11 @@ rooms: # 需要启用的直播间
 ```shell
 # Windows
 go build
-.\missevan-fm.exe
+.\missevanbot.exe
 
 # Linux
 go build
-./missevan-fm
+./missevanbot
 ```
 
 ## 目录结构
@@ -84,14 +85,12 @@ go build
     - template.go：消息模板
 - modules：各独立模块
     - thirdparty：第三方组件
-        - api.go：第三方接口
-        - push.go：消息推送
-        - zodiac.go：星座运势
     - checkin.go：签到模块
     - fm.go：猫耳 FM 相关模块
     - http.go：HTTP 请求模块
-    - music.go：点歌歌单模块
-    - praise.go：彩虹屁模块
     - push.go：消息推送模块
+    - score.go：游戏分数模块
+    - tasks.go：定时任务模块
+- templates：模板文件
 - utils：辅助工具
     - logger：日志组件

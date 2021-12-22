@@ -4,8 +4,8 @@ import (
 	"math/rand"
 	"time"
 
-	"missevan-fm/config"
-	"missevan-fm/modules/thirdparty"
+	"missevanbot/config"
+	"missevanbot/modules/thirdparty"
 )
 
 // Praise praise module, use timer to send messages regularly.

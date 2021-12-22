@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"missevan-fm/config"
+	"missevanbot/config"
 )
 
 const (

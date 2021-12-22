@@ -6,11 +6,11 @@ import (
 	"log"
 	"sync"
 
-	"missevan-fm/config"
-	"missevan-fm/core"
-	"missevan-fm/models"
-	"missevan-fm/modules"
-	"missevan-fm/utils/logger"
+	"missevanbot/config"
+	"missevanbot/core"
+	"missevanbot/models"
+	"missevanbot/modules"
+	"missevanbot/utils/logger"
 )
 
 var wg = &sync.WaitGroup{}

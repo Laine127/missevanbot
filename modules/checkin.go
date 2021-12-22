@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"missevan-fm/config"
-	"missevan-fm/models"
-	"missevan-fm/modules/thirdparty"
-	"missevan-fm/utils"
+	"missevanbot/config"
+	"missevanbot/models"
+	"missevanbot/modules/thirdparty"
+	"missevanbot/utils"
 )
 
 var ctx = context.Background()

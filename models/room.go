@@ -4,7 +4,7 @@ import (
 	"container/list"
 	"time"
 
-	"missevan-fm/config"
+	"missevanbot/config"
 )
 
 // Room 直播间实例结构体

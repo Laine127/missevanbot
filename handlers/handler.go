@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
-	"missevan-fm/config"
-	"missevan-fm/handlers/game"
-	"missevan-fm/models"
-	"missevan-fm/modules"
-	"missevan-fm/utils"
+	"missevanbot/config"
+	"missevanbot/handlers/game"
+	"missevanbot/models"
+	"missevanbot/modules"
+	"missevanbot/utils"
 )
 
 // The HandleRoom handles the events that related to live room.

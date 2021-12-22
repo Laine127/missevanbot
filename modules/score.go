@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"missevan-fm/config"
+	"missevanbot/config"
 )
 
 type RankMember struct {

@@ -1,4 +1,4 @@
-module missevan-fm
+module missevanbot
 
 go 1.17
 

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"missevan-fm/models"
-	"missevan-fm/utils"
+	"missevanbot/models"
+	"missevanbot/utils"
 )
 
 type PassParcel struct {

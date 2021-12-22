@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"go.uber.org/zap"
-	"missevan-fm/handlers"
-	"missevan-fm/models"
+	"missevanbot/handlers"
+	"missevanbot/models"
 )
 
 // Match receive the message from the channel input,

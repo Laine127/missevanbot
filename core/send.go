@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"go.uber.org/zap"
-	"missevan-fm/modules"
-	"missevan-fm/utils"
+	"missevanbot/modules"
+	"missevanbot/utils"
 )
 
 type message struct {

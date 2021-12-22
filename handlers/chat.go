@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 
-	"missevan-fm/models"
+	"missevanbot/models"
 )
 
 // Chat return a simple response.

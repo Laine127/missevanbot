@@ -1,8 +1,8 @@
 package modules
 
 import (
-	"missevan-fm/config"
-	"missevan-fm/modules/thirdparty"
+	"missevanbot/config"
+	"missevanbot/modules/thirdparty"
 )
 
 const (

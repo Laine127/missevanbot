@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"missevan-fm/models"
+	"missevanbot/models"
 )
 
 const (

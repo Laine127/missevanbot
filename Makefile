@@ -1,4 +1,4 @@
-NAME=missevan-pre
+NAME=missevanbot
 ifeq ($(OS),Windows_NT)
  	EXECUTABLE="$(NAME).exe"
 else

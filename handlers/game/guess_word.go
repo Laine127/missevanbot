@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
-	"missevan-fm/models"
-	"missevan-fm/modules"
+	"missevanbot/models"
+	"missevanbot/modules"
 )
 
 type GuessWord struct {

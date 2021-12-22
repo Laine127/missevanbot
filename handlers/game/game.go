@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"missevan-fm/models"
-	"missevan-fm/modules"
+	"missevanbot/models"
+	"missevanbot/modules"
 )
 
 type Game struct {

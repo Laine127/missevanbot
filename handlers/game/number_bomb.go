@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"missevan-fm/models"
+	"missevanbot/models"
 )
 
 type NumberBomb struct {
