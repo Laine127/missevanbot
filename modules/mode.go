@@ -11,7 +11,7 @@ import (
 const (
 	ModeMute   = "mute"
 	ModePinyin = "pinyin"
-	ModeBait   = "bait"
+	ModePander = "pander"
 	ModeWater  = "water"
 )
 
@@ -21,13 +21,13 @@ const (
 )
 
 const (
-	DefaultBait  = 6
-	DefaultWater = 12
+	DefaultPander = 6
+	DefaultWater  = 12
 )
 
 var _defaults = map[string]int{
-	ModeBait:  DefaultBait,
-	ModeWater: DefaultWater,
+	ModePander: DefaultPander,
+	ModeWater:  DefaultWater,
 }
 
 // InitMode initialize all the modes that storing in Redis and not exists,
@@ -39,7 +39,7 @@ func InitMode(rid int) {
 
 	rdb.HSetNX(ctx, key, ModeMute, Disabled)
 	rdb.HSetNX(ctx, key, ModePinyin, Enabled)
-	rdb.HSetNX(ctx, key, ModeBait, Disabled)
+	rdb.HSetNX(ctx, key, ModePander, Disabled)
 	rdb.HSetNX(ctx, key, ModeWater, Disabled)
 }
 

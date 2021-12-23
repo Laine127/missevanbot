@@ -29,7 +29,7 @@ func (s *NumberBomb) Start(cmd *models.Command) {
 
 	s.State = models.StateRunning // state transfer
 
-	s.Min, s.Max = s.bomb(len(s.Players)) // set for number bomb game.
+	s.Min, s.Max = s.bomb(len(s.Players))
 
 	text := strings.Builder{}
 	text.WriteString(fmt.Sprintln(models.TplGameStart))
@@ -51,15 +51,14 @@ func (s *NumberBomb) Action(cmd *models.Command, textMsg models.FmTextMessage) {
 	text := strings.Builder{}
 	if ok, min, max := s.guess(textMsg.Message); ok {
 		cmd.Output <- fmt.Sprintf(models.TplGameBomb, textMsg.User.Username)
-		// add score for winning players.
+		// Add scores for winning players.
 		if s.Index > 0 {
 			addScore(cmd.Room.ID, s.Players[:s.Index], models.ScoreNumberBomb)
 		}
 		if s.Index < len(s.Players)-1 {
 			addScore(cmd.Room.ID, s.Players[s.Index+1:], models.ScoreNumberBomb)
 		}
-		// stop the game.
-		stop(cmd)
+		stop(cmd) // Stop the game.
 		return
 	} else if min == -1 {
 		cmd.Output <- models.TplGameInputIllegal
@@ -75,9 +74,9 @@ func (s *NumberBomb) Action(cmd *models.Command, textMsg models.FmTextMessage) {
 	cmd.Output <- text.String()
 }
 
-// bomb set the range by the number of players,
-// generate a random number in the range,
-// store values into m, return the range boundary.
+// The bomb sets the range according to number of players,
+// generates a random number in the range,
+// stores values into m and returns the range boundary.
 func (s *NumberBomb) bomb(players int) (int, int) {
 	rand.Seed(time.Now().UnixNano())
 	max := players * 30
@@ -90,8 +89,8 @@ func (s *NumberBomb) bomb(players int) (int, int) {
 	return 1, max
 }
 
-// guess parse g to int type, return false and -1 if there is an error (not a number),
-// if int(g) is not equals to s.Bomb, return false and the new range boundary.
+// The guess parses g to int type, returns false and -1 if there is an error (not a number).
+// If int(g) is not equals s.Bomb, return false and the new range boundary.
 func (s *NumberBomb) guess(g string) (bool, int, int) {
 	min := s.Min
 	max := s.Max

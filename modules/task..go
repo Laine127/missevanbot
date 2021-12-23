@@ -12,17 +12,16 @@ func RunTasks(output chan<- string, room *models.Room) {
 	modes := ModeAll(room.ID)
 	count := room.TickerCount
 
-	if mode := modes[ModeBait]; isEnabled(mode) && shouldExec(count, mode) {
-		taskPraise(output)
+	if mode := modes[ModePander]; isEnabled(mode) && shouldExec(count, mode) {
+		taskPander(output)
 	}
-
 	if mode := modes[ModeWater]; isEnabled(mode) && shouldExec(count, mode) {
 		taskWater(output)
 	}
 }
 
-func taskPraise(output chan<- string) {
-	if text, err := thirdparty.PraiseText(); err == nil && text != "" {
+func taskPander(output chan<- string) {
+	if text, err := thirdparty.PanderText(); err == nil && text != "" {
 		output <- text
 	}
 }

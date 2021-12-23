@@ -14,19 +14,21 @@ import (
 	"missevanbot/utils"
 )
 
-// CmdHandler is the function type that receives *command
+// cmdHandler is the function type that receives *command
 // and handle the command event.
-type CmdHandler func(cmd *models.Command)
+type cmdHandler func(cmd *models.Command)
 
-var _cmdMap = map[int]CmdHandler{
+var _cmdMap = map[int]cmdHandler{
+	models.CmdBotHelper:   botHelper,
+	models.CmdBotFeatures: botUpdates,
 	models.CmdRoomInfo:    roomInfo,
 	models.CmdCheckin:     checkin,
 	models.CmdCheckinRank: checkinRank,
 	models.CmdHoroscope:   apiHoroscopes,
 	models.CmdWeather:     apiWeather,
-	models.CmdSongAdd:     songAdd,
-	models.CmdSongAll:     songAll,
-	models.CmdSongPop:     songPop,
+	models.CmdSongReq:     songReq,
+	models.CmdSongList:    songList,
+	models.CmdSongDone:    songDone,
 	models.CmdPiaStart:    piaStart,
 	models.CmdPiaNext:     piaNext,
 	models.CmdPiaNextSafe: piaNextSafe,
@@ -34,10 +36,45 @@ var _cmdMap = map[int]CmdHandler{
 	models.CmdPiaStop:     piaStop,
 	models.CmdModeAll:     modeAll,
 	models.CmdModeMute:    switchMute,
-	models.CmdModeBait:    switchBait,
+	models.CmdModePander:  switchPander,
 	models.CmdModePinyin:  switchPinyin,
 	models.CmdModeWater:   switchWater,
 	models.CmdGameRank:    gameRank,
+	models.CmdLove:        love,
+}
+
+// botHelper outputs the
+func botHelper(cmd *models.Command) {
+	args := cmd.Args
+	key := ""
+	if len(args) == 0 {
+		key = modules.TmplHelper
+	} else {
+		switch args[0] {
+		case "点歌", "歌单", "req", "list":
+			key = modules.TmplHelperPlaylist
+		case "pia戏", "pia":
+			key = modules.TmplHelperPia
+		case "游戏", "game":
+			key = modules.TmplHelperGame
+		}
+	}
+
+	text, err := modules.NewTemplate(key, nil)
+	if err != nil {
+		zap.S().Warn(cmd.Room.Log("create template failed", err))
+		return
+	}
+	cmd.Output <- text
+}
+
+func botUpdates(cmd *models.Command) {
+	text, err := modules.NewTemplate(modules.TmplUpdates, nil)
+	if err != nil {
+		zap.S().Warn(cmd.Room.Log("create template failed", err))
+		return
+	}
+	cmd.Output <- text
 }
 
 // The roomInfo handles the live room information fetching command.
@@ -76,7 +113,7 @@ func roomInfo(cmd *models.Command) {
 		admins,
 	}
 
-	text, err := models.NewTemplate(models.TmplRoomInfo, data)
+	text, err := modules.NewTemplate(modules.TmplRoomInfo, data)
 	if err != nil {
 		zap.Error(err)
 		return
@@ -171,7 +208,7 @@ type order struct {
 	User string
 }
 
-func songAdd(cmd *models.Command) {
+func songReq(cmd *models.Command) {
 	if len(cmd.Args) != 1 {
 		return
 	}
@@ -180,10 +217,10 @@ func songAdd(cmd *models.Command) {
 	playlist := cmd.Room.Playlist
 	playlist.PushBack(order{song, cmd.User.Username})
 
-	cmd.Output <- fmt.Sprintf(models.TplSongAdd, song)
+	cmd.Output <- fmt.Sprintf(models.TplSongReq, song)
 }
 
-func songAll(cmd *models.Command) {
+func songList(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
@@ -196,7 +233,7 @@ func songAll(cmd *models.Command) {
 		s = s.Next()
 	}
 
-	text, err := models.NewTemplate(models.TmplPlaylist, songs)
+	text, err := modules.NewTemplate(modules.TmplPlaylist, songs)
 	if err != nil {
 		zap.S().Warn(cmd.Room.Log("create template failed", err))
 		return
@@ -205,13 +242,13 @@ func songAll(cmd *models.Command) {
 	cmd.Output <- text
 }
 
-func songPop(cmd *models.Command) {
+func songDone(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
 
 	playlist := cmd.Room.Playlist
-	playlist.Remove(playlist.Front()) // pop the first song in playlist.
+	playlist.Remove(playlist.Front())
 
 	cmd.Output <- models.TplSongDone
 }
@@ -220,9 +257,7 @@ func piaStart(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
-
-	// check args
-	if len(cmd.Args) != 1 {
+	if len(cmd.Args) == 0 {
 		return
 	}
 
@@ -245,33 +280,36 @@ func piaStart(cmd *models.Command) {
 	cmd.Output <- fmt.Sprintf(models.TplPiaStart, text.String())
 }
 
-// piaNext 处理下一条戏文命令
 func piaNext(cmd *models.Command) {
-	switch len(cmd.Args) {
-	case 0:
-		piaNextN(cmd, 1, false)
-	case 1:
-		dur, err := strconv.Atoi(cmd.Args[0])
-		if err != nil {
-			return
-		}
-		piaNextN(cmd, dur, false)
-	}
-}
-
-// piaNextSafe 安全输出一条戏文
-func piaNextSafe(cmd *models.Command) {
-	piaNextN(cmd, 1, true)
-}
-
-// piaNextN 进行发送多条戏本文本的处理
-func piaNextN(cmd *models.Command, dur int, safe bool) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
+	args := cmd.Args
+	if len(args) == 0 {
+		piaNextN(cmd, 1, false)
+		return
+	}
+	dur, err := strconv.Atoi(args[0])
+	if err != nil {
+		return
+	}
+	piaNextN(cmd, dur, false)
+}
 
+// piaNextSafe outputs one paragraph in safety mode.
+func piaNextSafe(cmd *models.Command) {
+	if cmd.Role > models.RoleAdmin {
+		return
+	}
+	piaNextN(cmd, 1, true)
+}
+
+// piaNextN outputs dur paragraphs.
+// If safe=true, output paragraphs in safety mode
+// that can avoid being blocked.
+func piaNextN(cmd *models.Command, dur int, safe bool) {
 	if cmd.Room.PiaIndex == 0 || cmd.Room.PiaList == nil {
-		// 没有启动
+		// There is no script in PiaList.
 		cmd.Output <- models.TplPiaEmpty
 		return
 	}
@@ -280,7 +318,8 @@ func piaNextN(cmd *models.Command, dur int, safe bool) {
 	start := cmd.Room.PiaIndex - 1
 	stop := start + dur
 	if stop > length {
-		stop = length // 索引越界，则边界定位到数组末尾
+		// Index out of bounds, relocate to tail of the list.
+		stop = length
 	}
 
 	text := strings.Builder{}
@@ -289,7 +328,7 @@ func piaNextN(cmd *models.Command, dur int, safe bool) {
 			text.WriteString("\n")
 		}
 		if safe {
-			// 安全输出，防止屏蔽
+			// Add whitespace between each character, avoid being blocked.
 			for _, s := range v {
 				text.WriteString(string(s))
 				text.WriteString(" ")
@@ -304,14 +343,13 @@ func piaNextN(cmd *models.Command, dur int, safe bool) {
 	cmd.Output <- text.String()
 
 	if stop == length {
-		// 到达末尾，清空列表，关闭当前模式
+		// If reaching the end, clear the list and index.
 		cmd.Room.PiaList = nil
 		cmd.Room.PiaIndex = 0
 		cmd.Output <- models.TplPiaDone
 	}
 }
 
-// piaRelocate 重定位文章位置
 func piaRelocate(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
@@ -343,7 +381,6 @@ func piaRelocate(cmd *models.Command) {
 	cmd.Output <- models.TplPiaRelocate
 }
 
-// piaStop 处理停止pia戏命令
 func piaStop(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return // 权限不足
@@ -361,7 +398,8 @@ func modeAll(cmd *models.Command) {
 		return
 	}
 
-	text, err := models.NewTemplate(models.TmplModes, modules.ModeAll(cmd.Room.ID))
+	data := modules.ModeAll(cmd.Room.ID)
+	text, err := modules.NewTemplate(modules.TmplMode, data)
 	if err != nil {
 		zap.S().Warn(cmd.Room.Log("create template failed", err))
 		return
@@ -385,22 +423,21 @@ func switchPinyin(cmd *models.Command) {
 	cmd.Output <- models.TplModeSwitch
 }
 
-// switchBait 处理演员模式启停命令
-func switchBait(cmd *models.Command) {
+func switchPander(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
 	room := cmd.Room
 	args := cmd.Args
-	bait := modules.ModeBait
+	pander := modules.ModePander
 	if len(args) >= 1 {
 		if !modules.Validate(args[0]) {
 			cmd.Output <- models.TplIllegal
 			return
 		}
-		modules.SetMode(room.ID, bait, args[0])
+		modules.SetMode(room.ID, pander, args[0])
 	} else {
-		modules.SwitchMode(room.ID, bait)
+		modules.SwitchMode(room.ID, pander)
 	}
 	cmd.Output <- models.TplModeSwitch
 }
@@ -448,4 +485,8 @@ func gameRank(cmd *models.Command) {
 	}
 
 	cmd.Output <- text.String()
+}
+
+func love(cmd *models.Command) {
+	cmd.Output <- "❤️~"
 }

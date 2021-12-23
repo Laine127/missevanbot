@@ -52,7 +52,7 @@ func HandleMessage(output chan<- string, room *models.Room, textMsg models.FmTex
 // The handleChat handles the chat requests.
 func handleChat(output chan<- string, textMsg models.FmTextMessage) {
 	if textMsg.Message == config.Nickname() {
-		output <- fmt.Sprintf("@%s %s", textMsg.User.Username, models.ReplyString())
+		output <- fmt.Sprintf("@%s %s", textMsg.User.Username, modules.Word(modules.WordReply))
 		return
 	}
 	output <- Chat(textMsg.User.Username)
@@ -78,18 +78,8 @@ func handleCommand(output chan<- string, room *models.Room, cmdType int, textMsg
 		Output: output,
 	}
 
-	switch cmdType {
-	case models.CmdLove:
-		output <- "❤️~"
-	case models.CmdHelper:
-		text, err := models.NewTemplate(models.TmplHelper, nil)
-		if err != nil {
-			zap.S().Warn(cmd.Room.Log("create template failed", err))
-			return
-		}
-		output <- text
-	default:
-		_cmdMap[cmdType](cmd)
+	if f, ok := _cmdMap[cmdType]; ok {
+		f(cmd)
 	}
 }
 
@@ -166,23 +156,20 @@ func handleKeyword(output chan<- string, textMsg models.FmTextMessage) {
 	}
 }
 
-// role return the role of the user which specified by userID.
-func role(info models.FmInfo, userID int) int {
-	switch userID {
+// role returns role of the user according to UID.
+func role(info models.FmInfo, uid int) int {
+	switch uid {
 	case config.Admin():
-		// bot administrator.
 		return models.RoleSuper
 	case info.Creator.UserID:
-		// room creator.
 		return models.RoleCreator
 	default:
-		// determine whether it is an room administrator
+		// Determine whether it is a room administrator.
 		for _, v := range info.Room.Members.Admin {
-			if v.UserID == userID {
+			if v.UserID == uid {
 				return models.RoleAdmin
 			}
 		}
-		// general member.
 		return models.RoleMember
 	}
 }

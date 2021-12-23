@@ -11,7 +11,7 @@ import (
 )
 
 func eventOpen(output chan<- string, room *models.Room) {
-	data, err := models.NewTemplate(models.TmplStartUp, config.Nickname())
+	data, err := modules.NewTemplate(modules.TmplStartUp, config.Nickname())
 	if err != nil {
 		zap.S().Warn(room.Log("create template failed", err))
 	} else {

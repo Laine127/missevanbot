@@ -23,20 +23,24 @@ func eventJoinQueue(output chan<- string, store *models.Room, textMsg models.FmT
 				pinyin = utils.Pinyin(username)
 			}
 
-			sText := struct {
+			data := struct {
 				Name   string
 				Pinyin string
 				Extend string
-			}{username, pinyin, models.WelcomeString()}
+			}{
+				Name:   username,
+				Pinyin: pinyin,
+				Extend: modules.Word(modules.WordWelcome),
+			}
 
-			text, err := models.NewTemplate(models.TmplWelcome, sText)
+			text, err := modules.NewTemplate(modules.TmplWelcome, data)
 			if err != nil {
 				zap.S().Warn(store.Log("create template failed", err))
 				return
 			}
 			output <- text
-		} else if store.Count > 1 && store.Count%2 == 0 {
-			// start sending welcome message from the second joined user,
+		} else if store.Count > 5 && store.Count%2 == 0 {
+			// Start sending welcome messages from the sixth person
 			// and halve the number of messages sent.
 			output <- models.TplWelcomeAnon
 		}

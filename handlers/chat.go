@@ -3,10 +3,10 @@ package handlers
 import (
 	"fmt"
 
-	"missevanbot/models"
+	"missevanbot/modules"
 )
 
-// Chat return a simple response.
+// Chat returns a simple response.
 func Chat(username string) string {
-	return fmt.Sprintf("@%s %s", username, models.ChatString())
+	return fmt.Sprintf("@%s %s", username, modules.Word(modules.WordChat))
 }

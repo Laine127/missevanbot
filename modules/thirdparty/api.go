@@ -63,8 +63,8 @@ func PoemText() (text string, err error) {
 	return string(body), nil
 }
 
-// PraiseText 获取彩虹屁接口内容
-func PraiseText() (text string, err error) {
+// PanderText 获取彩虹屁接口内容
+func PanderText() (text string, err error) {
 	resp, err := http.Get("https://api.muxiaoguo.cn/api/caihongpi")
 	if err != nil {
 		return

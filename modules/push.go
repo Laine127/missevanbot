@@ -15,7 +15,8 @@ func MustPush(title, msg string) {
 	_ = Push(title, msg)
 }
 
-// Push 推送消息通知
+// Push pushes a message via third-party push library,
+// support bark push currently.
 func Push(title, msg string) (err error) {
 	conf := config.Push()
 

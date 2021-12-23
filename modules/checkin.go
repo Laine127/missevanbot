@@ -35,7 +35,7 @@ func Checkin(roomID, uid int, uname string) (string, error) {
 		luck = v
 	} else {
 		// there is no `luck` record.
-		luck = models.LuckString()
+		luck = "今日运势：" + Word(WordLuck)
 		rdb.HSet(ctx, key, "luck", luck)
 	}
 	// check if already checkin that day.
@@ -48,7 +48,7 @@ func Checkin(roomID, uid int, uname string) (string, error) {
 		rdb.HSet(ctx, key, "count", 0)
 	}
 	// generate the string of `luck` that day.
-	luck = models.LuckString()
+	luck = "今日运势：" + Word(WordLuck)
 	rdb.HMSet(ctx, key, "day", utils.Today(), "luck", luck)
 	// increase the count of consecutive checkin days.
 	countCMD := rdb.HIncrBy(ctx, key, "count", 1)

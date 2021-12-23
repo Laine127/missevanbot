@@ -28,19 +28,18 @@ func (p *PassParcel) Start(cmd *models.Command) {
 	p.State = models.StateRunning // state transfer
 
 	go func() {
-		// set timer, add one minutes every five players.
-		timer := time.NewTimer(time.Minute * time.Duration(len(p.Players)/5+1))
-		<-timer.C
-		// game over.
+		// Sleep one minute for every five players.
+		t := time.Minute * time.Duration(len(p.Players)/5+1)
+		time.Sleep(t)
+		// GAME OVER
 		cmd.Output <- fmt.Sprintf(models.TplGameParcelOver, p.Players[p.Index].Name)
-		// add score for winning players.
+		// Add scores for winning players.
 		if p.Index > 0 {
 			addScore(cmd.Room.ID, p.Players[:p.Index], models.ScorePassParcel)
 		}
 		if p.Index < len(p.Players)-1 {
 			addScore(cmd.Room.ID, p.Players[p.Index+1:], models.ScorePassParcel)
 		}
-		// stop that game.
 		stop(cmd)
 	}()
 
@@ -74,8 +73,8 @@ func (p *PassParcel) Action(cmd *models.Command, textMsg models.FmTextMessage) {
 	cmd.Output <- text.String()
 }
 
-// parcelNumber generate a random five-digit number,
-// and store it into m.
+// parcelNumber generates a random five-digit number,
+// and stores it into m.
 func (p *PassParcel) parcelNumber() string {
 	number := utils.RandomNumber(10000, 99999)
 	p.Number = number
@@ -83,7 +82,7 @@ func (p *PassParcel) parcelNumber() string {
 	return str
 }
 
-// isParcelCorrect check if int(s) equals to the value stored in m.
+// isParcelCorrect checks if int(s) equals the value stored in m.
 func (p *PassParcel) isParcelCorrect(s string) bool {
 	str := strconv.FormatInt(int64(p.Number), 10)
 	return s == str

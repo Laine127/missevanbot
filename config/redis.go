@@ -8,7 +8,11 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-const RedisPrefix = "missevan:"
+const (
+	RedisPrefix          = "missevan:"
+	RedisPrefixWords     = RedisPrefix + "words:"
+	RedisPrefixTemplates = RedisPrefix + "templates:"
+)
 
 var RDB *redis.Client
 

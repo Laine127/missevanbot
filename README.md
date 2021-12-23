@@ -102,6 +102,7 @@ docker run -d --link redis-server:redis missevan-bot:latest
     - mode.go：模式相关模块
     - push.go：消息推送模块
     - tasks.go：定时任务模块
-- templates：模板文件
+    - template.go：消息模板模块
+    - word.go：文本模板模块
 - utils：辅助工具
     - logger：日志组件

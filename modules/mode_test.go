@@ -27,7 +27,7 @@ func TestMode(t *testing.T) {
 		name string
 		args args
 	}{
-		{"bait", args{TestRID, ModeBait}},
+		{"pander", args{TestRID, ModePander}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -51,7 +51,7 @@ func TestSetMode(t *testing.T) {
 		name string
 		args args
 	}{
-		{"bait", args{TestRID, ModeBait, true}},
+		{"pander", args{TestRID, ModePander, true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

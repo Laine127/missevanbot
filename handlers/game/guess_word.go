@@ -37,7 +37,7 @@ func (g *GuessWord) Start(cmd *models.Command) {
 	content := fmt.Sprintf(models.TplGameGuessWord, g.Word)
 	if _, err := modules.SendMessage(uid, content); err != nil {
 		zap.S().Warn(cmd.Room.Log("send private message failed", err))
-		stop(cmd) // stop the game.
+		stop(cmd)
 		cmd.Output <- models.TplSthWrong
 		return
 	}
@@ -74,7 +74,7 @@ func (g *GuessWord) Action(cmd *models.Command, textMsg models.FmTextMessage) {
 }
 
 func (g *GuessWord) setWord() {
-	g.Word = models.WordString()
+	g.Word = modules.Word(modules.WordGuess)
 }
 
 func (g *GuessWord) guess(s string) bool {
