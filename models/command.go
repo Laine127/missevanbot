@@ -12,6 +12,7 @@ const (
 	CmdModeMute           // 静音模式
 	CmdModeBait           // 演员模式启停
 	CmdModePinyin         // 拼音模式启停
+	CmdModeWater          // 喝水助手启停
 	CmdSongAdd            // 点歌
 	CmdSongAll            // 点歌歌单
 	CmdSongPop            // 弹出一首歌
@@ -71,6 +72,7 @@ var _cmdMap = map[string]int{
 	"mode": CmdModeAll,
 	"mute": CmdModeMute,
 	"拼音":   CmdModePinyin,
+	"多喝热水": CmdModeWater,
 	"咳咳":   CmdModeBait,
 }
 

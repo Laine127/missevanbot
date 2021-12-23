@@ -36,6 +36,7 @@ var _cmdMap = map[int]CmdHandler{
 	models.CmdModeMute:    muteSwitch,
 	models.CmdModeBait:    baitSwitch,
 	models.CmdModePinyin:  pinyinSwitch,
+	models.CmdModeWater:   waterSwitch,
 	models.CmdGameRank:    gameRank,
 }
 
@@ -372,30 +373,32 @@ func muteSwitch(cmd *models.Command) {
 	if cmd.Role > models.RoleCreator {
 		return
 	}
-
-	modules.SwitchMode(cmd.Room.ID, modules.ModeMute)
-
 	cmd.Output <- models.TplModeSwitch
+	modules.SwitchMode(cmd.Room.ID, modules.ModeMute)
 }
 
 // baitSwitch 处理演员模式启停命令
 func baitSwitch(cmd *models.Command) {
-	if cmd.Role > models.RoleCreator {
+	if cmd.Role > models.RoleAdmin {
 		return
 	}
-
 	modules.SwitchMode(cmd.Room.ID, modules.ModeBait)
-
 	cmd.Output <- models.TplModeSwitch
 }
 
 func pinyinSwitch(cmd *models.Command) {
-	if cmd.Role > models.RoleCreator {
+	if cmd.Role > models.RoleAdmin {
 		return
 	}
-
 	modules.SwitchMode(cmd.Room.ID, modules.ModePinyin)
+	cmd.Output <- models.TplModeSwitch
+}
 
+func waterSwitch(cmd *models.Command) {
+	if cmd.Role > models.RoleAdmin {
+		return
+	}
+	modules.SwitchMode(cmd.Room.ID, modules.ModeWater)
 	cmd.Output <- models.TplModeSwitch
 }
 

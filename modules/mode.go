@@ -12,6 +12,7 @@ const (
 	ModeMute   = "mute"
 	ModePinyin = "pinyin"
 	ModeBait   = "bait"
+	ModeWater  = "water"
 )
 
 const (
@@ -19,14 +20,17 @@ const (
 	Disabled = "0"
 )
 
+// InitMode initialize all the modes that storing in Redis and not exists,
+// if you want to add some new modes, initialize them after define the constants.
 func InitMode(rid int) {
 	rdb := config.RDB
 	prefix := config.RedisPrefix + strconv.Itoa(rid) // Redis namespace prefix, `missevan:[RoomID]`
 	key := fmt.Sprintf("%s:mode", prefix)            // `missevan:[RoomID]:mode`
 
 	rdb.HSetNX(ctx, key, ModeMute, false)
-	rdb.HSetNX(ctx, key, ModePinyin, false)
-	rdb.HSetNX(ctx, key, ModeBait, false)
+	rdb.HSetNX(ctx, key, ModePinyin, true)
+	rdb.HSetNX(ctx, key, ModeBait, DefaultPraise)
+	rdb.HSetNX(ctx, key, ModeWater, DefaultWater)
 }
 
 func Mode(rid int, mode string) (bool, error) {
