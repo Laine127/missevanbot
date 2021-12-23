@@ -81,5 +81,5 @@ func SwitchMode(rid int, mode string) {
 }
 
 func isEnabled(s string) bool {
-	return s == Enabled
+	return s != Disabled
 }

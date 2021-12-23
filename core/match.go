@@ -36,7 +36,7 @@ func match(msg models.FmTextMessage, output chan<- string, room *models.Room) {
 	case models.TypeMember:
 		handlers.HandleMember(output, room, msg)
 	case models.TypeGift:
-		handlers.HandleGift(output, room, msg)
+		handlers.HandleGift(output, msg)
 	case models.TypeMessage:
 		handlers.HandleMessage(output, room, msg)
 	default:

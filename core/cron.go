@@ -4,12 +4,17 @@ import (
 	"context"
 	"time"
 
+	"go.uber.org/zap"
 	"missevanbot/models"
 	"missevanbot/modules"
 )
 
 func Cron(ctx context.Context, output chan<- string, room *models.Room) {
 	room.Ticker = time.NewTicker(time.Minute)
+	if !isOpening(room) {
+		room.Ticker.Stop()
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -20,4 +25,14 @@ func Cron(ctx context.Context, output chan<- string, room *models.Room) {
 			modules.RunTasks(output, room)
 		}
 	}
+}
+
+func isOpening(room *models.Room) bool {
+	info, err := modules.RoomInfo(room.ID)
+	if err != nil {
+		zap.S().Warn(room.Log("fetch the room information failed", err))
+		return true
+	}
+
+	return info.Room.Status.Open != 0
 }

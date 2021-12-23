@@ -78,7 +78,7 @@ retry:
 		msgType, msgData, err := c.conn.ReadMessage()
 		if err != nil {
 			zap.S().Error(room.Log("read message failed", err))
-			modules.MustPush(fmt.Sprint(modules.TitleError, room.Name), err.Error())
+			modules.MustPush(fmt.Sprint(modules.TitleError, room.Creator), err.Error())
 			cancel() // cancel the heart goroutine.
 			goto retry
 		}

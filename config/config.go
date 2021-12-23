@@ -34,10 +34,10 @@ type PushConfig struct {
 }
 
 type RoomConfig struct {
-	ID     int    `mapstructure:"id"`     // ID of the room.
-	Name   string `mapstructure:"name"`   // nickname of the room creator.
-	Enable bool   `mapstructure:"enable"` // whether to enable the bot.
-	Watch  bool   `mapstructure:"watch"`  // whether to enable live room status monitoring.
+	ID      int    `mapstructure:"id"`     // ID of the room.
+	Creator string `mapstructure:"name"`   // nickname of the room creator.
+	Enable  bool   `mapstructure:"enable"` // whether to enable the bot.
+	Watch   bool   `mapstructure:"watch"`  // whether to enable live room status monitoring.
 }
 
 // Config return copy of the configurations.
