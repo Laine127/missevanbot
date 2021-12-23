@@ -19,13 +19,13 @@ const (
 // bot is used to store the basic information of the bot user.
 var bot models.FmUser
 
-// Name return name of the bot.
-func Name() string {
+// BotName return name of the bot.
+func BotName() string {
 	return bot.Username
 }
 
-// UserID return UID of the bot.
-func UserID() int {
+// BotID return UID of the bot.
+func BotID() int {
 	return bot.UserID
 }
 
@@ -78,8 +78,8 @@ func RoomInfo(roomID int) (info models.FmInfo, err error) {
 	return
 }
 
-// ConnCookie return the string of the websocket connection cookie.
-func ConnCookie() (string, error) {
+// The BaseCookie get a new base cookie.
+func BaseCookie() (string, error) {
 	_url := "https://fm.missevan.com/api/user/info"
 
 	resp, err := http.Get(_url)

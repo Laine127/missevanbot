@@ -15,7 +15,7 @@ import (
 	"missevanbot/modules"
 )
 
-type RoomConnection struct {
+type connection struct {
 	conn *websocket.Conn
 	mu   *sync.Mutex
 }
@@ -29,11 +29,14 @@ func Connect(ctx context.Context, cancel context.CancelFunc, input chan<- models
 
 	roomID := room.ID
 
-	follow(roomID) // follow the room creator.
+	// Follow the room creator.
+	if err := follow(roomID); err != nil {
+		zap.S().Warn(room.Log("follow user failed", err))
+	}
 
-	cookie, err := modules.ConnCookie()
+	cookie, err := modules.BaseCookie()
 	if err != nil {
-		zap.S().Error("get the connection cookie failed: ", err)
+		zap.S().Error(room.Log("get the base cookie failed", err))
 		return
 	}
 
@@ -50,37 +53,37 @@ func Connect(ctx context.Context, cancel context.CancelFunc, input chan<- models
 retry:
 	conn, resp, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", roomID), h)
 	if err != nil {
-		zap.S().Error(err)
+		zap.S().Error(room.Log("dial failed", err))
 		return
 	}
 	defer conn.Close()
 
 	if resp.StatusCode != 101 {
-		zap.S().Error(errors.New("websocket connect failed"))
+		zap.S().Error(room.Log("websocket connect failed", nil))
 		return
 	}
 
-	rc := &RoomConnection{conn, &sync.Mutex{}}
+	c := &connection{conn, &sync.Mutex{}}
 	joinMsg := fmt.Sprintf(`{"action":"join","uuid":"35e77342-30af-4b0b-a0eb-f80a826a68c7","type":"room","room_id":%d}`, roomID)
-	if err := rc.conn.WriteMessage(websocket.TextMessage, []byte(joinMsg)); err != nil {
-		zap.S().Error(err)
+	if err := c.conn.WriteMessage(websocket.TextMessage, []byte(joinMsg)); err != nil {
+		zap.S().Error(room.Log("write message failed", err))
 		return
 	}
 
 	ctx, cancel = context.WithCancel(context.Background())
 	defer cancel()
-	go heart(ctx, rc) // keep connected
+	go heart(ctx, c) // keep connected
 
 	for {
-		msgType, msgData, err := rc.conn.ReadMessage()
+		msgType, msgData, err := c.conn.ReadMessage()
 		if err != nil {
-			zap.S().Error(err)
+			zap.S().Error(room.Log("read message failed", err))
 			modules.MustPush(fmt.Sprint(modules.TitleError, room.Name), err.Error())
 			cancel() // cancel the heart goroutine.
 			goto retry
 		}
 
-		zap.S().Debug(string(msgData))
+		zap.S().Debug(room.Log(string(msgData), err))
 
 		switch msgType {
 		case websocket.TextMessage:
@@ -89,10 +92,10 @@ retry:
 			}
 			textMsg := models.FmTextMessage{}
 			if err := json.Unmarshal(msgData, &textMsg); err != nil {
-				zap.S().Errorf("%s unmarshal failed: %s", string(msgData), err)
+				zap.S().Warn(room.Log(fmt.Sprintf("unmarshal failed (%s)", string(msgData)), err))
 				continue
 			}
-			if textMsg.User.UserID == modules.UserID() {
+			if textMsg.User.UserID == modules.BotID() {
 				continue // filter out messages sent by the bot.
 			}
 			input <- textMsg
@@ -108,7 +111,7 @@ retry:
 // heart send a heartbeat to the room Websocket connection every 30 seconds,
 // also receive a WithCancel Context, when the `Connect` goroutine is down,
 // return the heart function and stop the ticker.
-func heart(ctx context.Context, c *RoomConnection) {
+func heart(ctx context.Context, c *connection) {
 	ticker := time.NewTicker(time.Second * 30)
 	defer ticker.Stop()
 
@@ -128,17 +131,19 @@ func heart(ctx context.Context, c *RoomConnection) {
 // and follow the creator according to the ID.
 //
 // If there is an error, write the logs and return.
-func follow(roomID int) {
+func follow(roomID int) error {
 	info, err := modules.RoomInfo(roomID)
 	if err != nil {
-		zap.S().Error("fetch room info failed: ", err)
-		return
+		return err
 	}
 
 	ret, err := modules.ChangeAttention(info.Creator.UserID, modules.Follow)
 	if err != nil {
-		zap.S().Error("follow user failed: ", err)
-		return
+		return err
 	}
-	zap.S().Debug(string(ret))
+
+	if r := string(ret); r != `{"success":true,"info":"关注成功"}` {
+		return errors.New(r)
+	}
+	return nil
 }

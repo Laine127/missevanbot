@@ -149,36 +149,36 @@ var _words = [...]string{
 }
 
 func ReplyString() string {
-	return _replies[randNum(len(_replies))]
+	return _replies[randIndex(len(_replies))]
 }
 
 // WelcomeString return a welcome word in string type which chosen from _welcomes.
 func WelcomeString() string {
-	return _welcomes[randNum(len(_welcomes))]
+	return _welcomes[randIndex(len(_welcomes))]
 }
 
 // LuckString return a luck word in string type which chosen from _lucks.
 func LuckString() string {
 	result := "今日运势："
-	return result + _lucks[randNum(len(_lucks))]
+	return result + _lucks[randIndex(len(_lucks))]
 }
 
 // ChatString return a sentence in string type which chosen from _chats.
 func ChatString() string {
-	return _chats[randNum(len(_chats))]
+	return _chats[randIndex(len(_chats))]
 }
 
 // ComfortString return a sentence in string type which chosen from _comforts.
 func ComfortString() string {
-	return _comforts[randNum(len(_comforts))]
+	return _comforts[randIndex(len(_comforts))]
 }
 
 // WordString return a word in string type which chosen from _words.
 func WordString() string {
-	return _words[randNum(len(_words))]
+	return _words[randIndex(len(_words))]
 }
 
-func randNum(length int) int {
+func randIndex(length int) int {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(length)
 }

@@ -12,7 +12,7 @@ func init() {
 }
 
 func TestCookie(t *testing.T) {
-	cookie, err := ConnCookie()
+	cookie, err := BaseCookie()
 	if err != nil {
 		t.Error(err)
 		return

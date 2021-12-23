@@ -15,7 +15,6 @@ import (
 var wg = &sync.WaitGroup{}
 
 func main() {
-	// load the configurations.
 	config.LoadConfig()
 	conf := config.Config()
 
@@ -49,7 +48,7 @@ func main() {
 
 		go core.Connect(ctx, cancel, input, room)
 		go core.Match(ctx, input, output, room)
-		go core.Send(ctx, output, room.ID)
+		go core.Send(ctx, output, room)
 		go core.Cron(ctx, output, room)
 	}
 

@@ -17,7 +17,7 @@ import (
 func HandleRoom(output chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	info, err := modules.RoomInfo(room.ID)
 	if err != nil {
-		zap.S().Error("fetch the room information failed: ", err)
+		zap.S().Warn(room.Log("fetch the room information failed", err))
 		return
 	}
 
@@ -27,7 +27,7 @@ func HandleRoom(output chan<- string, room *models.Room, textMsg models.FmTextMe
 	case models.EventOpen:
 		data, err := models.NewTemplate(models.TmplStartUp, config.Nickname())
 		if err != nil {
-			zap.S().Error(err)
+			zap.S().Warn(room.Log("create template failed", err))
 		} else {
 			output <- data
 		}
@@ -40,7 +40,7 @@ func HandleRoom(output chan<- string, room *models.Room, textMsg models.FmTextMe
 		}
 		text := fmt.Sprintf("%s 开播啦~", info.Creator.Username)
 		if err := modules.Push(modules.TitleOpen, text); err != nil {
-			zap.S().Error("Bark push failed: ", err)
+			zap.S().Warn(room.Log("bark push failed", err))
 		}
 	case models.EventClose:
 		// stop the ticker.
@@ -61,7 +61,7 @@ func HandleRoom(output chan<- string, room *models.Room, textMsg models.FmTextMe
 		// push notify to the message service.
 		text := fmt.Sprintf("%s 下播啦~", info.Creator.Username)
 		if err := modules.Push(modules.TitleClose, text); err != nil {
-			zap.S().Error("Bark push failed: ", err)
+			zap.S().Warn(room.Log("bark push failed", err))
 		}
 	}
 }
@@ -75,7 +75,7 @@ func HandleMember(output chan<- string, store *models.Room, textMsg models.FmTex
 			if username := v.Username; username != "" {
 				var pinyin string
 				if ok, err := modules.Mode(store.ID, modules.ModePinyin); err != nil {
-					zap.S().Error(err)
+					zap.S().Warn(store.Log("get mode failed", err))
 				} else if ok {
 					pinyin = utils.Pinyin(username)
 				}
@@ -88,7 +88,7 @@ func HandleMember(output chan<- string, store *models.Room, textMsg models.FmTex
 
 				text, err := models.NewTemplate(models.TmplWelcome, sText)
 				if err != nil {
-					zap.S().Error(err)
+					zap.S().Warn(store.Log("create template failed", err))
 					return
 				}
 				output <- text
@@ -127,7 +127,7 @@ func HandleMessage(output chan<- string, room *models.Room, textMsg models.FmTex
 			return
 		}
 		// determine whether it is a chat request and handle it.
-		if first == fmt.Sprintf("@%s", modules.Name()) || first == config.Nickname() {
+		if first == fmt.Sprintf("@%s", modules.BotName()) || first == config.Nickname() {
 			handleChat(output, room, textMsg)
 			return
 		}
@@ -160,7 +160,7 @@ func handleChat(output chan<- string, store *models.Room, textMsg models.FmTextM
 func handleCommand(output chan<- string, store *models.Room, cmdType int, textMsg models.FmTextMessage) {
 	info, err := modules.RoomInfo(store.ID)
 	if err != nil {
-		zap.S().Error("fetch the room information failed: ", err)
+		zap.S().Warn(store.Log("fetch the room information failed", err))
 		return
 	}
 
@@ -181,7 +181,7 @@ func handleCommand(output chan<- string, store *models.Room, cmdType int, textMs
 	case models.CmdHelper:
 		text, err := models.NewTemplate(models.TmplHelper, nil)
 		if err != nil {
-			zap.S().Error(err)
+			zap.S().Warn(cmd.Room.Log("create template failed", err))
 			return
 		}
 		output <- text
@@ -194,7 +194,7 @@ func handleCommand(output chan<- string, store *models.Room, cmdType int, textMs
 func handleGame(output chan<- string, store *models.Room, textMsg models.FmTextMessage, cmdType int) {
 	info, err := modules.RoomInfo(store.ID)
 	if err != nil {
-		zap.S().Error("fetch the room information failed: ", err)
+		zap.S().Warn(store.Log("fetch the room information failed", err))
 		return
 	}
 

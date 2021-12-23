@@ -89,7 +89,7 @@ func checkin(cmd *models.Command) {
 	user := cmd.User
 	ret, err := modules.Checkin(cmd.Room.ID, user.UserID, user.Username)
 	if err != nil {
-		zap.S().Error("checkin error: ", err)
+		zap.S().Warn(cmd.Room.Log("checkin error", err))
 		return
 	}
 
@@ -130,7 +130,7 @@ func horoscopes(cmd *models.Command) {
 
 	n, err := rdb.Exists(ctx, key).Result()
 	if err != nil {
-		zap.S().Error("获取星座运势错误：", err)
+		zap.S().Warn(cmd.Room.Log("get horoscopes failed", err))
 		return
 	}
 	if n > 0 {
@@ -140,7 +140,7 @@ func horoscopes(cmd *models.Command) {
 		// check if exists
 		fort, err := thirdparty.Zodiac(str, thirdparty.Level5)
 		if err != nil {
-			zap.S().Error("获取星座运势错误：", err)
+			zap.S().Warn(cmd.Room.Log("get horoscopes failed", err))
 			return
 		}
 		rdb.HMSet(ctx, key, "content", fort.Content, "score", fort.Score)
@@ -156,7 +156,7 @@ func weather(cmd *models.Command) {
 
 	text, err := thirdparty.WeatherText(cmd.Args[0])
 	if err != nil {
-		zap.S().Error("天气查询失败：", err)
+		zap.S().Warn(cmd.Room.Log("get weather failed", err))
 		return
 	}
 
@@ -197,7 +197,7 @@ func songAll(cmd *models.Command) {
 
 	text, err := models.NewTemplate(models.TmplPlaylist, songs)
 	if err != nil {
-		zap.S().Error(err)
+		zap.S().Warn(cmd.Room.Log("create template failed", err))
 		return
 	}
 
@@ -233,7 +233,7 @@ func piaStart(cmd *models.Command) {
 	var roles []string
 	roles, cmd.Room.PiaList, err = thirdparty.Fetch(id)
 	if err != nil {
-		zap.S().Error("获取戏文出错了：", err)
+		zap.S().Warn(cmd.Room.Log("get scripts failed", err))
 		return
 	}
 	cmd.Room.PiaIndex = 1
@@ -362,7 +362,7 @@ func modeAll(cmd *models.Command) {
 
 	text, err := models.NewTemplate(models.TmplModes, modules.ModeAll(cmd.Room.ID))
 	if err != nil {
-		zap.S().Error(err)
+		zap.S().Warn(cmd.Room.Log("create template failed", err))
 		return
 	}
 	cmd.Output <- text
@@ -402,7 +402,7 @@ func pinyinSwitch(cmd *models.Command) {
 func gameRank(cmd *models.Command) {
 	rank, err := modules.ScoreRank(cmd.Room.ID)
 	if err != nil {
-		zap.S().Error("get score rank failed: ", err)
+		zap.S().Warn(cmd.Room.Log("get score rank failed", err))
 		return
 	}
 	if len(rank) == 0 {
@@ -416,7 +416,7 @@ func gameRank(cmd *models.Command) {
 	for k, v := range rank {
 		username, err := modules.QueryUsername(v.UID)
 		if err != nil {
-			zap.S().Error("get game ranking failed: ", err)
+			zap.S().Warn(cmd.Room.Log("get game ranking failed", err))
 			username = "UNKNOWN"
 		}
 		text.WriteString(fmt.Sprintf("\n%d. %s %d分", k+1, username, v.Score))

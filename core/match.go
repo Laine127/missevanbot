@@ -24,7 +24,7 @@ func Match(ctx context.Context, input <-chan models.FmTextMessage, output chan<-
 func match(msg models.FmTextMessage, output chan<- string, room *models.Room) {
 	defer func() {
 		if p := recover(); p != nil {
-			zap.S().Error(p)
+			zap.S().Error(room.Log("panic", p))
 		}
 	}()
 
@@ -41,6 +41,4 @@ func match(msg models.FmTextMessage, output chan<- string, room *models.Room) {
 		handlers.HandleMessage(output, room, msg)
 	default:
 	}
-
-	zap.S().Info(msg)
 }

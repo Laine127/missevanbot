@@ -2,6 +2,7 @@ package models
 
 import (
 	"container/list"
+	"fmt"
 	"time"
 
 	"missevanbot/config"
@@ -18,6 +19,13 @@ type Room struct {
 	Ticker             *time.Ticker //
 	TickerCount        int          //
 	Gamer              Gamer        // 存储游戏状态
+}
+
+func (room *Room) Log(str string, err interface{}) string {
+	if err == nil {
+		return fmt.Sprintf("[%s] %s", room.Name, str)
+	}
+	return fmt.Sprintf("[%s] %s: %s", room.Name, str, err)
 }
 
 func NewRoom(roomConf *config.RoomConfig) *Room {
