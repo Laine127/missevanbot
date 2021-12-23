@@ -33,7 +33,7 @@ const (
 )
 
 type Command struct {
-	Args   []string
+	Args   []string // exclude command.
 	Room   *Room
 	User   FmUser
 	Info   FmInfo

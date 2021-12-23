@@ -20,6 +20,16 @@ const (
 	Disabled = "0"
 )
 
+const (
+	DefaultBait  = 6
+	DefaultWater = 12
+)
+
+var _defaults = map[string]int{
+	ModeBait:  DefaultBait,
+	ModeWater: DefaultWater,
+}
+
 // InitMode initialize all the modes that storing in Redis and not exists,
 // if you want to add some new modes, initialize them after define the constants.
 func InitMode(rid int) {
@@ -27,10 +37,10 @@ func InitMode(rid int) {
 	prefix := config.RedisPrefix + strconv.Itoa(rid) // Redis namespace prefix, `missevan:[RoomID]`
 	key := fmt.Sprintf("%s:mode", prefix)            // `missevan:[RoomID]:mode`
 
-	rdb.HSetNX(ctx, key, ModeMute, false)
-	rdb.HSetNX(ctx, key, ModePinyin, true)
-	rdb.HSetNX(ctx, key, ModeBait, DefaultPraise)
-	rdb.HSetNX(ctx, key, ModeWater, DefaultWater)
+	rdb.HSetNX(ctx, key, ModeMute, Disabled)
+	rdb.HSetNX(ctx, key, ModePinyin, Enabled)
+	rdb.HSetNX(ctx, key, ModeBait, Disabled)
+	rdb.HSetNX(ctx, key, ModeWater, Disabled)
 }
 
 func Mode(rid int, mode string) (bool, error) {
@@ -44,14 +54,12 @@ func Mode(rid int, mode string) (bool, error) {
 	}
 
 	switch m := cmd[mode]; m {
-	case Enabled:
-		return true, nil
 	case Disabled:
 		return false, nil
 	case "":
 		return false, errors.New("redis: empty mode key " + mode)
 	default:
-		return false, errors.New("redis: invalid mode value " + m)
+		return true, nil
 	}
 }
 
@@ -63,7 +71,7 @@ func ModeAll(rid int) map[string]string {
 	return rdb.HGetAll(ctx, key).Val()
 }
 
-func SetMode(rid int, mode string, val bool) {
+func SetMode(rid int, mode string, val interface{}) {
 	rdb := config.RDB
 	prefix := config.RedisPrefix + strconv.Itoa(rid)
 	key := fmt.Sprintf("%s:mode", prefix)
@@ -71,17 +79,33 @@ func SetMode(rid int, mode string, val bool) {
 	rdb.HSet(ctx, key, mode, val)
 }
 
+// SwitchMode change mode into Disabled if enabled,
+// if mode disabled and has a default value,
+// change it to default value.
 func SwitchMode(rid int, mode string) {
 	rdb := config.RDB
 	prefix := config.RedisPrefix + strconv.Itoa(rid)
 	key := fmt.Sprintf("%s:mode", prefix)
 
+	d, ok := _defaults[mode]
+
 	switch m := rdb.HGet(ctx, key, mode).Val(); m {
-	case Enabled:
-		rdb.HMSet(ctx, key, mode, Disabled)
 	case Disabled:
-		rdb.HMSet(ctx, key, mode, Enabled)
+		if ok {
+			rdb.HMSet(ctx, key, mode, d)
+		} else {
+			rdb.HMSet(ctx, key, mode, Enabled)
+		}
+	case Enabled:
+		fallthrough
+	default:
+		rdb.HMSet(ctx, key, mode, Disabled)
 	}
+}
+
+func Validate(str string) bool {
+	n, err := strconv.Atoi(str)
+	return err == nil && n >= 0
 }
 
 func isEnabled(s string) bool {

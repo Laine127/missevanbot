@@ -8,11 +8,6 @@ import (
 	"missevanbot/modules/thirdparty"
 )
 
-const (
-	DefaultPraise = 6
-	DefaultWater  = 12
-)
-
 func RunTasks(output chan<- string, room *models.Room) {
 	modes := ModeAll(room.ID)
 	count := room.TickerCount

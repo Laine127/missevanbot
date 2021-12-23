@@ -22,8 +22,8 @@ var _cmdMap = map[int]CmdHandler{
 	models.CmdRoomInfo:    roomInfo,
 	models.CmdCheckin:     checkin,
 	models.CmdCheckinRank: checkinRank,
-	models.CmdHoroscope:   horoscopes,
-	models.CmdWeather:     weather,
+	models.CmdHoroscope:   apiHoroscopes,
+	models.CmdWeather:     apiWeather,
 	models.CmdSongAdd:     songAdd,
 	models.CmdSongAll:     songAll,
 	models.CmdSongPop:     songPop,
@@ -33,10 +33,10 @@ var _cmdMap = map[int]CmdHandler{
 	models.CmdPiaRelocate: piaRelocate,
 	models.CmdPiaStop:     piaStop,
 	models.CmdModeAll:     modeAll,
-	models.CmdModeMute:    muteSwitch,
-	models.CmdModeBait:    baitSwitch,
-	models.CmdModePinyin:  pinyinSwitch,
-	models.CmdModeWater:   waterSwitch,
+	models.CmdModeMute:    switchMute,
+	models.CmdModeBait:    switchBait,
+	models.CmdModePinyin:  switchPinyin,
+	models.CmdModeWater:   switchWater,
 	models.CmdGameRank:    gameRank,
 }
 
@@ -109,8 +109,8 @@ func checkinRank(cmd *models.Command) {
 	cmd.Output <- text
 }
 
-// The horoscopes handle the horoscopes commands.
-func horoscopes(cmd *models.Command) {
+// The apiHoroscopes handle the apiHoroscopes commands.
+func apiHoroscopes(cmd *models.Command) {
 	if len(cmd.Args) != 1 {
 		return
 	}
@@ -149,8 +149,8 @@ func horoscopes(cmd *models.Command) {
 	}
 }
 
-// The weather handles the weather command.
-func weather(cmd *models.Command) {
+// The apiWeather handles the apiWeather command.
+func apiWeather(cmd *models.Command) {
 	if len(cmd.Args) != 1 {
 		return
 	}
@@ -267,7 +267,7 @@ func piaNextSafe(cmd *models.Command) {
 // piaNextN 进行发送多条戏本文本的处理
 func piaNextN(cmd *models.Command, dur int, safe bool) {
 	if cmd.Role > models.RoleAdmin {
-		return // 权限不足
+		return
 	}
 
 	if cmd.Room.PiaIndex == 0 || cmd.Room.PiaList == nil {
@@ -369,7 +369,7 @@ func modeAll(cmd *models.Command) {
 	cmd.Output <- text
 }
 
-func muteSwitch(cmd *models.Command) {
+func switchMute(cmd *models.Command) {
 	if cmd.Role > models.RoleCreator {
 		return
 	}
@@ -377,16 +377,7 @@ func muteSwitch(cmd *models.Command) {
 	modules.SwitchMode(cmd.Room.ID, modules.ModeMute)
 }
 
-// baitSwitch 处理演员模式启停命令
-func baitSwitch(cmd *models.Command) {
-	if cmd.Role > models.RoleAdmin {
-		return
-	}
-	modules.SwitchMode(cmd.Room.ID, modules.ModeBait)
-	cmd.Output <- models.TplModeSwitch
-}
-
-func pinyinSwitch(cmd *models.Command) {
+func switchPinyin(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
@@ -394,11 +385,42 @@ func pinyinSwitch(cmd *models.Command) {
 	cmd.Output <- models.TplModeSwitch
 }
 
-func waterSwitch(cmd *models.Command) {
+// switchBait 处理演员模式启停命令
+func switchBait(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
-	modules.SwitchMode(cmd.Room.ID, modules.ModeWater)
+	room := cmd.Room
+	args := cmd.Args
+	bait := modules.ModeBait
+	if len(args) >= 1 {
+		if !modules.Validate(args[0]) {
+			cmd.Output <- models.TplIllegal
+			return
+		}
+		modules.SetMode(room.ID, bait, args[0])
+	} else {
+		modules.SwitchMode(room.ID, bait)
+	}
+	cmd.Output <- models.TplModeSwitch
+}
+
+func switchWater(cmd *models.Command) {
+	if cmd.Role > models.RoleAdmin {
+		return
+	}
+	room := cmd.Room
+	args := cmd.Args
+	water := modules.ModeWater
+	if len(args) >= 1 {
+		if !modules.Validate(args[0]) {
+			cmd.Output <- models.TplIllegal
+			return
+		}
+		modules.SetMode(room.ID, water, args[0])
+	} else {
+		modules.SwitchMode(room.ID, water)
+	}
 	cmd.Output <- models.TplModeSwitch
 }
 

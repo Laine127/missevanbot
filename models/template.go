@@ -17,6 +17,7 @@ const (
 
 // commands related templates.
 const (
+	TplIllegal    = "输入的参数不正确哦"
 	TplModeSwitch = "模式启停成功"
 	TplRankEmpty  = "今天的榜单好像空空的~"
 	TplSongAdd    = "点歌 %s 成功啦~"
