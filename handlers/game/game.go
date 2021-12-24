@@ -96,7 +96,7 @@ func (s *Game) Stop(cmd *models.Command) {
 		return
 	}
 
-	if cmd.Room.Gamer == nil {
+	if cmd.Gamer == nil {
 		cmd.Output <- models.TplGameNull
 		return
 	}
@@ -114,5 +114,5 @@ func addScore(roomID int, players []models.Player, score int) {
 }
 
 func stop(cmd *models.Command) {
-	cmd.Room.Gamer = nil
+	cmd.Gamer = nil
 }

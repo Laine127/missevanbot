@@ -8,8 +8,8 @@ import (
 
 // TODO: the number of gifts may be incorrect.
 func eventSend(output chan<- string, textMsg models.FmTextMessage) {
-	if username := textMsg.User.Username; username != "" {
+	if name := textMsg.User.Username; name != "" {
 		gift := textMsg.Gift
-		output <- fmt.Sprintf(models.TplThankGift, username, gift.Number, gift.Name)
+		output <- fmt.Sprintf(models.TplThankGift, name, gift.Number, gift.Name)
 	}
 }

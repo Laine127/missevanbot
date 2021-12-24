@@ -5,31 +5,29 @@ const TplDefaultPoem = "孜孜不倦，不易乎世。"
 // Handlers related templates.
 const (
 	TplWelcomeAnon = "欢迎新来的小可爱们进入直播间呀～"
-	TplThankFollow = "谢谢 @%s 的关注呀～"
-	TplThankGift   = "感谢 @%s 赠送的%d个%s～"
+	TplThankFollow = "@%s 谢谢关注呀～"
+	TplThankGift   = "@%s 谢谢送出的%d个%s，啵啵～"
 	TplSthWrong    = "不好意思呀，出现了一些状况～"
 )
 
 // Commands related templates.
 const (
-	TplIllegal    = "输入的参数不正确哦～"
-	TplModeSwitch = "模式启停成功～"
-	TplRankEmpty  = "今天的榜单好像空空的～"
-	TplSongReq    = "点歌 %s 成功啦～"
-	TplSongDone   = "完成了一首歌曲～"
+	TplIllegal    = "@%s 输入的参数不正确哦～"
+	TplModeSwitch = "@%s 模式启停成功～"
+	TplRankEmpty  = "@%s 今天的榜单好像空空的～"
+	TplSongReq    = "@%s 点歌%d首成功啦～"
+	TplSongDone   = "@%s 完成了一首歌曲～"
 )
 
 // Modules related templates.
 const (
-	TplSignDuplicate = "已经签到过啦\n\n您已经连续签到%s天～\n\n%s"
-	TplSignSuccess   = "签到成功啦，已经连续签到%d天～\n\n%s\n\n%s"
+	TplSignDuplicate = "@%s 已经签到过啦\n\n您已经连续签到%s天～\n\n%s"
+	TplSignSuccess   = "@%s 签到成功啦，已经连续签到%d天～\n\n%s\n\n%s"
 	TplStarFortune   = "%s今日幸运值：%s\n\n%s"
-	TplPiaStart      = "pia戏模式启动成功啦～\n本文角色：%s\n请注意，如果输出文本时没有出现结果，很可能是存在违禁词，请使用重定位命令 r 定位到需要的位置，再通过 s 指令进行单条输出～"
-	TplPiaEmpty      = "pia戏模式还没有启动哦，输入“帮助”来获取帮助吧～"
+	TplPiaStart      = "@%s pia戏模式启动成功啦～\n本文角色：%s\n"
+	TplPiaEmpty      = "@%s pia戏模式还没有启动哦，输入“帮助”来获取帮助吧～"
 	TplPiaDone       = "本篇文章已经结束啦～"
-	TplPiaOutBounds  = "选择的位置超过范围啦～"
-	TplPiaRelocate   = "成功重定位啦～"
-	TplPiaStop       = "pia戏模式结束成功啦～"
+	TplPiaStop       = "@%s pia戏模式结束成功啦～"
 )
 
 // Games related templates.

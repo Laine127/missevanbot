@@ -5,7 +5,7 @@ import (
 )
 
 func TestFetch(t *testing.T) {
-	roles, text, err := Fetch(95915)
+	roles, paras, err := DramaScript(95915)
 	if err != nil {
 		t.Error(err)
 		return
@@ -15,7 +15,7 @@ func TestFetch(t *testing.T) {
 		t.Log(v)
 	}
 
-	for _, v := range text {
+	for _, v := range paras {
 		t.Log(v)
 	}
 }

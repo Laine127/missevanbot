@@ -9,8 +9,9 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// Fetch 获取戏文
-func Fetch(id int) (roleList []string, textList []string, err error) {
+// DramaScript fetches the roles list and script paragraphs,
+// then returns them in string slice type.
+func DramaScript(id int) (roleList []string, textList []string, err error) {
 	_url := fmt.Sprintf("https://aipiaxi.com/Index/post/id/%d", id)
 
 	client := http.Client{}
@@ -34,13 +35,13 @@ func Fetch(id int) (roleList []string, textList []string, err error) {
 		return
 	}
 
-	// 获取角色列表
+	// Fetch the roles list.
 	roleList = make([]string, 0)
 	doc.Find(".role-section>div>*").Each(func(i int, s *goquery.Selection) {
 		roleList = append(roleList, s.Text())
 	})
 
-	// 获取文本段列表
+	// Fetch the script paragraphs.
 	textList = make([]string, 0)
 	doc.Find("#content>*").Each(func(i int, s *goquery.Selection) {
 		content := s.Find("*").Text()

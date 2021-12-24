@@ -35,10 +35,10 @@ func (p *PassParcel) Start(cmd *models.Command) {
 		cmd.Output <- fmt.Sprintf(models.TplGameParcelOver, p.Players[p.Index].Name)
 		// Add scores for winning players.
 		if p.Index > 0 {
-			addScore(cmd.Room.ID, p.Players[:p.Index], models.ScorePassParcel)
+			addScore(cmd.ID, p.Players[:p.Index], models.ScorePassParcel)
 		}
 		if p.Index < len(p.Players)-1 {
-			addScore(cmd.Room.ID, p.Players[p.Index+1:], models.ScorePassParcel)
+			addScore(cmd.ID, p.Players[p.Index+1:], models.ScorePassParcel)
 		}
 		stop(cmd)
 	}()

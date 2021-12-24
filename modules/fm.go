@@ -122,12 +122,12 @@ func QueryUsername(uid int) (string, error) {
 		return "", err
 	}
 
-	username := doc.Find("#t_u_n>a").Text()
-	if username == "" {
+	name := doc.Find("#t_u_n>a").Text()
+	if name == "" {
 		return "", errors.New("username empty")
 	}
 
-	return username, nil
+	return name, nil
 }
 
 // SendMessage send a private message to a user according to uid.

@@ -7,6 +7,6 @@ import (
 )
 
 // Chat returns a simple response.
-func Chat(username string) string {
-	return fmt.Sprintf("@%s %s", username, modules.Word(modules.WordChat))
+func Chat(name string) string {
+	return fmt.Sprintf("@%s %s", name, modules.Word(modules.WordChat))
 }

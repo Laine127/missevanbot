@@ -36,7 +36,7 @@ func (g *GuessWord) Start(cmd *models.Command) {
 	uid := g.Players[g.Index].ID
 	content := fmt.Sprintf(models.TplGameGuessWord, g.Word)
 	if _, err := modules.SendMessage(uid, content); err != nil {
-		zap.S().Warn(cmd.Room.Log("send private message failed", err))
+		zap.S().Warn(cmd.Log("send private message failed", err))
 		stop(cmd)
 		cmd.Output <- models.TplSthWrong
 		return
@@ -58,7 +58,7 @@ func (g *GuessWord) Action(cmd *models.Command, textMsg models.FmTextMessage) {
 
 	if g.guess(textMsg.Message) && g.Index != 0 {
 		cmd.Output <- fmt.Sprintf(models.TplGameGuessSuccess, g.Players[g.Index].Name)
-		addScore(cmd.Room.ID, []models.Player{g.Players[g.Index]}, 15)
+		addScore(cmd.ID, []models.Player{g.Players[g.Index]}, 15)
 		stop(cmd)
 		return
 	} else if g.Index != 0 {

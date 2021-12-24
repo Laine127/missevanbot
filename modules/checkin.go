@@ -16,7 +16,7 @@ import (
 var ctx = context.Background()
 
 // Checkin do the action of user checkin.
-func Checkin(roomID, uid int, uname string) (string, error) {
+func Checkin(roomID, uid int, name string) (string, error) {
 	rdb := config.RDB
 	prefix := config.RedisPrefix + strconv.Itoa(roomID) // Redis namespace prefix, `missevan:[roomID]`
 
@@ -40,7 +40,7 @@ func Checkin(roomID, uid int, uname string) (string, error) {
 	}
 	// check if already checkin that day.
 	if day == utils.Today() {
-		return fmt.Sprintf(models.TplSignDuplicate, count, luck), nil
+		return fmt.Sprintf(models.TplSignDuplicate, name, count, luck), nil
 	}
 	// check if checkin for consecutive days,
 	// if not, set the `count` to 0.
@@ -54,14 +54,14 @@ func Checkin(roomID, uid int, uname string) (string, error) {
 	countCMD := rdb.HIncrBy(ctx, key, "count", 1)
 	// push the UID and Username into the rank list.
 	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:id", prefix, utils.Today()), uid)
-	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:name", prefix, utils.Today()), uname)
+	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:name", prefix, utils.Today()), name)
 
 	poem, err := thirdparty.PoemText()
 	if err != nil {
 		poem = models.TplDefaultPoem
 	}
 
-	return fmt.Sprintf(models.TplSignSuccess, countCMD.Val(), luck, poem), nil
+	return fmt.Sprintf(models.TplSignSuccess, name, countCMD.Val(), luck, poem), nil
 }
 
 // CheckinRank return the rank of checkin task today.

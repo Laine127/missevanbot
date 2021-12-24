@@ -53,10 +53,10 @@ func (s *NumberBomb) Action(cmd *models.Command, textMsg models.FmTextMessage) {
 		cmd.Output <- fmt.Sprintf(models.TplGameBomb, textMsg.User.Username)
 		// Add scores for winning players.
 		if s.Index > 0 {
-			addScore(cmd.Room.ID, s.Players[:s.Index], models.ScoreNumberBomb)
+			addScore(cmd.ID, s.Players[:s.Index], models.ScoreNumberBomb)
 		}
 		if s.Index < len(s.Players)-1 {
-			addScore(cmd.Room.ID, s.Players[s.Index+1:], models.ScoreNumberBomb)
+			addScore(cmd.ID, s.Players[s.Index+1:], models.ScoreNumberBomb)
 		}
 		stop(cmd) // Stop the game.
 		return

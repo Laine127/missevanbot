@@ -8,17 +8,22 @@ import (
 	"missevanbot/config"
 )
 
-// Room 直播间实例结构体
+// The Room is used to store some dynamic data of a live room.
 type Room struct {
-	*config.RoomConfig              // 当前房间的配置
-	Count              int          // 统计进入的数量
-	Online             int          // 记录当前直播间在线人数
-	Playlist           *list.List   //
-	PiaList            []string     // 戏文
-	PiaIndex           int          // 位置
-	Ticker             *time.Ticker //
-	TickerCount        int          //
-	Gamer              Gamer        // 存储游戏状态
+	*config.RoomConfig
+
+	Count    int // the number of enqueue
+	Online   int // online members in the live room
+	Playlist *list.List
+
+	PiaParas []string // drama paragraphs
+	PiaIndex int      // paragraph index
+
+	Ticker *time.Ticker
+	// TickerCount represents the number of minutes that have passed.
+	TickerCount int
+
+	Gamer Gamer
 }
 
 func NewRoom(roomConf *config.RoomConfig) *Room {

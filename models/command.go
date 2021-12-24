@@ -23,8 +23,6 @@ const (
 
 	CmdPiaStart
 	CmdPiaNext
-	CmdPiaNextSafe
-	CmdPiaRelocate
 	CmdPiaStop
 
 	CmdGameRank
@@ -40,8 +38,8 @@ const (
 )
 
 type Command struct {
+	*Room
 	Args   []string // exclude command
-	Room   *Room
 	User   FmUser
 	Info   FmInfo
 	Role   int
@@ -60,6 +58,7 @@ var _cmdMap = map[string]int{
 	"info":    CmdRoomInfo,
 	"签到":      CmdCheckin,
 	"打卡":      CmdCheckin,
+	"dd":      CmdCheckin,
 	"checkin": CmdCheckin,
 	"签到榜":     CmdCheckinRank,
 	"星座":      CmdHoroscope,
@@ -75,8 +74,6 @@ var _cmdMap = map[string]int{
 	"贴本": CmdPiaStart,
 	"选本": CmdPiaStart,
 	"n":  CmdPiaNext,
-	"s":  CmdPiaNextSafe,
-	"r":  CmdPiaRelocate,
 	"结束": CmdPiaStop,
 	// Game commands.
 	"排行":   CmdGameRank,

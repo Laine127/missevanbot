@@ -15,12 +15,12 @@ func eventJoinQueue(output chan<- string, store *models.Room, textMsg models.FmT
 		if v.UserId == modules.BotID() {
 			continue
 		}
-		if username := v.Username; username != "" {
+		if name := v.Username; name != "" {
 			var pinyin string
 			if ok, err := modules.Mode(store.ID, modules.ModePinyin); err != nil {
 				zap.S().Warn(store.Log("get mode failed", err))
 			} else if ok {
-				pinyin = utils.Pinyin(username)
+				pinyin = utils.Pinyin(name)
 			}
 
 			data := struct {
@@ -28,7 +28,7 @@ func eventJoinQueue(output chan<- string, store *models.Room, textMsg models.FmT
 				Pinyin string
 				Extend string
 			}{
-				Name:   username,
+				Name:   name,
 				Pinyin: pinyin,
 				Extend: modules.Word(modules.WordWelcome),
 			}
@@ -48,7 +48,7 @@ func eventJoinQueue(output chan<- string, store *models.Room, textMsg models.FmT
 }
 
 func eventFollowed(output chan<- string, textMsg models.FmTextMessage) {
-	if username := textMsg.User.Username; username != "" {
-		output <- fmt.Sprintf(models.TplThankFollow, username)
+	if name := textMsg.User.Username; name != "" {
+		output <- fmt.Sprintf(models.TplThankFollow, name)
 	}
 }
