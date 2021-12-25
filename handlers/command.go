@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"go.uber.org/zap"
 	"missevanbot/config"
@@ -83,6 +84,7 @@ func roomInfo(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
+
 	info := cmd.Info
 	fmAdmins := info.Room.Members.Admin
 
@@ -93,6 +95,12 @@ func roomInfo(cmd *models.Command) {
 		admins = append(admins, v.Username)
 	}
 
+	openTime := time.UnixMilli(int64(info.Room.Status.OpenTime))
+	dur := time.Since(openTime)
+
+	infoRoom := info.Room
+	infoCreator := info.Creator
+
 	data := struct {
 		Name         string
 		Creator      string
@@ -102,20 +110,26 @@ func roomInfo(cmd *models.Command) {
 		Accumulation int
 		Count        int
 		Admins       []string
+		Duration     int
+		Vip          int
+		Medal        string
 	}{
-		info.Room.Name,
-		info.Creator.Username,
-		info.Room.Statistics.AttentionCount,
-		info.Room.Status.Channel.Platform,
-		cmd.Online,
-		info.Room.Statistics.Accumulation,
-		cmd.Count,
-		admins,
+		Name:         infoRoom.Name,
+		Creator:      infoCreator.Username,
+		Followers:    infoRoom.Statistics.AttentionCount,
+		Platform:     infoRoom.Status.Channel.Platform,
+		Online:       cmd.Online,
+		Accumulation: infoRoom.Statistics.Accumulation,
+		Count:        cmd.Count,
+		Admins:       admins,
+		Duration:     int(dur.Minutes()),
+		Vip:          info.Room.Statistics.Vip,
+		Medal:        infoRoom.Medal.Name,
 	}
 
 	text, err := modules.NewTemplate(modules.TmplRoomInfo, data)
 	if err != nil {
-		zap.Error(err)
+		zap.S().Warn(cmd.Log("create template failed", err))
 		return
 	}
 	cmd.Output <- text

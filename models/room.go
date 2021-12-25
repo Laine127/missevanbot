@@ -60,6 +60,11 @@ type (
 		Members      fmMembers    `json:"members"`      // 直播间成员
 		Statistics   fmStatistics `json:"statistics"`   // 统计数据
 		Status       fmStatus     `json:"status"`       // 状态信息
+		GuildID      int          `json:"guild_id"`     // 公会ID
+		Medal        struct {
+			Name string `json:"name"` // 粉丝牌名
+		} `json:"medal"` // 粉丝牌
+
 	}
 
 	fmMembers struct {
@@ -74,14 +79,16 @@ type (
 	fmStatistics struct {
 		Accumulation   int `json:"accumulation"`    // 累计人数
 		Vip            int `json:"vip"`             // 贵宾数量
-		Score          int `json:"score"`           // 分数
+		Score          int `json:"score"`           // 分数（热度）
+		Revenue        int `json:"revenue"`         // 收益
 		Online         int `json:"online"`          // 在线
 		AttentionCount int `json:"attention_count"` // 关注数
 	}
 
 	fmStatus struct {
-		Open    int       `json:"open"`
-		Channel fmChannel `json:"channel"`
+		Open     int       `json:"open"`
+		OpenTime int       `json:"open_time"`
+		Channel  fmChannel `json:"channel"`
 	}
 
 	fmChannel struct {
