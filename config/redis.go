@@ -10,6 +10,7 @@ import (
 
 const (
 	RedisPrefix          = "missevan:"
+	RedisPrefixCookies   = RedisPrefix + "cookies:"
 	RedisPrefixWords     = RedisPrefix + "words:"
 	RedisPrefixTemplates = RedisPrefix + "templates:"
 )

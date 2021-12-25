@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"missevanbot/config"
 	"missevanbot/models"
-	"missevanbot/modules"
 )
 
 func eventNew(output chan<- string, room *models.Room, textMsg models.FmTextMessage) {
@@ -15,8 +13,8 @@ func eventNew(output chan<- string, room *models.Room, textMsg models.FmTextMess
 		return
 	}
 	// Determine whether it is a chat request and handle it.
-	if first == fmt.Sprintf("@%s", modules.BotName()) || first == config.Nickname() {
-		handleChat(output, textMsg)
+	if first == fmt.Sprintf("@%s", room.BotName()) || first == room.BotNic {
+		handleChat(output, room, textMsg)
 		return
 	}
 	// Determine whether it is a command and handle it.

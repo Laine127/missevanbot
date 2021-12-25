@@ -23,18 +23,18 @@ type connection struct {
 // Connect handle the Websocket connection,
 // put the received message into input channel.
 //
-// TODO: Websocket connection may throw EOF error.
+// TODO: Websocket connection may throw EOF error,
+//  should find a new way to retry connection.
 func Connect(ctx context.Context, cancel context.CancelFunc, input chan<- models.FmTextMessage, room *models.Room) {
 	defer cancel() // cancel Connect, Match and Send goroutines.
 
-	roomID := room.ID
-
+	rid := room.ID
 	// Follow the room creator.
-	if err := follow(roomID); err != nil {
+	if err := follow(room); err != nil {
 		zap.S().Warn(room.Log("follow user failed", err))
 	}
 
-	cookie, err := modules.BaseCookie()
+	baseCookie, err := modules.BaseCookie()
 	if err != nil {
 		zap.S().Error(room.Log("get the base cookie failed", err))
 		return
@@ -46,12 +46,12 @@ func Connect(ctx context.Context, cancel context.CancelFunc, input chan<- models
 	h.Add("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,ja;q=0.5")
 	h.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36 Edg/96.0.1054.34")
 	h.Add("Cache-Control", "no-cache")
-	h.Add("Cookie", cookie)
+	h.Add("Cookie", baseCookie)
 
 	dialer := new(websocket.Dialer)
 
 retry:
-	conn, resp, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", roomID), h)
+	conn, resp, err := dialer.Dial(fmt.Sprintf("wss://im.missevan.com/ws?room_id=%d", rid), h)
 	if err != nil {
 		zap.S().Error(room.Log("dial failed", err))
 		return
@@ -64,7 +64,7 @@ retry:
 	}
 
 	c := &connection{conn, &sync.Mutex{}}
-	joinMsg := fmt.Sprintf(`{"action":"join","uuid":"35e77342-30af-4b0b-a0eb-f80a826a68c7","type":"room","room_id":%d}`, roomID)
+	joinMsg := fmt.Sprintf(`{"action":"join","uuid":"35e77342-30af-4b0b-a0eb-f80a826a68c7","type":"room","room_id":%d}`, rid)
 	if err := c.conn.WriteMessage(websocket.TextMessage, []byte(joinMsg)); err != nil {
 		zap.S().Error(room.Log("write message failed", err))
 		return
@@ -95,7 +95,7 @@ retry:
 				zap.S().Warn(room.Log(fmt.Sprintf("unmarshal failed (%s)", string(msgData)), err))
 				continue
 			}
-			if textMsg.User.UserID == modules.BotID() {
+			if textMsg.User.UserID == room.BotID() {
 				continue // filter out messages sent by the bot.
 			}
 			input <- textMsg
@@ -131,13 +131,13 @@ func heart(ctx context.Context, c *connection) {
 // and follow the creator according to the ID.
 //
 // If there is an error, write the logs and return.
-func follow(roomID int) error {
-	info, err := modules.RoomInfo(roomID)
+func follow(room *models.Room) error {
+	info, err := modules.RoomInfo(room)
 	if err != nil {
 		return err
 	}
 
-	ret, err := modules.ChangeAttention(info.Creator.UserID, modules.Follow)
+	ret, err := modules.ChangeAttention(room.BotCookie, info.Creator.UserID, modules.Follow)
 	if err != nil {
 		return err
 	}

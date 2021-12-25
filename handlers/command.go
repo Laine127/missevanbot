@@ -15,7 +15,7 @@ import (
 	"missevanbot/utils"
 )
 
-const defaultParas = 7
+const defParas = 7
 
 // cmdHandler is the function type that receives *command
 // and handle the command event.
@@ -299,7 +299,7 @@ func piaNext(cmd *models.Command) {
 	}
 	args := cmd.Args
 	if len(args) == 0 {
-		piaNextN(cmd, defaultParas)
+		piaNextN(cmd, defParas)
 		return
 	}
 	dur, err := strconv.Atoi(args[0])

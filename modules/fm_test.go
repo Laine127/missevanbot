@@ -11,7 +11,7 @@ func init() {
 	config.LoadConfig()
 }
 
-func TestCookie(t *testing.T) {
+func TestBaseCookie(t *testing.T) {
 	cookie, err := BaseCookie()
 	if err != nil {
 		t.Error(err)
@@ -22,7 +22,7 @@ func TestCookie(t *testing.T) {
 
 func TestChangeAttention(t *testing.T) {
 	t.Run("follow", func(t *testing.T) {
-		ret, err := ChangeAttention(11111, Follow)
+		ret, err := ChangeAttention(cookie(0), 11111, Follow)
 		if err != nil {
 			log.Println(err)
 			return
@@ -30,7 +30,7 @@ func TestChangeAttention(t *testing.T) {
 		t.Log(string(ret))
 	})
 	t.Run("unfollow", func(t *testing.T) {
-		ret, err := ChangeAttention(11111, Unfollow)
+		ret, err := ChangeAttention(cookie(0), 11111, Unfollow)
 		if err != nil {
 			t.Error(err)
 			return

@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"missevanbot/config"
 	"missevanbot/models"
 )
 
@@ -16,34 +18,30 @@ const (
 	Follow   = 1
 )
 
-// bot is used to store the basic information of the bot user.
-var bot models.FmUser
-
-// BotName return name of the bot.
-func BotName() string {
-	return bot.Username
-}
-
-// BotID return UID of the bot.
-func BotID() int {
-	return bot.UserID
-}
-
-// InitBot initialize information of the bot.
-func InitBot() {
-	// get name of the bot.
-	user, err := UserInfo()
-	if err != nil {
-		panic(fmt.Errorf("got bot name failed: %s", err))
+// InitBot queries information of the bot.
+func InitBot(room *models.Room) (err error) {
+	n, c := cookie(room.ID)
+	if c == "" {
+		// Make sure the cookie is not empty.
+		err = errors.New("cookie empty")
+		return
 	}
-	bot = user
+	room.BotNic = n
+	room.BotCookie = c
+	user, err := UserInfo(c)
+	if err != nil {
+		return
+	}
+	room.BotUser = user
+	return
 }
 
 // UserInfo return the information of the bot user.
-func UserInfo() (user models.FmUser, err error) {
+func UserInfo(c string) (user models.FmUser, err error) {
 	_url := "https://fm.missevan.com/api/user/info"
 
-	body, err := GetRequest(_url, nil)
+	req := NewRequest(_url, nil, c, nil)
+	body, err := req.Get()
 	if err != nil {
 		return
 	}
@@ -61,20 +59,20 @@ func UserInfo() (user models.FmUser, err error) {
 }
 
 // RoomInfo return the information of the fm room.
-func RoomInfo(roomID int) (info models.FmInfo, err error) {
-	_url := fmt.Sprintf("https://fm.missevan.com/api/v2/live/%d", roomID)
+func RoomInfo(room *models.Room) (info models.FmInfo, err error) {
+	_url := fmt.Sprintf("https://fm.missevan.com/api/v2/live/%d", room.ID)
 
-	body, err := GetRequest(_url, nil)
+	req := NewRequest(_url, nil, room.BotCookie, nil)
+	body, err := req.Get()
 	if err != nil {
 		return
 	}
 
-	room := models.FmRoom{}
-	if err = json.Unmarshal(body, &room); err != nil {
+	fmRoom := models.FmRoom{}
+	if err = json.Unmarshal(body, &fmRoom); err != nil {
 		return
 	}
-
-	info = room.Info
+	info = fmRoom.Info
 	return
 }
 
@@ -86,16 +84,16 @@ func BaseCookie() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	cookie := strings.Builder{}
+	bc := strings.Builder{}
 	for _, v := range resp.Header.Values("set-cookie") {
-		cookie.WriteString(v)
+		bc.WriteString(v)
 	}
-	return cookie.String(), nil
+	return bc.String(), nil
 }
 
 // ChangeAttention change the attention state,
 // tp = 0 is unfollow，tp = 1 is follow.
-func ChangeAttention(uid, tp int) (ret []byte, err error) {
+func ChangeAttention(c string, uid, tp int) (ret []byte, err error) {
 	_url := "https://www.missevan.com/person/ChangeAttention"
 
 	data := []byte(fmt.Sprintf("attentionid=%d&type=%d", uid, tp))
@@ -103,7 +101,8 @@ func ChangeAttention(uid, tp int) (ret []byte, err error) {
 	header := http.Header{}
 	header.Set("content-type", "application/x-www-form-urlencoded; charset=UTF-8")
 
-	ret, err = PostRequest(_url, header, data)
+	req := NewRequest(_url, header, c, data)
+	ret, err = req.Post()
 	return
 }
 
@@ -131,7 +130,7 @@ func QueryUsername(uid int) (string, error) {
 }
 
 // SendMessage send a private message to a user according to uid.
-func SendMessage(uid int, content string) (ret []byte, err error) {
+func SendMessage(c string, uid int, content string) (ret []byte, err error) {
 	_url := "https://www.missevan.com/mperson/sendmessage"
 
 	data := []byte(fmt.Sprintf("user_id=%d&content=%s", uid, content))
@@ -139,6 +138,27 @@ func SendMessage(uid int, content string) (ret []byte, err error) {
 	header := http.Header{}
 	header.Set("content-type", "application/x-www-form-urlencoded; charset=UTF-8")
 
-	ret, err = PostRequest(_url, header, data)
+	req := NewRequest(_url, header, c, data)
+	ret, err = req.Post()
 	return
+}
+
+const defCookie = "0" // default cookie field
+
+const (
+	fieldNic    = "nickname"
+	fieldCookie = "cookie"
+)
+
+// cookie return bot nickname and account cookie.
+func cookie(rid int) (string, string) {
+	rdb := config.RDB
+	prefix := config.RedisPrefixCookies
+	key := prefix + strconv.Itoa(rid)
+	if rdb.Exists(ctx, key).Val() != 1 {
+		key = prefix + defCookie
+	}
+
+	m := rdb.HGetAll(ctx, key).Val()
+	return m[fieldNic], m[fieldCookie]
 }

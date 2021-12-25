@@ -50,8 +50,8 @@ func HandleMessage(output chan<- string, room *models.Room, textMsg models.FmTex
 }
 
 // The handleChat handles the chat requests.
-func handleChat(output chan<- string, textMsg models.FmTextMessage) {
-	if textMsg.Message == config.Nickname() {
+func handleChat(output chan<- string, room *models.Room, textMsg models.FmTextMessage) {
+	if textMsg.Message == room.BotNic {
 		output <- fmt.Sprintf("@%s %s", textMsg.User.Username, modules.Word(modules.WordReply))
 		return
 	}
@@ -61,7 +61,7 @@ func handleChat(output chan<- string, textMsg models.FmTextMessage) {
 // The handleCommand handles the user commands,
 // simple logics are handling in this function, others in command.go.
 func handleCommand(output chan<- string, room *models.Room, cmdType int, textMsg models.FmTextMessage) {
-	info, err := modules.RoomInfo(room.ID)
+	info, err := modules.RoomInfo(room)
 	if err != nil {
 		zap.S().Warn(room.Log("fetch the room information failed", err))
 		return
@@ -85,7 +85,7 @@ func handleCommand(output chan<- string, room *models.Room, cmdType int, textMsg
 
 // handleGame handles the game-related message.
 func handleGame(output chan<- string, room *models.Room, textMsg models.FmTextMessage, cmdType int) {
-	info, err := modules.RoomInfo(room.ID)
+	info, err := modules.RoomInfo(room)
 	if err != nil {
 		zap.S().Warn(room.Log("fetch the room information failed", err))
 		return

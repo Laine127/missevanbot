@@ -9,16 +9,16 @@ import (
 	"missevanbot/utils"
 )
 
-func eventJoinQueue(output chan<- string, store *models.Room, textMsg models.FmTextMessage) {
+func eventJoinQueue(output chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	for _, v := range textMsg.Queue {
-		store.Count++
-		if v.UserId == modules.BotID() {
+		room.Count++
+		if v.UserId == room.BotID() {
 			continue
 		}
 		if name := v.Username; name != "" {
 			var pinyin string
-			if ok, err := modules.Mode(store.ID, modules.ModePinyin); err != nil {
-				zap.S().Warn(store.Log("get mode failed", err))
+			if ok, err := modules.Mode(room.ID, modules.ModePinyin); err != nil {
+				zap.S().Warn(room.Log("get mode failed", err))
 			} else if ok {
 				pinyin = utils.Pinyin(name)
 			}
@@ -35,11 +35,11 @@ func eventJoinQueue(output chan<- string, store *models.Room, textMsg models.FmT
 
 			text, err := modules.NewTemplate(modules.TmplWelcome, data)
 			if err != nil {
-				zap.S().Warn(store.Log("create template failed", err))
+				zap.S().Warn(room.Log("create template failed", err))
 				return
 			}
 			output <- text
-		} else if store.Count > 5 && store.Count%2 == 0 {
+		} else if room.Count > 5 && room.Count%2 == 0 {
 			// Start sending welcome messages from the sixth person
 			// and halve the number of messages sent.
 			output <- models.TplWelcomeAnon

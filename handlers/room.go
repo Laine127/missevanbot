@@ -5,13 +5,12 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	"missevanbot/config"
 	"missevanbot/models"
 	"missevanbot/modules"
 )
 
 func eventOpen(output chan<- string, room *models.Room) {
-	data, err := modules.NewTemplate(modules.TmplStartUp, config.Nickname())
+	data, err := modules.NewTemplate(modules.TmplStartUp, room.BotNic)
 	if err != nil {
 		zap.S().Warn(room.Log("create template failed", err))
 	} else {
