@@ -17,6 +17,7 @@ type BotConfig struct {
 	Nickname string        `mapstructure:"nickname"` // the nickname of the bot.
 	Cookie   string        `mapstructure:"cookie"`   // path of the cookie file.
 	Admin    int           `mapstructure:"admin"`    // admin of the bot.
+	Log      string        `mapstructure:"log"`      // log file path.
 	Level    string        `mapstructure:"level"`    // log level.
 	Redis    *RedisConfig  `mapstructure:"redis"`    // configurations of Redis client.
 	Push     *PushConfig   `mapstructure:"push"`     // configurations of message push module.
@@ -71,6 +72,7 @@ func LoadConfig() {
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
+	viper.AddConfigPath("data")
 	viper.AddConfigPath(".")
 
 	if err := viper.ReadInConfig(); err != nil {

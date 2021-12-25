@@ -16,9 +16,10 @@
 # vendor/
 .idea/
 
-*.yaml
 *.ps1
 *.log
 .cookie
+.env*
+config.yaml
 
 missevan*

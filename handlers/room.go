@@ -41,7 +41,7 @@ func eventClose(room *models.Room) {
 	}
 	room.TickerCount = 0
 	// clear playlist.
-	room.Playlist = nil
+	room.Playlist.Init()
 	// stop the game instance.
 	room.Gamer = nil
 	// clear count.

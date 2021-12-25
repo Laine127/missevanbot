@@ -1,0 +1,17 @@
+version: "3.2"
+services:
+  bot:
+    image: missevan-bot:latest
+    volumes:
+      - ~/missevan:/app/missevan/data
+  redis:
+    container_name: 'bot-redis'
+    image: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: >
+      --requirepass ${REDIS_PASSWORD}
+volumes:
+  redis_data:

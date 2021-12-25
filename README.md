@@ -31,12 +31,13 @@
 
 ```yaml
 nickname: "知世" # 机器人昵称
-cookie: ".cookie" # 存储 Cookie 的文件路径，需要单独创建该文件
+cookie: "data/.cookie" # 存储 Cookie 的文件路径，需要单独创建该文件
+log: "data/missevan.log" # 日志文件路径
 level: "info" # 日志输出等级
 redis: # Redis 相关配置
   host: ""
-  passwd:
-  db: 1
+  passwd: ""
+  db: 0
 push: # 各类推送服务密钥
   bark: "" # Bark App 推送通知
 admin: 11111 # 管理员 ID
@@ -62,13 +63,18 @@ go build
 
 ### Docker
 
-建议另外部署 Redis 容器，并将 *config.yaml* 中的 `redis.host` 改为 `"redis:6379"`。
-
-```shell
-cd missevan-fm/
-docker build -t missevan-bot .
-docker run -d --link redis-server:redis missevan-bot:latest
-```
+1. 创建 _~/missevan_ 目录，放入 _config.yaml_ 和 _.cookie_ 文件（需要修改 config 中 cookie 的路径）
+2. 将 *config.yaml* 中的 `redis.host` 改为 `"redis:6379"`
+3. 构建镜像：
+    ```shell
+    cd missevanbot/
+    docker build -t missevan-bot .
+    ```
+4. 启动容器：
+    ```shell
+    export REDIS_PASSWORD=mypassword # 设置 Redis 访问密码
+    docker-compose up
+    ```
 
 ## 目录结构
 

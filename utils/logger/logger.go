@@ -8,13 +8,13 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func Init(lvl string) (err error) {
+func Init(path, lvl string) (err error) {
 	level := new(zapcore.Level) // set level
 	if err = level.UnmarshalText([]byte(lvl)); err != nil {
 		return
 	}
 
-	writeSyncer := logWriteSyncer()
+	writeSyncer := logWriteSyncer(path)
 	encoder := logEncoder()
 
 	var core zapcore.Core
@@ -43,8 +43,8 @@ func logEncoder() zapcore.Encoder {
 	return zapcore.NewConsoleEncoder(cfg)
 }
 
-func logWriteSyncer() zapcore.WriteSyncer {
-	file, err := os.OpenFile("missevan.log", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+func logWriteSyncer(path string) zapcore.WriteSyncer {
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		panic(fmt.Errorf("create log file failed: %s", err))
 	}
