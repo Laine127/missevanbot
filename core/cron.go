@@ -28,7 +28,7 @@ func Cron(ctx context.Context, output chan<- string, room *models.Room) {
 }
 
 func isOpening(room *models.Room) bool {
-	info, err := modules.RoomInfo(room.ID)
+	info, err := modules.RoomInfo(room)
 	if err != nil {
 		zap.S().Warn(room.Log("fetch the room information failed", err))
 		return true

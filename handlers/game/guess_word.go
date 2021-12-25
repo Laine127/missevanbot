@@ -35,7 +35,7 @@ func (g *GuessWord) Start(cmd *models.Command) {
 
 	uid := g.Players[g.Index].ID
 	content := fmt.Sprintf(models.TplGameGuessWord, g.Word)
-	if _, err := modules.SendMessage(uid, content); err != nil {
+	if _, err := modules.SendMessage(cmd.BotCookie, uid, content); err != nil {
 		zap.S().Warn(cmd.Log("send private message failed", err))
 		stop(cmd)
 		cmd.Output <- models.TplSthWrong

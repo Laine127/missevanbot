@@ -2,20 +2,16 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
 
 	"github.com/spf13/viper"
 )
 
 var (
-	botConfig BotConfig
-	cookie    string
+	cfg GlobalConfig
 )
 
-type BotConfig struct {
+type GlobalConfig struct {
 	Nickname string        `mapstructure:"nickname"` // the nickname of the bot.
-	Cookie   string        `mapstructure:"cookie"`   // path of the cookie file.
 	Admin    int           `mapstructure:"admin"`    // admin of the bot.
 	Log      string        `mapstructure:"log"`      // log file path.
 	Level    string        `mapstructure:"level"`    // log level.
@@ -36,39 +32,34 @@ type PushConfig struct {
 
 type RoomConfig struct {
 	ID      int    `mapstructure:"id"`     // ID of the room.
-	Creator string `mapstructure:"name"`   // nickname of the room creator.
-	Enable  bool   `mapstructure:"enable"` // whether to enable the bot.
-	Watch   bool   `mapstructure:"watch"`  // whether to enable live room status monitoring.
+	Creator string `mapstructure:"name"`   // Nickname of the room creator.
+	Enable  bool   `mapstructure:"enable"` // Whether to enable the bot.
+	Watch   bool   `mapstructure:"watch"`  // Whether to enable live room status monitoring.
 }
 
 // Config return copy of the configurations.
-func Config() BotConfig {
-	return botConfig
+func Config() GlobalConfig {
+	return cfg
 }
 
 // Push return copy of the push configurations.
 func Push() PushConfig {
-	return *botConfig.Push
+	return *cfg.Push
 }
 
 // Nickname return the bot nickname in string format.
 func Nickname() string {
-	return botConfig.Nickname
-}
-
-// Cookie return the cookie in string format.
-func Cookie() string {
-	return cookie
+	return cfg.Nickname
 }
 
 // Admin return ID of the bot admin.
 func Admin() int {
-	return botConfig.Admin
+	return cfg.Admin
 }
 
 // LoadConfig is used to load configuration file
 func LoadConfig() {
-	conf := BotConfig{}
+	cfg = GlobalConfig{}
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -78,24 +69,7 @@ func LoadConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("fatal error read configration file: %s", err))
 	}
-	if err := viper.Unmarshal(&conf); err != nil {
+	if err := viper.Unmarshal(&cfg); err != nil {
 		panic(fmt.Errorf("fatal error unmarshal configration file: %s", err))
 	}
-	botConfig = conf
-
-	initCookie()
-}
-
-// initCookie read the content of cookie file which specified by botConfig.Cookie
-// and store it in a global variable.
-func initCookie() {
-	file, err := os.Open(botConfig.Cookie)
-	if err != nil {
-		panic(fmt.Errorf("read cookie file failed: %s", err))
-	}
-	content, err := ioutil.ReadAll(file)
-	if err != nil {
-		panic(fmt.Errorf("read cookie file failed: %s", err))
-	}
-	cookie = string(content)
 }

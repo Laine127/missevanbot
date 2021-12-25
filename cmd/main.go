@@ -16,35 +16,35 @@ var wg = &sync.WaitGroup{}
 
 func main() {
 	config.LoadConfig()
-	conf := config.Config()
+	cfg := config.Config()
 
-	// init the Redis client.
-	config.InitRDBClient(conf.Redis)
-
-	// init the logger.
-	if err := logger.Init(conf.Log, conf.Level); err != nil {
+	// Initialize the Redis client.
+	config.InitRDBClient(cfg.Redis)
+	// Initialize the logger.
+	if err := logger.Init(cfg.Log, cfg.Level); err != nil {
 		log.Println("init logger failed: ", err)
 		return
 	}
 
-	// init the bot information.
-	modules.InitBot()
-
 	ctx := context.Background()
-	for _, roomConf := range conf.Rooms {
-		if !roomConf.Enable {
+	for _, rc := range cfg.Rooms {
+		if !rc.Enable {
 			continue
 		}
+		room := models.NewRoom(rc)
+		err := modules.InitBot(room)
+		if err != nil {
+			log.Printf("init bot %s failed: %s\n", rc.Creator, err)
+			continue
+		}
+		modules.InitMode(room.ID)
 
 		wg.Add(4)
 
 		input := make(chan models.FmTextMessage, 1)
 		output := make(chan string, 1)
-		room := models.NewRoom(roomConf)
 
 		ctx, cancel := context.WithCancel(ctx)
-
-		modules.InitMode(room.ID)
 
 		go core.Connect(ctx, cancel, input, room)
 		go core.Match(ctx, input, output, room)

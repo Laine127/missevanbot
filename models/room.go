@@ -11,6 +11,8 @@ import (
 // The Room is used to store some dynamic data of a live room.
 type Room struct {
 	*config.RoomConfig
+	BotCookie string
+	BotUser   FmUser
 
 	Count    int // the number of enqueue
 	Online   int // online members in the live room
@@ -28,6 +30,14 @@ type Room struct {
 
 func NewRoom(roomConf *config.RoomConfig) *Room {
 	return &Room{RoomConfig: roomConf, Playlist: list.New()}
+}
+
+func (room *Room) BotID() int {
+	return room.BotUser.UserID
+}
+
+func (room *Room) BotName() string {
+	return room.BotUser.Username
 }
 
 func (room *Room) Log(str string, err interface{}) string {

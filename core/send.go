@@ -58,7 +58,8 @@ func send(msg string, room *models.Room) {
 	header := http.Header{}
 	header.Set("content-type", "application/json; charset=UTF-8")
 
-	if body, err := modules.PostRequest(_url, header, data); err != nil {
+	req := modules.NewRequest(_url, header, room.BotCookie, data)
+	if body, err := req.Post(); err != nil {
 		zap.S().Warn(room.Log("send message failed", err))
 	} else {
 		zap.S().Debug(room.Log(string(body), nil))

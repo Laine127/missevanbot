@@ -31,7 +31,6 @@
 
 ```yaml
 nickname: "知世" # 机器人昵称
-cookie: "data/.cookie" # 存储 Cookie 的文件路径，需要单独创建该文件
 log: "data/missevan.log" # 日志文件路径
 level: "info" # 日志输出等级
 redis: # Redis 相关配置
@@ -63,7 +62,7 @@ go build
 
 ### Docker
 
-1. 创建 _~/missevan_ 目录，放入 _config.yaml_ 和 _.cookie_ 文件（需要修改 config 中 cookie 的路径）
+1. 创建 *~/missevan* 目录，放入 *config.yaml*。
 2. 将 *config.yaml* 中的 `redis.host` 改为 `"redis:6379"`
 3. 构建镜像：
     ```shell
