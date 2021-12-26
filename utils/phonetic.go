@@ -14,6 +14,17 @@ func Pinyin(s string) string {
 	args.Heteronym = true    // enable heteronym
 	arr := pinyin.Pinyin(s, args)
 	for i, multi := range arr {
+		if len(multi) > 0 {
+			text.WriteString(multi[0])
+		}
+		if i < len(arr)-1 {
+			text.WriteString(" ")
+		}
+	}
+	if len(arr) > 0 {
+		text.WriteString("\n")
+	}
+	for i, multi := range arr {
 		text.WriteString("[")
 		if len(multi) == 1 {
 			text.WriteString(multi[0])

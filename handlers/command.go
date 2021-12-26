@@ -15,8 +15,6 @@ import (
 	"missevanbot/utils"
 )
 
-const defParas = 7
-
 // cmdHandler is the function type that receives *command
 // and handle the command event.
 type cmdHandler func(cmd *models.Command)
@@ -291,6 +289,8 @@ func piaStart(cmd *models.Command) {
 	}
 	cmd.Output <- fmt.Sprintf(models.TplPiaStart, cmd.User.Username, text.String())
 }
+
+const defParas = 7
 
 // piaNext outputs N paragraph in safety mode.
 func piaNext(cmd *models.Command) {

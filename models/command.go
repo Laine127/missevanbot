@@ -90,6 +90,7 @@ var _cmdMap = map[string]int{
 	"拼音":     CmdModePinyin,
 	"pinyin": CmdModePinyin,
 	"多喝热水":   CmdModeWater,
+	"喝水":     CmdModeWater,
 	"water":  CmdModeWater,
 	"咳咳":     CmdModePander,
 	"pander": CmdModePander,
