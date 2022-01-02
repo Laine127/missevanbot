@@ -16,6 +16,7 @@ const (
 	TmplMode           = "mode"
 	TmplPlaylist       = "playlist"
 	TmplRoomInfo       = "room"
+	TmplRoomAdmin      = "admin"
 	TmplStartUp        = "startup"
 	TmplWelcome        = "welcome"
 )

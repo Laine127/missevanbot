@@ -16,7 +16,8 @@ const (
 	TplModeSwitch = "@%s 模式启停成功～"
 	TplRankEmpty  = "@%s 今天的榜单好像空空的～"
 	TplSongReq    = "@%s 点歌%d首成功啦～"
-	TplSongDone   = "@%s 完成了一首歌曲～"
+	TplSongDone   = "@%s 完成了歌曲[%s]～"
+	TplSongClear  = "@%s 清空了整个歌单～"
 )
 
 // Modules related templates.

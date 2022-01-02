@@ -34,6 +34,7 @@ type RoomConfig struct {
 	Creator string `mapstructure:"name"`   // Nickname of the room creator.
 	Enable  bool   `mapstructure:"enable"` // Whether to enable the bot.
 	Watch   bool   `mapstructure:"watch"`  // Whether to enable live room status monitoring.
+	Cookie  int    `mapstructure:"cookie"` // Cookie sequence number.
 }
 
 // Config return copy of the configurations.

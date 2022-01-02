@@ -6,6 +6,7 @@ const (
 	CmdBotFeatures        // updates of bot recently
 
 	CmdRoomInfo
+	CmdRoomAdmin
 	CmdCheckin
 	CmdCheckinRank
 	CmdHoroscope
@@ -22,6 +23,7 @@ const (
 	CmdSongReq
 	CmdSongList
 	CmdSongDone
+	CmdSongClear
 
 	CmdPiaStart
 	CmdPiaNext
@@ -58,6 +60,8 @@ var _cmdMap = map[string]int{
 	"房间":      CmdRoomInfo,
 	"room":    CmdRoomInfo,
 	"info":    CmdRoomInfo,
+	"管理员":     CmdRoomAdmin,
+	"admin":   CmdRoomAdmin,
 	"签到":      CmdCheckin,
 	"打卡":      CmdCheckin,
 	"dd":      CmdCheckin,
@@ -66,12 +70,14 @@ var _cmdMap = map[string]int{
 	"星座":      CmdHoroscope,
 	"天气":      CmdWeather,
 	// Playlist commands.
-	"点歌":   CmdSongReq,
-	"req":  CmdSongReq,
-	"歌单":   CmdSongList,
-	"list": CmdSongList,
-	"完成":   CmdSongDone,
-	"done": CmdSongDone,
+	"点歌":    CmdSongReq,
+	"req":   CmdSongReq,
+	"歌单":    CmdSongList,
+	"list":  CmdSongList,
+	"完成":    CmdSongDone,
+	"done":  CmdSongDone,
+	"清空":    CmdSongClear,
+	"clear": CmdSongClear,
 	// Drama commands, no English version.
 	"贴本": CmdPiaStart,
 	"选本": CmdPiaStart,

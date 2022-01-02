@@ -16,9 +16,9 @@ func eventJoinQueue(output chan<- string, room *models.Room, textMsg models.FmTe
 			continue
 		}
 		if name := v.Username; name != "" {
-			var pinyin string
+			var pinyin, pinyinM string
 			if mode(room, modules.ModePinyin) {
-				pinyin = utils.Pinyin(name)
+				pinyin, pinyinM = utils.Pinyin(name)
 			}
 
 			// Store the information of the joined user.
@@ -28,16 +28,16 @@ func eventJoinQueue(output chan<- string, room *models.Room, textMsg models.FmTe
 			// var medalLevel string
 			var medalCreator string // username of the medal creator
 			var level int
-			for _, v := range v.Titles {
-				switch v.Type {
+			for _, t := range v.Titles {
+				switch t.Type {
 				case models.TitleLevel:
-					level = v.Level
+					level = t.Level
 				case models.TitleMedal:
-					medal = v.Name
+					medal = t.Name
 					// medalLevel = v.Level
 				case models.TitleNoble:
-					noble = v.Name
-					nobleLevel = v.Level
+					noble = t.Name
+					nobleLevel = t.Level
 				}
 			}
 
@@ -63,6 +63,7 @@ func eventJoinQueue(output chan<- string, room *models.Room, textMsg models.FmTe
 				MedalCreator string
 				Contribution int
 				Pinyin       string
+				PinyinM      string
 				Extend       string
 			}{
 				Name:         name,
@@ -72,6 +73,7 @@ func eventJoinQueue(output chan<- string, room *models.Room, textMsg models.FmTe
 				MedalCreator: medalCreator,
 				Contribution: v.Contribution,
 				Pinyin:       pinyin,
+				PinyinM:      pinyinM,
 				Extend:       modules.Word(modules.WordWelcome),
 			}
 

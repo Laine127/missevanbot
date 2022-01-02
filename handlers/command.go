@@ -23,6 +23,7 @@ var _cmdMap = map[int]cmdHandler{
 	models.CmdBotHelper:   botHelper,
 	models.CmdBotFeatures: botUpdates,
 	models.CmdRoomInfo:    roomInfo,
+	models.CmdRoomAdmin:   roomAdmin,
 	models.CmdCheckin:     checkin,
 	models.CmdCheckinRank: checkinRank,
 	models.CmdHoroscope:   apiHoroscopes,
@@ -30,6 +31,7 @@ var _cmdMap = map[int]cmdHandler{
 	models.CmdSongReq:     songReq,
 	models.CmdSongList:    songList,
 	models.CmdSongDone:    songDone,
+	models.CmdSongClear:   songClear,
 	models.CmdPiaStart:    piaStart,
 	models.CmdPiaNext:     piaNext,
 	models.CmdPiaStop:     piaStop,
@@ -86,20 +88,11 @@ func roomInfo(cmd *models.Command) {
 	}
 
 	info := cmd.Info
-	fmAdmins := info.Room.Members.Admin
-
-	// The admins slice only contains the name of
-	// each live room admin.
-	admins := make([]string, 0, len(fmAdmins))
-	for _, v := range fmAdmins {
-		admins = append(admins, v.Username)
-	}
+	infoRoom := info.Room
+	infoCreator := info.Creator
 
 	openTime := time.UnixMilli(int64(info.Room.Status.OpenTime))
 	dur := time.Since(openTime)
-
-	infoRoom := info.Room
-	infoCreator := info.Creator
 
 	data := struct {
 		Name         string
@@ -109,7 +102,6 @@ func roomInfo(cmd *models.Command) {
 		Online       int
 		Accumulation int
 		Count        int
-		Admins       []string
 		Duration     int
 		Vip          int
 		Medal        string
@@ -121,13 +113,35 @@ func roomInfo(cmd *models.Command) {
 		Online:       cmd.Online,
 		Accumulation: infoRoom.Statistics.Accumulation,
 		Count:        cmd.Count,
-		Admins:       admins,
 		Duration:     int(dur.Minutes()),
 		Vip:          info.Room.Statistics.Vip,
 		Medal:        infoRoom.Medal.Name,
 	}
 
 	text, err := modules.NewTemplate(modules.TmplRoomInfo, data)
+	if err != nil {
+		zap.S().Warn(cmd.Log("create template failed", err))
+		return
+	}
+	cmd.Output <- text
+}
+
+func roomAdmin(cmd *models.Command) {
+	if cmd.Role > models.RoleCreator {
+		return
+	}
+
+	info := cmd.Info
+	fmAdmins := info.Room.Members.Admin
+
+	// The admins slice only contains the name of
+	// each live room admin.
+	admins := make([]string, 0, len(fmAdmins))
+	for _, v := range fmAdmins {
+		admins = append(admins, v.Username)
+	}
+
+	text, err := modules.NewTemplate(modules.TmplRoomAdmin, admins)
 	if err != nil {
 		zap.S().Warn(cmd.Log("create template failed", err))
 		return
@@ -257,9 +271,26 @@ func songDone(cmd *models.Command) {
 	if cmd.Role > models.RoleAdmin {
 		return
 	}
+	args := cmd.Args
 	list := cmd.Playlist
-	list.Remove(list.Front())
-	cmd.Output <- fmt.Sprintf(models.TplSongDone, cmd.User.Username)
+	ele := list.Front()
+	if len(args) > 0 {
+		if n, err := strconv.Atoi(args[0]); err == nil && n <= list.Len() {
+			for i := 1; i < n; i++ {
+				ele = ele.Next()
+			}
+		}
+	}
+	val := list.Remove(ele)
+	cmd.Output <- fmt.Sprintf(models.TplSongDone, cmd.User.Username, val.(order).Name)
+}
+
+func songClear(cmd *models.Command) {
+	if cmd.Role > models.RoleAdmin {
+		return
+	}
+	cmd.Playlist.Init()
+	cmd.Output <- fmt.Sprintf(models.TplSongClear, cmd.User.Username)
 }
 
 func piaStart(cmd *models.Command) {
