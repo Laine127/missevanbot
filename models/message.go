@@ -25,6 +25,12 @@ const (
 	TypeChannel = "channel"
 )
 
+const (
+	TitleLevel = "level"
+	TitleNoble = "noble"
+	TitleMedal = "medal"
+)
+
 type (
 	// FmTextMessage represents the Websocket message from the live room.
 	FmTextMessage struct {
@@ -53,10 +59,17 @@ type (
 
 	// FmQueue represents basic information of the user who is joining.
 	FmQueue struct {
-		Contribution int    `json:"contribution"`
-		IconUrl      string `json:"iconurl"`
-		UserId       int    `json:"user_id"`
-		Username     string `json:"username"`
+		Contribution int       `json:"contribution"`
+		IconUrl      string    `json:"iconurl"`
+		Titles       []fmTitle `json:"titles"`
+		UserId       int       `json:"user_id"`
+		Username     string    `json:"username"`
+	}
+
+	fmTitle struct {
+		Level int    `json:"level"`
+		Name  string `json:"name"`
+		Type  string `json:"type"` // types: level, medal, noble
 	}
 
 	// FmGift represents the information of gift.

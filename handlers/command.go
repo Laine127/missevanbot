@@ -37,6 +37,8 @@ var _cmdMap = map[int]cmdHandler{
 	models.CmdModeMute:    switchMute,
 	models.CmdModePander:  switchPander,
 	models.CmdModePinyin:  switchPinyin,
+	models.CmdModeNoble:   switchNoble,
+	models.CmdModeMedal:   switchMedal,
 	models.CmdModeWater:   switchWater,
 	models.CmdGameRank:    gameRank,
 	models.CmdLove:        love,
@@ -392,6 +394,22 @@ func switchPinyin(cmd *models.Command) {
 		return
 	}
 	modules.SwitchMode(cmd.ID, modules.ModePinyin)
+	cmd.Output <- fmt.Sprintf(models.TplModeSwitch, cmd.User.Username)
+}
+
+func switchNoble(cmd *models.Command) {
+	if cmd.Role > models.RoleAdmin {
+		return
+	}
+	modules.SwitchMode(cmd.ID, modules.ModeNoble)
+	cmd.Output <- fmt.Sprintf(models.TplModeSwitch, cmd.User.Username)
+}
+
+func switchMedal(cmd *models.Command) {
+	if cmd.Role > models.RoleAdmin {
+		return
+	}
+	modules.SwitchMode(cmd.ID, modules.ModeMedal)
 	cmd.Output <- fmt.Sprintf(models.TplModeSwitch, cmd.User.Username)
 }
 

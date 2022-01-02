@@ -11,6 +11,8 @@ import (
 const (
 	ModeMute   = "mute"
 	ModePinyin = "pinyin"
+	ModeNoble  = "noble"
+	ModeMedal  = "medal"
 	ModePander = "pander"
 	ModeWater  = "water"
 )
@@ -39,6 +41,8 @@ func InitMode(rid int) {
 
 	rdb.HSetNX(ctx, key, ModeMute, Disabled)
 	rdb.HSetNX(ctx, key, ModePinyin, Enabled)
+	rdb.HSetNX(ctx, key, ModeNoble, Enabled)
+	rdb.HSetNX(ctx, key, ModeMedal, Disabled)
 	rdb.HSetNX(ctx, key, ModePander, Disabled)
 	rdb.HSetNX(ctx, key, ModeWater, Disabled)
 }

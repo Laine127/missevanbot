@@ -2,7 +2,6 @@ package modules
 
 import (
 	"bytes"
-	"errors"
 	"io/ioutil"
 	"net/http"
 )
@@ -41,11 +40,6 @@ func (r Request) Get() (body []byte, err error) {
 // request does the GET or the POST request according to reqType,
 // first, read the cookie of the bot user.
 func (r Request) request(reqType int) (body []byte, err error) {
-	if r.Cookie == "" {
-		err = errors.New("cookie empty")
-		return
-	}
-
 	client, req := new(http.Client), new(http.Request)
 
 	switch reqType {

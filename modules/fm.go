@@ -36,6 +36,21 @@ func InitBot(room *models.Room) (err error) {
 	return
 }
 
+// The BaseCookie get a new base cookie.
+func BaseCookie() (string, error) {
+	_url := "https://fm.missevan.com/api/user/info"
+
+	resp, err := http.Get(_url)
+	if err != nil {
+		return "", err
+	}
+	bc := strings.Builder{}
+	for _, v := range resp.Header.Values("set-cookie") {
+		bc.WriteString(v)
+	}
+	return bc.String(), nil
+}
+
 // UserInfo return the information of the bot user.
 func UserInfo(c string) (user models.FmUser, err error) {
 	_url := "https://fm.missevan.com/api/user/info"
@@ -74,21 +89,6 @@ func RoomInfo(room *models.Room) (info models.FmInfo, err error) {
 	}
 	info = fmRoom.Info
 	return
-}
-
-// The BaseCookie get a new base cookie.
-func BaseCookie() (string, error) {
-	_url := "https://fm.missevan.com/api/user/info"
-
-	resp, err := http.Get(_url)
-	if err != nil {
-		return "", err
-	}
-	bc := strings.Builder{}
-	for _, v := range resp.Header.Values("set-cookie") {
-		bc.WriteString(v)
-	}
-	return bc.String(), nil
 }
 
 // ChangeAttention change the attention state,
@@ -140,6 +140,24 @@ func SendMessage(c string, uid int, content string) (ret []byte, err error) {
 
 	req := NewRequest(_url, header, c, data)
 	ret, err = req.Post()
+	return
+}
+
+func MedalInfo(medal string) (info models.FmMedalInfo, err error) {
+	_url := "https://fm.missevan.com/api/v2/user/medal/get?name=" + medal
+
+	req := NewRequest(_url, nil, "", nil)
+	body, err := req.Get()
+	if err != nil {
+		return
+	}
+	fmt.Println(string(body))
+
+	fmMedal := models.FmMedal{}
+	if err = json.Unmarshal(body, &fmMedal); err != nil {
+		return
+	}
+	info = fmMedal.Info
 	return
 }
 

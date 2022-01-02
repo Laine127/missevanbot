@@ -109,3 +109,20 @@ type (
 		Type     string `json:"type"`
 	}
 )
+
+type (
+	FmMedal struct {
+		Code int         `json:"code"`
+		Info FmMedalInfo `json:"info"`
+	}
+
+	FmMedalInfo struct {
+		Medal struct {
+			CreatorID   int    `json:"creator_id"`
+			CreatorName string `json:"creator_username"`
+			Name        string `json:"name"`
+			RoomID      int    `json:"room_id"`
+		} `json:"medal"`
+		OwnerCount int `json:"owner_count"`
+	}
+)

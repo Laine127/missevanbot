@@ -173,3 +173,11 @@ func role(info models.FmInfo, uid int) int {
 		return models.RoleMember
 	}
 }
+
+func mode(room *models.Room, m string) (ok bool) {
+	ok, err := modules.Mode(room.ID, m)
+	if err != nil {
+		zap.S().Warn(room.Log("get mode failed", err))
+	}
+	return
+}

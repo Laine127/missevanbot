@@ -15,6 +15,8 @@ const (
 	CmdModeMute // disable message sender of the bot
 	CmdModePander
 	CmdModePinyin
+	CmdModeNoble
+	CmdModeMedal
 	CmdModeWater // water reminder
 
 	CmdSongReq
@@ -87,12 +89,16 @@ var _cmdMap = map[string]int{
 	"mode":   CmdModeAll,
 	"静音":     CmdModeMute,
 	"mute":   CmdModeMute,
-	"拼音":     CmdModePinyin,
+	"显示拼音":   CmdModePinyin,
 	"pinyin": CmdModePinyin,
-	"多喝热水":   CmdModeWater,
-	"喝水":     CmdModeWater,
+	"显示贵族":   CmdModeNoble,
+	"noble":  CmdModeNoble,
+	"显示粉丝牌":  CmdModeMedal,
+	"medal":  CmdModeMedal,
+	"喝水助手":   CmdModeWater,
 	"water":  CmdModeWater,
 	"咳咳":     CmdModePander,
+	"彩虹屁":    CmdModePander,
 	"pander": CmdModePander,
 }
 
