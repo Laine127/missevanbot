@@ -20,7 +20,7 @@ const (
 
 // InitBot queries information of the bot.
 func InitBot(room *models.Room) (err error) {
-	n, c := cookie(room.ID)
+	n, c := cookie(room.ID, room.Cookie)
 	if c == "" {
 		// Make sure the cookie is not empty.
 		err = errors.New("cookie empty")
@@ -151,7 +151,6 @@ func MedalInfo(medal string) (info models.FmMedalInfo, err error) {
 	if err != nil {
 		return
 	}
-	fmt.Println(string(body))
 
 	fmMedal := models.FmMedal{}
 	if err = json.Unmarshal(body, &fmMedal); err != nil {
@@ -161,20 +160,18 @@ func MedalInfo(medal string) (info models.FmMedalInfo, err error) {
 	return
 }
 
-const defCookie = "0" // default cookie field
-
 const (
 	fieldNic    = "nickname"
 	fieldCookie = "cookie"
 )
 
 // cookie return bot nickname and account cookie.
-func cookie(rid int) (string, string) {
+func cookie(rid, defCookie int) (string, string) {
 	rdb := config.RDB
 	prefix := config.RedisPrefixCookies
 	key := prefix + strconv.Itoa(rid)
 	if rdb.Exists(ctx, key).Val() != 1 {
-		key = prefix + defCookie
+		key = prefix + strconv.Itoa(defCookie)
 	}
 
 	m := rdb.HGetAll(ctx, key).Val()
