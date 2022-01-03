@@ -59,9 +59,15 @@ func send(msg string, room *models.Room) {
 	header.Set("content-type", "application/json; charset=UTF-8")
 
 	req := modules.NewRequest(_url, header, room.BotCookie, data)
-	if body, err := req.Post(); err != nil {
+	body, err := req.Post()
+	if err != nil {
 		zap.S().Warn(room.Log("send message failed", err))
-	} else {
-		zap.S().Debug(room.Log(string(body), nil))
+		return
 	}
+	str := string(body)
+	if str == `{"code":500150022,"info":"聊天内容含有违规信息"}` {
+		send("检测到屏蔽词，消息被屏蔽了哦～", room)
+		return
+	}
+	zap.S().Debug(room.Log(str, nil))
 }

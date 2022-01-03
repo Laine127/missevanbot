@@ -50,7 +50,7 @@ var _cmdMap = map[int]cmdHandler{
 // and outputs other help texts according to the arguments.
 func botHelper(cmd *models.Command) {
 	args := cmd.Args
-	key := ""
+	var key string
 	if len(args) == 0 {
 		key = modules.TmplHelper
 	} else {
@@ -88,8 +88,8 @@ func roomInfo(cmd *models.Command) {
 	}
 
 	info := cmd.Info
-	infoRoom := info.Room
-	infoCreator := info.Creator
+	room := info.Room
+	creator := info.Creator
 
 	openTime := time.UnixMilli(int64(info.Room.Status.OpenTime))
 	dur := time.Since(openTime)
@@ -106,16 +106,16 @@ func roomInfo(cmd *models.Command) {
 		Vip          int
 		Medal        string
 	}{
-		Name:         infoRoom.Name,
-		Creator:      infoCreator.Username,
-		Followers:    infoRoom.Statistics.AttentionCount,
-		Platform:     infoRoom.Status.Channel.Platform,
+		Name:         room.Name,
+		Creator:      creator.Username,
+		Followers:    room.Statistics.AttentionCount,
+		Platform:     room.Status.Channel.Platform,
 		Online:       cmd.Online,
-		Accumulation: infoRoom.Statistics.Accumulation,
+		Accumulation: room.Statistics.Accumulation,
 		Count:        cmd.Count,
 		Duration:     int(dur.Minutes()),
 		Vip:          info.Room.Statistics.Vip,
-		Medal:        infoRoom.Medal.Name,
+		Medal:        room.Medal.Name,
 	}
 
 	text, err := modules.NewTemplate(modules.TmplRoomInfo, data)
@@ -322,7 +322,7 @@ func piaStart(cmd *models.Command) {
 	cmd.Output <- fmt.Sprintf(models.TplPiaStart, cmd.User.Username, text.String())
 }
 
-const defParas = 7
+const defParas = 7 // Default number of the paragraphs.
 
 // piaNext outputs N paragraph in safety mode.
 func piaNext(cmd *models.Command) {
@@ -457,6 +457,7 @@ func switchWater(cmd *models.Command) {
 	switchValue(cmd, modules.ModeWater)
 }
 
+// switchValue handles the switch actions that could have an argument.
 func switchValue(cmd *models.Command, key string) {
 	args := cmd.Args
 	name := cmd.User.Username

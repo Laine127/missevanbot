@@ -90,6 +90,7 @@ retry:
 			if string(msgData) == "❤️" {
 				continue
 			}
+			// TODO: Unmarshal add_admin json message.
 			textMsg := models.FmTextMessage{}
 			if err := json.Unmarshal(msgData, &textMsg); err != nil {
 				zap.S().Warn(room.Log(fmt.Sprintf("unmarshal failed (%s)", string(msgData)), err))

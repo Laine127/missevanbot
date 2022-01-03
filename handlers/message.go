@@ -19,7 +19,12 @@ func eventNew(output chan<- string, room *models.Room, textMsg models.FmTextMess
 	}
 	// Determine whether it is a command and handle it.
 	if cmdType := models.Cmd(first); cmdType >= 0 {
-		handleCommand(output, room, cmdType, textMsg)
+		handleCommand(output, room, textMsg, cmdType)
+		return
+	}
+	// Determine whether it is a spells and handle it.
+	if spellsType := models.Spells(strings.ToUpper(textMsg.Message)); spellsType >= 0 {
+		handleSpells(output, room, textMsg, spellsType)
 		return
 	}
 	// If message is a game-related command or room.Gamer is not null,

@@ -22,14 +22,9 @@ const (
 	Disabled = "0"
 )
 
-const (
-	DefaultPander = 6
-	DefaultWater  = 12
-)
-
 var _defaults = map[string]int{
-	ModePander: DefaultPander,
-	ModeWater:  DefaultWater,
+	ModePander: 6,
+	ModeWater:  12,
 }
 
 // InitMode initialize all the modes that storing in Redis and not exists,

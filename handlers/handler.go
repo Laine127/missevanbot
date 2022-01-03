@@ -60,7 +60,7 @@ func handleChat(output chan<- string, room *models.Room, textMsg models.FmTextMe
 
 // The handleCommand handles the user commands,
 // simple logics are handling in this function, others in command.go.
-func handleCommand(output chan<- string, room *models.Room, cmdType int, textMsg models.FmTextMessage) {
+func handleCommand(output chan<- string, room *models.Room, textMsg models.FmTextMessage, cmdType int) {
 	info, err := modules.RoomInfo(room)
 	if err != nil {
 		zap.S().Warn(room.Log("fetch the room information failed", err))
@@ -146,6 +146,12 @@ func handleGame(output chan<- string, room *models.Room, textMsg models.FmTextMe
 		default:
 			gamer.Action(cmd, textMsg)
 		}
+	}
+}
+
+func handleSpells(output chan<- string, room *models.Room, textMsg models.FmTextMessage, spellsType int) {
+	if f, ok := _spellsMap[spellsType]; ok {
+		f(room, textMsg.User, output)
 	}
 }
 
