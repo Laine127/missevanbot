@@ -19,6 +19,7 @@ const (
 	TmplRoomAdmin      = "admin"
 	TmplStartUp        = "startup"
 	TmplWelcome        = "welcome"
+	TmplGift           = "gift"
 )
 
 func NewTemplate(key string, data interface{}) (string, error) {

@@ -15,9 +15,10 @@ type Room struct {
 	BotNic    string
 	BotUser   FmUser
 
-	Count    int // the number of enqueue
-	Online   int // online members in the live room
-	Playlist *list.List
+	Count     int // the number of enqueue
+	Online    int // online members in the live room
+	Playlist  *list.List
+	GiftTimer *time.Timer
 
 	PiaParas []string // drama paragraphs
 	PiaIndex int      // paragraph index

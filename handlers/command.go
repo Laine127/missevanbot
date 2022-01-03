@@ -240,10 +240,9 @@ func songReq(cmd *models.Command) {
 
 	name := cmd.User.Username
 	list := cmd.Playlist
-	for _, song := range args {
-		list.PushBack(order{song, name})
-	}
-	cmd.Output <- fmt.Sprintf(models.TplSongReq, name, len(args))
+	song := strings.Join(args, " ")
+	list.PushBack(order{song, name})
+	cmd.Output <- fmt.Sprintf(models.TplSongReq, name, song)
 }
 
 func songList(cmd *models.Command) {

@@ -6,7 +6,6 @@ const TplDefaultPoem = "孜孜不倦，不易乎世。"
 const (
 	TplWelcomeAnon = "欢迎新来的小可爱们进入直播间呀～"
 	TplThankFollow = "@%s 谢谢关注呀～"
-	TplThankGift   = "@%s 谢谢送出的%d个%s，啵啵～"
 	TplSthWrong    = "不好意思呀，出现了一些状况～"
 )
 
@@ -15,7 +14,7 @@ const (
 	TplIllegal    = "@%s 输入的参数不正确哦～"
 	TplModeSwitch = "@%s 模式启停成功～"
 	TplRankEmpty  = "@%s 今天的榜单好像空空的～"
-	TplSongReq    = "@%s 点歌%d首成功啦～"
+	TplSongReq    = "@%s 添加歌曲[%s]成功啦～"
 	TplSongDone   = "@%s 完成了歌曲[%s]～"
 	TplSongClear  = "@%s 清空了整个歌单～"
 )

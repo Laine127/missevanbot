@@ -34,10 +34,10 @@ func HandleMember(output chan<- string, room *models.Room, textMsg models.FmText
 }
 
 // The HandleGift handles the event related to gift.
-func HandleGift(output chan<- string, textMsg models.FmTextMessage) {
+func HandleGift(output chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	switch textMsg.Event {
 	case models.EventSend:
-		eventSend(output, textMsg)
+		eventSend(output, room, textMsg)
 	}
 }
 
