@@ -2,6 +2,8 @@ version: "3.2"
 services:
   bot:
     image: missevan-bot:latest
+    depends_on:
+      - redis
     volumes:
       - ~/missevan:/app/missevan/data
   redis:
