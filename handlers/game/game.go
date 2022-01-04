@@ -9,9 +9,14 @@ import (
 )
 
 type Game struct {
+	Name    string
 	State   int             // game state.
 	Players []models.Player // store a list of players in order, contains ID and name of each player.
 	Index   int             // the index of next player.
+}
+
+func (s *Game) GameName() string {
+	return s.Name
 }
 
 func (s *Game) AddPlayer(player models.Player) bool {

@@ -110,7 +110,7 @@ func handleGame(output chan<- string, room *models.Room, textMsg models.FmTextMe
 			output <- models.TplGameExists
 			return
 		}
-		room.Gamer = &game.NumberBomb{Game: new(game.Game)}
+		room.Gamer = &game.NumberBomb{Game: &game.Game{Name: "数字炸弹"}}
 		room.Gamer.Create(cmd)
 		return
 	case models.CmdGamePassParcel:
@@ -118,7 +118,7 @@ func handleGame(output chan<- string, room *models.Room, textMsg models.FmTextMe
 			output <- models.TplGameExists
 			return
 		}
-		room.Gamer = &game.PassParcel{Game: new(game.Game)}
+		room.Gamer = &game.PassParcel{Game: &game.Game{Name: "击鼓传花"}}
 		room.Gamer.Create(cmd)
 		return
 	case models.CmdGameGuessWord:
@@ -126,7 +126,7 @@ func handleGame(output chan<- string, room *models.Room, textMsg models.FmTextMe
 			output <- models.TplGameExists
 			return
 		}
-		room.Gamer = &game.GuessWord{Game: new(game.Game)}
+		room.Gamer = &game.GuessWord{Game: &game.Game{Name: "你说我猜"}}
 		room.Gamer.Create(cmd)
 	default:
 		gamer := room.Gamer

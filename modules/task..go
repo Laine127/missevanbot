@@ -18,6 +18,7 @@ func RunTasks(output chan<- string, room *models.Room) {
 	if mode := modes[ModeWater]; isEnabled(mode) && shouldExec(count, mode) {
 		taskWater(output)
 	}
+	StatusOnline(room) // set status
 }
 
 func taskPander(output chan<- string) {

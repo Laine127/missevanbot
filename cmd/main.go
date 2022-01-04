@@ -34,9 +34,10 @@ func main() {
 		room := models.NewRoom(rc)
 		err := modules.InitBot(room)
 		if err != nil {
-			log.Printf("init bot %s failed: %s\n", rc.Creator, err)
+			log.Printf("init bot %s failed: %s\n", rc.Alias, err)
 			continue
 		}
+		modules.InitRoomInfo(room.ID, room.Alias, room.BotNic)
 		modules.InitMode(room.ID)
 
 		wg.Add(4)

@@ -11,13 +11,3 @@ endif
 
 build:
 	go build -ldflags "-s -w" -o $(EXECUTABLE) cmd/main.go
-start:
-	screen -S $(EXECUTABLE) ./$(EXECUTABLE)
-resume:
-	screen -R $(EXECUTABLE)
-stop:
-	screen -S $(EXECUTABLE) -X quit
-restart:
-	make stop && make build && make start
-docker:
-	docker build -t missevan-bot . && docker-compose up

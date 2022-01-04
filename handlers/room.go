@@ -24,10 +24,12 @@ func eventOpen(output chan<- string, room *models.Room) {
 	}
 	room.TickerCount = 0
 
+	modules.StatusOnline(room) // set status
+
 	if !room.Watch {
 		return
 	}
-	text := fmt.Sprintf("%s 开播啦~", room.Creator)
+	text := fmt.Sprintf("%s 开播啦~", room.Alias)
 	if err := modules.Push(modules.TitleOpen, text); err != nil {
 		zap.S().Warn(room.Log("bark push failed", err))
 	}
@@ -50,7 +52,7 @@ func eventClose(room *models.Room) {
 		return
 	}
 	// push notify to the message service.
-	text := fmt.Sprintf("%s 下播啦~", room.Creator)
+	text := fmt.Sprintf("%s 下播啦~", room.Alias)
 	if err := modules.Push(modules.TitleClose, text); err != nil {
 		zap.S().Warn(room.Log("bark push failed", err))
 	}

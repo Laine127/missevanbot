@@ -50,6 +50,8 @@ type Player struct {
 }
 
 type Gamer interface {
+	// GameName return the name of the game.
+	GameName() string
 	// AddPlayer add the player to the list of players,
 	// if the player has already joined, return false.
 	AddPlayer(player Player) bool

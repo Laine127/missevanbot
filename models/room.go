@@ -44,9 +44,9 @@ func (room *Room) BotName() string {
 
 func (room *Room) Log(str string, err interface{}) string {
 	if err == nil {
-		return fmt.Sprintf("[%s][%d] %s", room.Creator, room.ID, str)
+		return fmt.Sprintf("[%s][%d] %s", room.Alias, room.ID, str)
 	}
-	return fmt.Sprintf("[%s][%d] %s: %s", room.Creator, room.ID, str, err)
+	return fmt.Sprintf("[%s][%d] %s: %s", room.Alias, room.ID, str, err)
 }
 
 type (
