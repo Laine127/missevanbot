@@ -22,7 +22,8 @@ func TestBaseCookie(t *testing.T) {
 
 func TestChangeAttention(t *testing.T) {
 	t.Run("follow", func(t *testing.T) {
-		ret, err := ChangeAttention(cookie(0), 11111, Follow)
+		_, ck := cookie(0, 0)
+		ret, err := ChangeAttention(ck, 11111, Follow)
 		if err != nil {
 			log.Println(err)
 			return
@@ -30,7 +31,8 @@ func TestChangeAttention(t *testing.T) {
 		t.Log(string(ret))
 	})
 	t.Run("unfollow", func(t *testing.T) {
-		ret, err := ChangeAttention(cookie(0), 11111, Unfollow)
+		_, ck := cookie(0, 0)
+		ret, err := ChangeAttention(ck, 11111, Unfollow)
 		if err != nil {
 			t.Error(err)
 			return

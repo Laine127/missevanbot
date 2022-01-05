@@ -25,6 +25,7 @@ func main() {
 		log.Println("init logger failed: ", err)
 		return
 	}
+	modules.Init()
 
 	ctx := context.Background()
 	for _, rc := range cfg.Rooms {

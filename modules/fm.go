@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"missevanbot/config"
 	"missevanbot/models"
 )
 
@@ -167,9 +166,9 @@ const (
 
 // cookie return bot nickname and account cookie.
 func cookie(rid, defCookie int) (string, string) {
-	rdb := config.RDB
-	prefix := config.RedisPrefixCookies
+	prefix := RedisPrefixCookies
 	key := prefix + strconv.Itoa(rid)
+
 	if rdb.Exists(ctx, key).Val() != 1 {
 		key = prefix + strconv.Itoa(defCookie)
 	}

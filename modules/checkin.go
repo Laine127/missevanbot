@@ -1,26 +1,20 @@
 package modules
 
 import (
-	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
-	"missevanbot/config"
 	"missevanbot/models"
 	"missevanbot/modules/thirdparty"
 	"missevanbot/utils"
 )
 
-var ctx = context.Background()
-
 // Checkin do the action of user checkin.
-func Checkin(roomID, uid int, name string) (string, error) {
-	rdb := config.RDB
-	prefix := config.RedisPrefix + strconv.Itoa(roomID) // Redis namespace prefix, `missevan:[roomID]`
-
-	key := fmt.Sprintf("%s:checkin:%d", prefix, uid) // `missevan:[roomID]:checkin:[UID]`
+// TODO: enhance this function.
+func Checkin(rid, uid int, name string) (string, error) {
+	prefix := prefixRoom(rid)
+	key := prefix + fmt.Sprintf("checkin:%d", uid) // missevan:[RoomID]:checkin:[UID]
 
 	// get the checkin data from the Redis cache.
 	cmd := rdb.HMGet(ctx, key, "count", "day", "luck")
@@ -53,8 +47,8 @@ func Checkin(roomID, uid int, name string) (string, error) {
 	// increase the count of consecutive checkin days.
 	countCMD := rdb.HIncrBy(ctx, key, "count", 1)
 	// push the UID and Username into the rank list.
-	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:id", prefix, utils.Today()), uid)
-	rdb.RPush(ctx, fmt.Sprintf("%s:rank:%s:name", prefix, utils.Today()), name)
+	rdb.RPush(ctx, prefix+fmt.Sprintf("rank:%s:id", utils.Today()), uid)
+	rdb.RPush(ctx, prefix+fmt.Sprintf("rank:%s:name", utils.Today()), name)
 
 	poem, err := thirdparty.PoemText()
 	if err != nil {
@@ -65,18 +59,17 @@ func Checkin(roomID, uid int, name string) (string, error) {
 }
 
 // CheckinRank return the rank of checkin task today.
-func CheckinRank(roomID int) string {
-	rdb := config.RDB
-	prefix := config.RedisPrefix + strconv.Itoa(roomID)
+func CheckinRank(rid int) string {
+	prefix := prefixRoom(rid)
+	key := prefix + fmt.Sprintf("rank:%s:id", utils.Today())
+	nKey := prefix + fmt.Sprintf("rank:%s:name", utils.Today())
 
-	key := fmt.Sprintf("%s:rank:%s:id", prefix, utils.Today())
-	nKey := fmt.Sprintf("%s:rank:%s:name", prefix, utils.Today())
 	listID := rdb.LRange(ctx, key, 0, -1)
 	listName := rdb.LRange(ctx, nKey, 0, -1)
 	result := strings.Builder{}
 	result.WriteString("\n")
 	for k, v := range listID.Val() {
-		count := rdb.HGet(ctx, fmt.Sprintf("%s:checkin:%s", prefix, v), "count").Val()
+		count := rdb.HGet(ctx, prefix+fmt.Sprintf("checkin:%s", v), "count").Val()
 		result.WriteString(fmt.Sprintf("Rank %d. [%s] 连续签到%s天", k+1, listName.Val()[k], count))
 		if k < len(listID.Val())-1 {
 			result.WriteString("\n")

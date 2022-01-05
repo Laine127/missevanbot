@@ -2,10 +2,7 @@ package modules
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
-
-	"missevanbot/config"
 )
 
 const (
@@ -30,9 +27,7 @@ var _defaults = map[string]int{
 // InitMode initialize all the modes that storing in Redis and not exists,
 // if you want to add some new modes, initialize them after define the constants.
 func InitMode(rid int) {
-	rdb := config.RDB
-	prefix := config.RedisPrefix + strconv.Itoa(rid) // Redis namespace prefix, `missevan:[RoomID]`
-	key := fmt.Sprintf("%s:mode", prefix)            // `missevan:[RoomID]:mode`
+	key := prefixRoom(rid) + "mode" // `missevan:[RoomID]:mode`
 
 	rdb.HSetNX(ctx, key, ModeMute, Disabled)
 	rdb.HSetNX(ctx, key, ModePinyin, Enabled)
@@ -43,9 +38,7 @@ func InitMode(rid int) {
 }
 
 func Mode(rid int, mode string) (bool, error) {
-	rdb := config.RDB
-	prefix := config.RedisPrefix + strconv.Itoa(rid) // Redis namespace prefix, `missevan:[RoomID]`
-	key := fmt.Sprintf("%s:mode", prefix)            // `missevan:[RoomID]:mode`
+	key := prefixRoom(rid) + "mode" // `missevan:[RoomID]:mode`
 
 	cmd, err := rdb.HGetAll(ctx, key).Result()
 	if err != nil {
@@ -63,17 +56,13 @@ func Mode(rid int, mode string) (bool, error) {
 }
 
 func ModeAll(rid int) map[string]string {
-	rdb := config.RDB
-	prefix := config.RedisPrefix + strconv.Itoa(rid)
-	key := fmt.Sprintf("%s:mode", prefix)
+	key := prefixRoom(rid) + "mode" // `missevan:[RoomID]:mode`
 
 	return rdb.HGetAll(ctx, key).Val()
 }
 
 func SetMode(rid int, mode string, val interface{}) {
-	rdb := config.RDB
-	prefix := config.RedisPrefix + strconv.Itoa(rid)
-	key := fmt.Sprintf("%s:mode", prefix)
+	key := prefixRoom(rid) + "mode" // `missevan:[RoomID]:mode`
 
 	rdb.HSet(ctx, key, mode, val)
 }
@@ -82,9 +71,7 @@ func SetMode(rid int, mode string, val interface{}) {
 // if mode disabled and has a default value,
 // change it to default value.
 func SwitchMode(rid int, mode string) {
-	rdb := config.RDB
-	prefix := config.RedisPrefix + strconv.Itoa(rid)
-	key := fmt.Sprintf("%s:mode", prefix)
+	key := prefixRoom(rid) + "mode" // `missevan:[RoomID]:mode`
 
 	d, ok := _defaults[mode]
 

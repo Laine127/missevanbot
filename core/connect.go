@@ -72,7 +72,7 @@ retry:
 
 	ctx, cancel = context.WithCancel(context.Background())
 	defer cancel()
-	go heart(ctx, c, room.ID) // keep connected
+	go heart(ctx, c) // keep connected
 
 	for {
 		msgType, msgData, err := c.conn.ReadMessage()
@@ -88,6 +88,7 @@ retry:
 		switch msgType {
 		case websocket.TextMessage:
 			if string(msgData) == "❤️" {
+				modules.StatusRunning(rid) // set status
 				continue
 			}
 			// TODO: Unmarshal add_admin json message.
@@ -112,11 +113,9 @@ retry:
 // heart send a heartbeat to the room Websocket connection every 30 seconds,
 // also receive a WithCancel Context, when the `Connect` goroutine is down,
 // return the heart function and stop the ticker.
-func heart(ctx context.Context, c *connection, rid int) {
+func heart(ctx context.Context, c *connection) {
 	ticker := time.NewTicker(time.Second * 30)
 	defer ticker.Stop()
-
-	modules.StatusRunning(rid) // set status
 
 	for {
 		select {
@@ -126,8 +125,6 @@ func heart(ctx context.Context, c *connection, rid int) {
 			c.mu.Lock()
 			_ = c.conn.WriteMessage(websocket.TextMessage, []byte("❤️"))
 			c.mu.Unlock()
-
-			modules.StatusRunning(rid) // set status
 		}
 	}
 }

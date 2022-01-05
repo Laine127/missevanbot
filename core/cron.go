@@ -11,7 +11,9 @@ import (
 
 func Cron(ctx context.Context, output chan<- string, room *models.Room) {
 	room.Ticker = time.NewTicker(time.Minute)
-	if !isOpening(room) {
+	if isOpening(room) {
+		modules.StatusOnline(room) // set status
+	} else {
 		room.Ticker.Stop()
 	}
 
@@ -23,6 +25,7 @@ func Cron(ctx context.Context, output chan<- string, room *models.Room) {
 			room.TickerCount = (room.TickerCount + 1) % 60
 			<-room.Ticker.C
 			modules.RunTasks(output, room)
+			modules.StatusOnline(room) // set status
 		}
 	}
 }

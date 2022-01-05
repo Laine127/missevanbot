@@ -3,7 +3,6 @@ package modules
 import (
 	"strconv"
 
-	"missevanbot/config"
 	"missevanbot/models"
 	"missevanbot/modules/thirdparty"
 )
@@ -18,7 +17,6 @@ func RunTasks(output chan<- string, room *models.Room) {
 	if mode := modes[ModeWater]; isEnabled(mode) && shouldExec(count, mode) {
 		taskWater(output)
 	}
-	StatusOnline(room) // set status
 }
 
 func taskPander(output chan<- string) {
@@ -28,10 +26,9 @@ func taskPander(output chan<- string) {
 }
 
 func taskWater(output chan<- string) {
-	rdb := config.RDB
-	key := config.RedisPrefix + "words:water"
-	c := rdb.SRandMember(ctx, key)
+	key := RedisPrefixWords + "water"
 
+	c := rdb.SRandMember(ctx, key)
 	if text := c.Val(); text != "" {
 		output <- text
 	}

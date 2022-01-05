@@ -15,6 +15,8 @@ def get_rid(key):
 
 
 def decode(val: bytes):
+    if val is None:
+        return "NONE"
     s = val.decode("utf-8")
     if s == "":
         return "NONE"
@@ -25,17 +27,18 @@ def get_info(rid):
     key = "missevan:{}:info".format(rid)
     alias = r.hget(key, "alias")
     bot = r.hget(key, "bot")
-    ret = "\tBOT={}\tALIAS={}".format(decode(bot), decode(alias))
+    ret = "BOT={}   ALIAS={}".format(decode(bot), decode(alias).ljust(15))
     return ret
 
 
 def get_detail(key):
     info = get_info(get_rid(key))
 
+    online = r.hget(key, "online")
     count = r.hget(key, "count")
     game = r.hget(key, "game")
 
-    ret = "\tCOUNT={}\tGAME={}".format(decode(count), decode(game))
+    ret = "ONLINE={}   COUNT={}   GAME={}".format(decode(online), decode(count), decode(game))
     return info + ret
 
 
@@ -45,7 +48,7 @@ def current_running(running_rooms):
         print("NONE")
         return
     for idx, key in enumerate(running_rooms):
-        print("[RUNNING #{}] ".format(idx+1), get_info(get_rid(key)))
+        print("[RUNNING #{}] ".format(idx + 1), get_info(get_rid(key)))
 
 
 def current_online(online_rooms):
@@ -54,7 +57,7 @@ def current_online(online_rooms):
         print("NONE")
         return
     for idx, key in enumerate(online_rooms):
-        print("[ONLINE #{}]".format(idx+1), get_detail(key))
+        print("[ONLINE #{}]".format(idx + 1), get_detail(key))
 
 
 if __name__ == '__main__':

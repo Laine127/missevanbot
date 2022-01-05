@@ -1,10 +1,7 @@
 package modules
 
 import (
-	"fmt"
 	"strconv"
-
-	"missevanbot/config"
 )
 
 type RankMember struct {
@@ -13,19 +10,15 @@ type RankMember struct {
 }
 
 // UpdateScore update the score of a player which specified by UID.
-func UpdateScore(roomID, uid, score int) {
-	rdb := config.RDB
-	prefix := config.RedisPrefix + strconv.Itoa(roomID) // Redis namespace prefix, `missevan:[roomID]`
-	key := fmt.Sprintf("%s:game", prefix)
+func UpdateScore(rid, uid, score int) {
+	key := prefixRoom(rid) + "game" // "missevan:[RoomID]:game"
 
 	rdb.ZIncrBy(ctx, key, float64(score), strconv.Itoa(uid))
 }
 
 // ScoreRank return list of the members which in rank list.
-func ScoreRank(roomID int) ([]RankMember, error) {
-	rdb := config.RDB
-	prefix := config.RedisPrefix + strconv.Itoa(roomID)
-	key := fmt.Sprintf("%s:game", prefix)
+func ScoreRank(rid int) ([]RankMember, error) {
+	key := prefixRoom(rid) + "game" // "missevan:[RoomID]:game"
 
 	slice := rdb.ZRevRangeWithScores(ctx, key, 0, -1)
 

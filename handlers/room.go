@@ -24,8 +24,6 @@ func eventOpen(output chan<- string, room *models.Room) {
 	}
 	room.TickerCount = 0
 
-	modules.StatusOnline(room) // set status
-
 	if !room.Watch {
 		return
 	}

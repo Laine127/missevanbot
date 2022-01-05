@@ -8,13 +8,6 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-const (
-	RedisPrefix          = "missevan:"
-	RedisPrefixCookies   = RedisPrefix + "cookies:"
-	RedisPrefixWords     = RedisPrefix + "words:"
-	RedisPrefixTemplates = RedisPrefix + "templates:"
-)
-
 var RDB *redis.Client
 
 // InitRDBClient initialize the Redis client.

@@ -187,7 +187,7 @@ func apiHoroscopes(cmd *models.Command) {
 
 	ctx := context.Background()
 	rdb := config.RDB
-	key := fmt.Sprintf("%szodiac:%s:%s", config.RedisPrefix, utils.Today(), str)
+	key := modules.RedisPrefix + fmt.Sprintf("zodiac:%s:%s", utils.Today(), str)
 
 	n, err := rdb.Exists(ctx, key).Result()
 	if err != nil {

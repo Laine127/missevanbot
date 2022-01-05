@@ -3,8 +3,6 @@ package modules
 import (
 	"strings"
 	"text/template"
-
-	"missevanbot/config"
 )
 
 const (
@@ -22,6 +20,17 @@ const (
 	TmplGift           = "gift"
 )
 
+const (
+	WordChat    = "chat"
+	WordComfort = "comfort"
+	WordGuess   = "guess"
+	WordLuck    = "luck"
+	WordReply   = "reply"
+	WordWelcome = "welcome"
+)
+
+// The NewTemplate gets a text template via key from the Redis database,
+// and use the data to generate the result text.
 func NewTemplate(key string, data interface{}) (string, error) {
 	temp := tmplString(key)
 	text := new(strings.Builder)
@@ -34,12 +43,20 @@ func NewTemplate(key string, data interface{}) (string, error) {
 }
 
 func tmplString(key string) string {
-	rdb := config.RDB
-	key = config.RedisPrefixTemplates + key
+	key = RedisPrefixTemplates + key
+
 	c := rdb.Get(ctx, key)
 	return c.Val()
 }
 
 func add(x, y int) int {
 	return x + y
+}
+
+// The Word gets a random string from the Redis words set.
+func Word(key string) string {
+	key = RedisPrefixWords + key
+
+	c := rdb.SRandMember(ctx, key)
+	return c.Val()
 }
