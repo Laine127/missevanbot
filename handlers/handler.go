@@ -27,9 +27,11 @@ func HandleRoom(output chan<- string, room *models.Room, textMsg models.FmTextMe
 func HandleMember(output chan<- string, room *models.Room, textMsg models.FmTextMessage) {
 	switch textMsg.Event {
 	case models.EventJoinQueue:
-		eventJoinQueue(output, room, textMsg)
+		eventJoinQueue(output, room, textMsg.Queue)
 	case models.EventFollowed:
-		eventFollowed(output, textMsg)
+		eventFollowed(output, textMsg.User)
+	case models.EventAddAdmin:
+		eventAddAdmin(output, room, textMsg.Target)
 	}
 }
 

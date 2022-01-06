@@ -88,6 +88,7 @@ type (
 		Username string `json:"username"`
 	}
 
+	// fmStatistics represents the statistics of the live room.
 	fmStatistics struct {
 		Accumulation   int `json:"accumulation"`    // 累计人数
 		Vip            int `json:"vip"`             // 贵宾数量

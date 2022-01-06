@@ -2,16 +2,18 @@ package models
 
 // Event define the message events.
 const (
-	EventSend      = "send"       // gift send.
-	EventNew       = "new"        // new message received.
-	EventStatistic = "statistics" // statistics of the live room.
-	EventJoin      = "join"       // connect to the live room channel.
-	EventJoinQueue = "join_queue" // members join the live room.
-	EventFollowed  = "followed"   // user followed the room creator.
-	EventOpen      = "open"       // the live room opened.
-	EventClose     = "close"      // the live room closed.
-	EventNewRank   = "new_rank"   // the new rank information of the live room.
-	EventLeave     = "leave"      // user leaved the live room.
+	EventSend       = "send"        // gift send.
+	EventNew        = "new"         // new message received.
+	EventStatistic  = "statistics"  // statistics of the live room.
+	EventJoin       = "join"        // connect to the live room channel.
+	EventJoinQueue  = "join_queue"  // members join the live room.
+	EventFollowed   = "followed"    // user followed the room creator.
+	EventOpen       = "open"        // the live room opened.
+	EventClose      = "close"       // the live room closed.
+	EventNewRank    = "new_rank"    // the new rank information of the live room.
+	EventLeave      = "leave"       // user leaved the live room.
+	EventAddAdmin   = "add_admin"   // add a room admin.
+	EventRemoveMute = "remove_mute" // unmute a user in the live room.
 )
 
 // Type define the message types.
@@ -42,7 +44,8 @@ type (
 		User       FmUser       `json:"user"`
 		Queue      []FmQueue    `json:"queue"`
 		Gift       FmGift       `json:"gift"`
-		Statistics FmStatistics `json:"statistics"`
+		Target     FmTarget     `json:"target"`
+		Statistics fmStatistics `json:"statistics"`
 	}
 
 	// FmUser represents the information of a user.
@@ -62,7 +65,7 @@ type (
 		Contribution int       `json:"contribution"`
 		IconUrl      string    `json:"iconurl"`
 		Titles       []fmTitle `json:"titles"`
-		UserId       int       `json:"user_id"`
+		UserID       int       `json:"user_id"`
 		Username     string    `json:"username"`
 	}
 
@@ -80,11 +83,8 @@ type (
 		Number int    `json:"num"`
 	}
 
-	// FmStatistics represents the statistics of the live room.
-	FmStatistics struct {
-		Accumulation int `json:"accumulation"`
-		Online       int `json:"online"`
-		Vip          int `json:"vip"`
-		Score        int `json:"score"`
+	FmTarget struct {
+		UserID   int    `json:"user_id"`
+		Username string `json:"username"`
 	}
 )

@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -91,16 +92,30 @@ retry:
 				modules.StatusAlive(rid) // set status
 				continue
 			}
-			// TODO: Unmarshal add_admin json message.
-			textMsg := models.FmTextMessage{}
-			if err := json.Unmarshal(msgData, &textMsg); err != nil {
+			if len(msgData) == 0 {
+				continue
+			}
+			// TODO: improve performance
+			buf := bytes.Buffer{}
+			if msgData[0] != '[' {
+				buf.WriteByte('[')
+				buf.Write(msgData)
+				buf.WriteByte(']')
+			} else {
+				buf.Write(msgData)
+			}
+
+			var textMsgs []models.FmTextMessage
+			if err := json.Unmarshal(buf.Bytes(), &textMsgs); err != nil {
 				zap.S().Warn(room.Log(fmt.Sprintf("unmarshal failed (%s)", string(msgData)), err))
 				continue
 			}
-			if textMsg.User.UserID == room.BotID() {
-				continue // filter out messages sent by the bot.
+			for _, textMsg := range textMsgs {
+				if textMsg.User.UserID == room.BotID() {
+					continue // filter out messages sent by the bot.
+				}
+				input <- textMsg
 			}
-			input <- textMsg
 		case websocket.BinaryMessage:
 		case websocket.CloseMessage:
 		case websocket.PingMessage:

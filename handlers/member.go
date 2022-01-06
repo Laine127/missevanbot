@@ -9,13 +9,13 @@ import (
 	"missevanbot/utils"
 )
 
-func eventJoinQueue(output chan<- string, room *models.Room, textMsg models.FmTextMessage) {
-	for _, v := range textMsg.Queue {
+func eventJoinQueue(output chan<- string, room *models.Room, queue []models.FmQueue) {
+	for _, v := range queue {
 		room.Count++
-		if v.UserId == room.BotID() {
+		if v.UserID == room.BotID() {
 			continue
 		}
-		if modules.IsGlobalInvisible(v.UserId) || modules.IsInvisible(room.ID, v.UserId) {
+		if modules.IsGlobalInvisible(v.UserID) || modules.IsInvisible(room.ID, v.UserID) {
 			continue // invisible online
 		}
 		if name := v.Username; name != "" {
@@ -94,8 +94,17 @@ func eventJoinQueue(output chan<- string, room *models.Room, textMsg models.FmTe
 	}
 }
 
-func eventFollowed(output chan<- string, textMsg models.FmTextMessage) {
-	if name := textMsg.User.Username; name != "" {
+func eventFollowed(output chan<- string, user models.FmUser) {
+	if name := user.Username; name != "" {
 		output <- fmt.Sprintf(models.TplThankFollow, name)
 	}
+}
+
+func eventAddAdmin(output chan<- string, room *models.Room, target models.FmTarget) {
+	text, err := modules.NewTemplate(modules.TmplNewAdmin, target.Username)
+	if err != nil {
+		zap.S().Warn(room.Log("create template failed", err))
+		return
+	}
+	output <- text
 }

@@ -18,6 +18,7 @@ const (
 	TmplStartUp        = "startup"
 	TmplWelcome        = "welcome"
 	TmplGift           = "gift"
+	TmplNewAdmin       = "newadmin"
 )
 
 const (
