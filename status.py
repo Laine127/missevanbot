@@ -38,16 +38,16 @@ def get_detail(key):
     count = r.hget(key, "count")
     game = r.hget(key, "game")
 
-    ret = "ONLINE={}   COUNT={}   GAME={}".format(decode(online), decode(count), decode(game))
+    ret = "\n\tONLINE={}   COUNT={}   GAME={}".format(decode(online), decode(count), decode(game))
     return info + ret
 
 
-def current_running(running_rooms):
+def current_alive(alive_rooms):
     print("当前运行：")
-    if len(running_rooms) == 0:
+    if len(alive_rooms) == 0:
         print("NONE")
         return
-    for idx, key in enumerate(running_rooms):
+    for idx, key in enumerate(alive_rooms):
         print("[RUNNING #{}] ".format(idx + 1), get_info(get_rid(key)))
 
 
@@ -60,6 +60,6 @@ def current_online(online_rooms):
         print("[ONLINE #{}]".format(idx + 1), get_detail(key))
 
 
-if __name__ == '__main__':
-    current_running(r.keys("missevan:running:*"))
+if __name__ == "__main__":
+    current_alive(r.keys("missevan:alive:*"))
     current_online(r.keys("missevan:online:*"))

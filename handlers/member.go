@@ -15,7 +15,7 @@ func eventJoinQueue(output chan<- string, room *models.Room, textMsg models.FmTe
 		if v.UserId == room.BotID() {
 			continue
 		}
-		if modules.IsInvisible(room.ID, v.UserId) {
+		if modules.IsGlobalInvisible(v.UserId) || modules.IsInvisible(room.ID, v.UserId) {
 			continue // invisible online
 		}
 		if name := v.Username; name != "" {

@@ -88,7 +88,7 @@ retry:
 		switch msgType {
 		case websocket.TextMessage:
 			if string(msgData) == "❤️" {
-				modules.StatusRunning(rid) // set status
+				modules.StatusAlive(rid) // set status
 				continue
 			}
 			// TODO: Unmarshal add_admin json message.

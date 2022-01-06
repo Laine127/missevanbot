@@ -15,10 +15,10 @@ func InitRoomInfo(rid int, name string, bot string) {
 	rdb.HSet(ctx, key, "bot", bot)
 }
 
-// StatusRunning store a live key with 30 seconds (equals to Websocket heart beat duration) expiration in Redis,
-// the status Live means the bot running normally.
-func StatusRunning(rid int) {
-	key := RedisPrefixRunning + strconv.Itoa(rid) // `missevan:running:[RoomID]`
+// StatusAlive store a live key with 30 seconds (equals to Websocket heart beat duration) expiration in Redis,
+// the status Alive means the bot running normally.
+func StatusAlive(rid int) {
+	key := RedisPrefixRunning + strconv.Itoa(rid) // `missevan:alive:[RoomID]`
 
 	rdb.SetEX(ctx, key, "", 30*time.Second)
 }

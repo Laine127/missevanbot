@@ -13,8 +13,9 @@ const (
 	RedisPrefixCookies   = RedisPrefix + "cookies:"
 	RedisPrefixWords     = RedisPrefix + "words:"
 	RedisPrefixTemplates = RedisPrefix + "templates:"
-	RedisPrefixRunning   = RedisPrefix + "running:"
+	RedisPrefixRunning   = RedisPrefix + "alive:"
 	RedisPrefixOnline    = RedisPrefix + "online:"
+	RedisPrefixGlobal    = RedisPrefix + "global:"
 )
 
 var rdb *redis.Client
